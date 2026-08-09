@@ -69,9 +69,20 @@ use PDO;
 
 final class InfrastructureServiceProvider implements ServiceProviderInterface
 {
+    /**
+     * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+     */
     public function register(ContainerInterface $container): void
     {
-        // 1. Core / System (Datenbank, Uhrzeit, Logging)
+        $this->registerCore($container);
+        $this->registerSecurity($container);
+        $this->registerMail($container);
+        $this->registerDomainRepositories($container);
+        $this->registerSystemUtils($container);
+    }
+
+    private function registerCore(ContainerInterface $container): void
+    {
         $container->bind(PDO::class, function () use ($container): PDO {
             $config = $container->get(ConfigInterface::class);
             \assert($config instanceof ConfigInterface);
@@ -96,8 +107,10 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
 
             return new ErrorLogger($config);
         });
+    }
 
-        // 2. Security & Session
+    private function registerSecurity(ContainerInterface $container): void
+    {
         $container->bind(AuthSessionInterface::class, function () use ($container): object {
             $sessionManager = $container->get(SessionManager::class);
             \assert(\is_object($sessionManager));
@@ -121,7 +134,7 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new MySqlUserRepository($pdo);
         });
 
-        $container->bind(LoginAttemptRepositoryInterface::class, function () use ($container): MySqlLoginAttemptRepository { // phpcs:ignore Generic.Files.LineLength.TooLong
+        $container->bind(LoginAttemptRepositoryInterface::class, function () use ($container): MySqlLoginAttemptRepository {
             $pdo = $container->get(PDO::class);
             \assert($pdo instanceof PDO);
 
@@ -136,8 +149,10 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
 
             return new RateLimiter($clock, $repo);
         });
+    }
 
-        // 3. E-Mail
+    private function registerMail(ContainerInterface $container): void
+    {
         $container->bind(MagicLinkRepositoryInterface::class, function () use ($container): MySqlMagicLinkRepository {
             $pdo = $container->get(PDO::class);
             \assert($pdo instanceof PDO);
@@ -154,7 +169,6 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new MySqlMailQueueRepository($pdo, $jsonHelper);
         });
 
-        // Mail Services (SMTP als interne Instanz, MailQueue als das Interface für den Rest der App)
         $container->bind('mail.smtp', function () use ($container): SmtpMailService {
             $pdo = $container->get(PDO::class);
             \assert($pdo instanceof PDO);
@@ -175,15 +189,16 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new MailQueueService($repo, $smtp);
         });
 
-        // Direkter Mailer für Sofort-Versand ohne Warteschlange
         $container->bind(DirectMailServiceInterface::class, function () use ($container): SmtpMailService {
             $smtp = $container->get('mail.smtp');
             \assert($smtp instanceof SmtpMailService);
 
             return $smtp;
         });
+    }
 
-        // Bookmarks / Lesezeichen
+    private function registerDomainRepositories(ContainerInterface $container): void
+    {
         $container->bind(BookmarkRepositoryInterface::class, function () use ($container): MySqlBookmarkRepository {
             $pdo = $container->get(PDO::class);
             \assert($pdo instanceof PDO);
@@ -191,7 +206,6 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new MySqlBookmarkRepository($pdo);
         });
 
-        // 4. Domain Repositories (TwoKinds MySQL Persistenz)
         $container->bind(ComicRepositoryInterface::class, function () use ($container): MySqlComicRepository {
             $pdo = $container->get(PDO::class);
             \assert($pdo instanceof PDO);
@@ -199,7 +213,7 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new MySqlComicRepository($pdo);
         });
 
-        $container->bind(ComicRevisionRepositoryInterface::class, function () use ($container): MySqlComicRevisionRepository { // phpcs:ignore Generic.Files.LineLength.TooLong
+        $container->bind(ComicRevisionRepositoryInterface::class, function () use ($container): MySqlComicRevisionRepository {
             $pdo = $container->get(PDO::class);
             \assert($pdo instanceof PDO);
             $clock = $container->get(ClockInterface::class);
@@ -217,7 +231,7 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new MySqlCharacterRepository($pdo);
         });
 
-        $container->bind(CharacterGroupRepositoryInterface::class, function () use ($container): MySqlCharacterGroupRepository { // phpcs:ignore Generic.Files.LineLength.TooLong
+        $container->bind(CharacterGroupRepositoryInterface::class, function () use ($container): MySqlCharacterGroupRepository {
             $pdo = $container->get(PDO::class);
             \assert($pdo instanceof PDO);
 
@@ -237,8 +251,10 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
 
             return new MySqlChapterRepository($pdo);
         });
+    }
 
-        // Backup Service als Infrastruktur-Dienst gebunden
+    private function registerSystemUtils(ContainerInterface $container): void
+    {
         $container->bind(BackupServiceInterface::class, function () use ($container): SystemBackupService {
             $pdo = $container->get(PDO::class);
             \assert($pdo instanceof PDO);
@@ -250,7 +266,6 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new SystemBackupService($pdo, $config, $json);
         });
 
-        // Andere
         $container->bind(MediaServiceInterface::class, function () use ($container): GdMediaService {
             $config = $container->get(ConfigInterface::class);
             \assert($config instanceof ConfigInterface);
@@ -258,7 +273,7 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new GdMediaService($config);
         });
 
-        $container->bind(RemoteResourceProberInterface::class, fn (): CurlRemoteResourceProber => new CurlRemoteResourceProber()); // phpcs:ignore Generic.Files.LineLength.TooLong
+        $container->bind(RemoteResourceProberInterface::class, fn (): CurlRemoteResourceProber => new CurlRemoteResourceProber());
 
         $container->bind(SystemInfoInterface::class, function () use ($container): SystemInfoService {
             $config = $container->get(ConfigInterface::class);
@@ -290,7 +305,6 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new FileRouteCache($config);
         });
 
-        // Sitemap und RSS
         $container->bind(SiteGeneratorInterface::class, function () use ($container): StaticSiteGenerator {
             $comicRepo = $container->get(ComicRepositoryInterface::class);
             \assert($comicRepo instanceof ComicRepositoryInterface);
