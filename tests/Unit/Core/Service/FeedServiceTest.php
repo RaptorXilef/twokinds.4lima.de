@@ -9,6 +9,7 @@ use App\Core\Entity\ComicPage;
 use App\Core\Service\FeedService;
 use App\Core\ValueObject\ComicId;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 
 function setupFeedTest(mixed $test): object
 {
@@ -24,8 +25,8 @@ function setupFeedTest(mixed $test): object
 
         public function __construct(
             public MockObject&ComicRepositoryInterface $comicRepo,
-            public MockObject&ConfigInterface $config,
-            public MockObject&ClockInterface $clock,
+            public Stub&ConfigInterface $config,
+            public Stub&ClockInterface $clock,
         ) {
             $this->service = new FeedService($this->comicRepo, $this->config, $this->clock);
         }

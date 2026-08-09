@@ -9,6 +9,7 @@ use App\Core\Entity\MagicLink;
 use App\Core\Service\MagicLinkService;
 use App\Core\ValueObject\EmailAddress;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 
 function setupMagicLinkTest(mixed $test): object
 {
@@ -23,8 +24,8 @@ function setupMagicLinkTest(mixed $test): object
         public MagicLinkService $service;
 
         public function __construct(
-            public MockObject&ClockInterface $clock,
-            public MockObject&ConfigInterface $config,
+            public Stub&ClockInterface $clock,
+            public Stub&ConfigInterface $config,
             public MockObject&MagicLinkRepositoryInterface $repo,
         ) {
             $this->service = new MagicLinkService($this->clock, $this->config, $this->repo);
@@ -38,8 +39,7 @@ function setupMagicLinkTest(mixed $test): object
     $now = new \DateTimeImmutable('2026-08-07 10:00:00');
     $app->clock->method('now')->willReturn($now);
 
-    $app->config->expects($this->once())
-        ->method('get')
+    $app->config->method('get')
         ->with('magic_link_duration', 15)
         ->willReturn(30); // 30 Minuten Lebensdauer konfigurieren
 

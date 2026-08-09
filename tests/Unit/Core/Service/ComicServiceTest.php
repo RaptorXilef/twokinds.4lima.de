@@ -10,6 +10,7 @@ use App\Core\Entity\ComicPage;
 use App\Core\Service\ComicService;
 use App\Core\ValueObject\ComicId;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 
 /**
  * ZENTRALER SETUP: Hier wird der Service und alle Mocks exakt EINMAL instanziiert.
@@ -30,7 +31,7 @@ function setupComicTest(mixed $test): object
         public function __construct(
             public MockObject&ComicRepositoryInterface $comicRepo,
             public MockObject&ComicRevisionRepositoryInterface $revisionRepo,
-            public MockObject&ClockInterface $clock,
+            public Stub&ClockInterface $clock,
             public MockObject&SiteGeneratorInterface $siteGen,
         ) {
             $this->service = new ComicService(

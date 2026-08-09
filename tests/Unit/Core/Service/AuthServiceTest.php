@@ -12,6 +12,7 @@ use App\Core\Service\AuthService;
 use App\Core\ValueObject\EmailAddress;
 use App\Core\ValueObject\Username;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 
 function setupAuthTest(mixed $test): object
 {
@@ -28,7 +29,7 @@ function setupAuthTest(mixed $test): object
         public AuthService $service;
 
         public function __construct(
-            public MockObject&ConfigInterface $config,
+            public Stub&ConfigInterface $config,
             public MockObject&RoleRepositoryInterface $roleRepo,
             public MockObject&RateLimiterInterface $rateLimiter,
             public MockObject&AuthSessionInterface $session,

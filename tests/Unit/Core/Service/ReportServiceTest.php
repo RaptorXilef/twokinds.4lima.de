@@ -8,6 +8,7 @@ use App\Core\Entity\Report;
 use App\Core\Exception\RateLimitExceededException;
 use App\Core\Service\ReportService;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 
 function setupReportTest(mixed $test): object
 {
@@ -22,7 +23,7 @@ function setupReportTest(mixed $test): object
 
         public function __construct(
             public MockObject&ReportRepositoryInterface $reportRepo,
-            public MockObject&ClockInterface $clock,
+            public Stub&ClockInterface $clock,
         ) {
             // Service mit gemockten Abhängigkeiten instanziieren
             $this->service = new ReportService($this->reportRepo, $this->clock);

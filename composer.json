@@ -87,9 +87,9 @@
     "chk:style": "php-cs-fixer fix --dry-run --diff --no-interaction",
     "chk:md": "phpmd analyze src --format text --ruleset phpmd.xml.dist",
     "chk:cpd": "php -d display_errors=0 tools/phpcpd.phar src/ --min-lines=5 --min-tokens=70",
+    "chk:modern": "rector process --dry-run",
     "chk:arch": "deptrac analyse --config-file=deptrac.yaml",
     "chk:arch:uncovered": "deptrac analyse --config-file=deptrac.yaml --report-uncovered",
-    "chk:modern": "rector process --dry-run",
 
     "//chk:style:s": "phpcs tests/Unit/Core/Service/ -s",
 
