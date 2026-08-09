@@ -39,9 +39,8 @@ function setupMagicLinkTest(mixed $test): object
     $now = new \DateTimeImmutable('2026-08-07 10:00:00');
     $app->clock->method('now')->willReturn($now);
 
-    $app->config->method('get')
-        ->with('magic_link_duration', 15)
-        ->willReturn(30); // 30 Minuten Lebensdauer konfigurieren
+    // Fix: Ein Stub nutzt kein expects() oder with() mehr in PHPUnit 11
+    $app->config->method('get')->willReturn(30); // 30 Minuten Lebensdauer konfigurieren
 
     $app->repo->expects($this->once())
         ->method('loadAll')
@@ -100,7 +99,9 @@ function setupMagicLinkTest(mixed $test): object
         $now->modify('-5 minutes'), // Liegt in der Vergangenheit
     );
 
-    $app->repo->method('loadAll')->willReturn(['expired_token' => $expiredLink]);
+    $app->repo->expects($this->exactly(2))
+        ->method('loadAll')
+        ->willReturn(['expired_token' => $expiredLink]);
 
     \expect($app->service->peekToken('expired_token'))->toBeNull()
         ->and($app->service->peekToken('unknown_token'))->toBeNull();
@@ -119,7 +120,9 @@ function setupMagicLinkTest(mixed $test): object
     );
 
     // loadAll gibt den Link zurück
-    $app->repo->method('loadAll')->willReturn(['very_long_secret_token_123' => $validLink]);
+    $app->repo->expects($this->once())
+        ->method('loadAll')
+        ->willReturn(['very_long_secret_token_123' => $validLink]);
 
     // saveAll wird erwartet, aber diesmal MUSS das Array leer sein (Link wurde verbraucht)
     $app->repo->expects($this->once())
@@ -142,7 +145,9 @@ function setupMagicLinkTest(mixed $test): object
         $now->modify('+10 minutes'),
     );
 
-    $app->repo->method('loadAll')->willReturn(['very_long_secret_token_123' => $validLink]);
+    $app->repo->expects($this->once())
+        ->method('loadAll')
+        ->willReturn(['very_long_secret_token_123' => $validLink]);
 
     // saveAll wird erwartet, auch hier muss das Array geleert werden
     $app->repo->expects($this->once())

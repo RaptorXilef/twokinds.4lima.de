@@ -49,6 +49,11 @@ function setupAuthTest(mixed $test): object
 \it('throws exception if IP is rate limited', function (): void {
     $app = \setupAuthTest($this);
 
+    // Diese Mocks dürfen gar nicht erst aufgerufen werden!
+    $app->roleRepo->expects($this->never())->method($this->anything());
+    $app->userRepo->expects($this->never())->method($this->anything());
+    $app->session->expects($this->never())->method($this->anything());
+
     $app->rateLimiter->expects($this->once())
         ->method('isBlocked')
         ->with('127.0.0.1')
@@ -63,7 +68,11 @@ function setupAuthTest(mixed $test): object
     // Hash für "secret"
     $hash = \password_hash('secret', \PASSWORD_DEFAULT);
 
-    $app->rateLimiter->method('isBlocked')->willReturn(false);
+    $app->roleRepo->expects($this->never())->method($this->anything());
+    $app->userRepo->expects($this->never())->method($this->anything());
+
+    $app->rateLimiter->expects($this->any())->method('isBlocked')->willReturn(false);
+    $app->rateLimiter->expects($this->once())->method('clearAttempts');
 
     $app->config->method('get')->willReturnMap([
         ['backdoor', null, ['user' => 'admin_backdoor', 'pass' => $hash, 'label' => 'System-Inhaber']],
@@ -74,8 +83,6 @@ function setupAuthTest(mixed $test): object
         ->method('setAuthSession')
         ->with('sys_backdoor', 'admin', 'System-Inhaber', null);
 
-    $app->rateLimiter->expects($this->once())->method('clearAttempts');
-
     $result = $app->service->login('admin_backdoor', 'secret', '192.168.0.1');
     \expect($result)->toBeTrue();
 })->covers(AuthService::class);
@@ -83,7 +90,13 @@ function setupAuthTest(mixed $test): object
 \it('fails login with wrong password and triggers rate limit', function (): void {
     $app = \setupAuthTest($this);
 
-    $app->rateLimiter->method('isBlocked')->willReturn(false);
+    $app->roleRepo->expects($this->never())->method($this->anything());
+    $app->session->expects($this->never())->method($this->anything());
+
+    $app->rateLimiter->expects($this->any())->method('isBlocked')->willReturn(false);
+    $app->rateLimiter->expects($this->once())
+        ->method('recordFailedAttempt')
+        ->with('127.0.0.1');
 
     $user = new User(
         'usr_1',
@@ -99,17 +112,18 @@ function setupAuthTest(mixed $test): object
         ->with('test@test.de')
         ->willReturn($user);
 
-    $app->rateLimiter->expects($this->once())
-        ->method('recordFailedAttempt')
-        ->with('127.0.0.1');
-
     $result = $app->service->login('test@test.de', 'WRONG_PASSWORD', '127.0.0.1');
     \expect($result)->toBeFalse();
 })->covers(AuthService::class);
 
 \it('prevents login for pending users', function (): void {
     $app = \setupAuthTest($this);
-    $app->rateLimiter->method('isBlocked')->willReturn(false);
+
+    $app->roleRepo->expects($this->never())->method($this->anything());
+    $app->session->expects($this->never())->method($this->anything());
+
+    $app->rateLimiter->expects($this->any())->method('isBlocked')->willReturn(false);
+    $app->rateLimiter->expects($this->once())->method('recordFailedAttempt');
 
     $user = new User(
         'usr_2',
@@ -120,16 +134,15 @@ function setupAuthTest(mixed $test): object
         new \DateTimeImmutable(),
     );
 
-    $app->userRepo->method('findByEmail')->willReturn($user);
-
-    $app->rateLimiter->expects($this->once())->method('recordFailedAttempt');
+    $app->userRepo->expects($this->once())->method('findByEmail')->willReturn($user);
 
     $app->service->login('wait@test.de', 'mypassword', '127.0.0.1');
 })->throws(\DomainException::class, 'Dein Konto wurde noch nicht bestätigt')->covers(AuthService::class);
 
 \it('successfully logs in a valid user and compiles permissions', function (): void {
     $app = \setupAuthTest($this);
-    $app->rateLimiter->method('isBlocked')->willReturn(false);
+
+    $app->rateLimiter->expects($this->any())->method('isBlocked')->willReturn(false);
 
     $app->config->method('get')->willReturnCallback(fn ($key, $default = null) => $key === 'structure' ? [] : $default);
 
@@ -142,7 +155,7 @@ function setupAuthTest(mixed $test): object
         new \DateTimeImmutable(),
     );
 
-    $app->userRepo->method('findByEmail')->willReturn($user);
+    $app->userRepo->expects($this->once())->method('findByEmail')->willReturn($user);
 
     $app->session->expects($this->once())->method('regenerate');
     $app->session->expects($this->once())->method('rotateCsrfToken');

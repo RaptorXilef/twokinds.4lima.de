@@ -95,6 +95,10 @@ function setupComicTest(mixed $test): object
         ->method('save')
         ->with($updatedComic);
 
+    // Der SiteGenerator wird beim Speichern immer getriggert! (Das fehlte vorher)
+    $app->siteGen->expects($this->once())
+        ->method('generateAll');
+
     // Act
     $app->service->saveComic($updatedComic);
 })->covers(ComicService::class);
