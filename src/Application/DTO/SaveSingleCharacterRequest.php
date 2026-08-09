@@ -26,6 +26,9 @@ final readonly class SaveSingleCharacterRequest
     ) {
     }
 
+    /**
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
+     */
     public static function fromRequest(ServerRequest $request): self
     {
         $data = $request->post;

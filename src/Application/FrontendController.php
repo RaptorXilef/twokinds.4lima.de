@@ -20,6 +20,9 @@ use App\Application\Routing\UniversalActionFactory;
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
 
+/**
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ */
 final readonly class FrontendController
 {
     public function __construct(
@@ -30,7 +33,33 @@ final readonly class FrontendController
     ) {
     }
 
+    // =========================================================================
+    // PUBLIC API
+    // =========================================================================
+
     public function handleRequest(ServerRequest $request): void
+    {
+        $relativePath = $this->resolveRelativePath($request);
+        $routeMatch = $this->resolveRoute($request, $relativePath);
+
+        $request = $routeMatch['request'];
+        $className = $routeMatch['class'];
+        $requiresAuth = $routeMatch['requiresAuth'];
+
+        if ($this->isMaintenanceLockActive($className)) {
+            $this->sendMaintenanceResponse($className);
+
+            return;
+        }
+
+        $this->executePipeline($request, $className, $requiresAuth);
+    }
+
+    // =========================================================================
+    // PRIVATE HELPER
+    // =========================================================================
+
+    private function resolveRelativePath(ServerRequest $request): string
     {
         $pathRaw = \parse_url($request->getPath(), \PHP_URL_PATH);
         $path = \is_string($pathRaw) ? $pathRaw : '/';
@@ -49,10 +78,19 @@ final readonly class FrontendController
         if (\str_ends_with($relativePath, '.php')) {
             $relativePath = \substr($relativePath, 0, -4);
         }
+
         if ($relativePath === '/index') {
-            $relativePath = '/';
+            return '/';
         }
 
+        return $relativePath;
+    }
+
+    /**
+     * @return array{request: ServerRequest, class: string, requiresAuth: bool}
+     */
+    private function resolveRoute(ServerRequest $request, string $relativePath): array
+    {
         $method = $request->getMethod();
         $matched = $this->actionFactory->getRegistry()->match($method, $relativePath);
 
@@ -63,18 +101,29 @@ final readonly class FrontendController
         if (\is_array($matched)) {
             $className = \is_string($matched['class']) ? $matched['class'] : Error404Action::class;
             $params = \is_array($matched['params']) ? $matched['params'] : [];
-            $request = $request->withInput(\array_merge($request->input, $params));
-            $requiresAuth = ($matched['requiresAuth'] ?? false) === true;
-        } else {
-            $className = Error404Action::class;
-            $requiresAuth = false;
+
+            return [
+                'request' => $request->withInput(\array_merge($request->input, $params)),
+                'class' => $className,
+                'requiresAuth' => ($matched['requiresAuth'] ?? false) === true,
+            ];
         }
 
+        return [
+            'request' => $request,
+            'class' => Error404Action::class,
+            'requiresAuth' => false,
+        ];
+    }
+
+    private function isMaintenanceLockActive(string $className): bool
+    {
         $maintenanceMode = $this->config->get('maintenance_mode', false) === true;
         $maintenanceAdmin = $this->config->get('maintenance_mode_admin', false) === true;
 
         $isAdminAction = \str_starts_with($className, 'App\\Application\\Actions\\Admin\\')
             || \str_starts_with($className, 'App\\Application\\Actions\\Api\\Admin\\');
+
         $isFrontendAction = \str_starts_with($className, 'App\\Application\\Actions\\Frontend\\')
             || \str_starts_with($className, 'App\\Application\\Actions\\Api\\Frontend\\');
 
@@ -84,33 +133,38 @@ final readonly class FrontendController
             ProcessMailQueueAction::class,
         ];
 
-        $isLocked = false;
-        if ($isAdminAction && $maintenanceAdmin) {
-            $isLocked = true;
-        } elseif ($isFrontendAction && $maintenanceMode && $this->sessionManager->getAdminGroup() !== 'admin') {
-            $isLocked = true;
+        if (\in_array($className, $safeDuringMaintenance, true)) {
+            return false;
         }
 
-        if ($isLocked && !\in_array($className, $safeDuringMaintenance, true)) {
-            if (\str_starts_with($className, 'App\\Application\\Actions\\Api\\')) {
-                JsonResponse::error('System wird gewartet.', 503)->send();
+        if ($isAdminAction && $maintenanceAdmin) {
+            return true;
+        }
 
-                return;
-            }
+        return $isFrontendAction && $maintenanceMode && $this->sessionManager->getAdminGroup() !== 'admin';
+    }
 
-            \ob_start();
-
-            $rootPathRaw = $this->config->get('root_path');
-            $rootPath = \is_string($rootPathRaw) ? $rootPathRaw : '';
-            require_once \rtrim($rootPath, '/\\') . '/public/maintenance.php';
-
-            $html = \ob_get_clean();
-
-            (new HtmlResponse((string) $html, 503))->send();
+    private function sendMaintenanceResponse(string $className): void
+    {
+        if (\str_starts_with($className, 'App\\Application\\Actions\\Api\\')) {
+            JsonResponse::error('System wird gewartet.', 503)->send();
 
             return;
         }
 
+        \ob_start();
+
+        $rootPathRaw = $this->config->get('root_path');
+        $rootPath = \is_string($rootPathRaw) ? $rootPathRaw : '';
+        require_once \rtrim($rootPath, '/\\') . '/public/maintenance.php';
+
+        $html = \ob_get_clean();
+
+        (new HtmlResponse((string) $html, 503))->send();
+    }
+
+    private function executePipeline(ServerRequest $request, string $className, bool $requiresAuth): void
+    {
         $pipeline = new MiddlewarePipeline();
         $pipeline->add($this->securityHeaders);
 
@@ -132,7 +186,7 @@ final readonly class FrontendController
             return new HtmlResponse('404 Not Found', 404);
         });
 
-        if (!$response instanceof ResponseInterface) {
+        if (!($response instanceof ResponseInterface)) {
             return;
         }
 

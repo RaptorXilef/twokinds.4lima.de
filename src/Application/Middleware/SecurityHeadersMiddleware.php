@@ -49,110 +49,8 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
                 || $host === '127.0.0.1'
                 || \php_sapi_name() === 'cli';
 
-            // Hochlesbare CSP Definition (Konsolidiert aus Public & Admin)
-            $csp = [
-                'default-src' => [
-                    "'self'",
-                    'https://cdnjs.cloudflare.com',
-                ],
-                'upgrade-insecure-requests' => [],
-                'script-src' => [
-                    "'self'",
-                    "'nonce-{$nonce}'",
-                    'https://cdn.jsdelivr.net',
-                    'https://cdn.twokinds.keenspot.com',
-                    'https://cdnjs.cloudflare.com',
-                    'https://code.jquery.com',
-                    'https://placehold.co',
-                    'https://twokinds.4lima.de',
-                    'https://www.googletagmanager.com',
-                ],
-                'style-src' => [
-                    "'self'",
-                    "'unsafe-inline'",
-                    'https://cdn.jsdelivr.net',
-                    'https://cdn.twokinds.keenspot.com',
-                    'https://cdnjs.cloudflare.com',
-                    'https://code.jquery.com',
-                    'https://fonts.googleapis.com',
-                    'https://twokinds.4lima.de',
-                ],
-                'font-src' => [
-                    "'self'",
-                    'data:',
-                    'https://cdn.jsdelivr.net',
-                    'https://cdn.twokinds.keenspot.com',
-                    'https://cdnjs.cloudflare.com',
-                    'https://fonts.gstatic.com',
-                    'https://twokinds.4lima.de',
-                ],
-                'img-src' => [
-                    "'self'",
-                    'data:',
-                    'blob:',
-                    'https://cdn.twokinds.keenspot.com',
-                    'https://i.creativecommons.org',
-                    'https://licensebuttons.net',
-                    'https://placehold.co',
-                    'https://placehold.co/',
-                    'https://twokinds.4lima.de',
-                    'https://twokindscomic.com',
-                    'https://www.2kinds.com',
-                    'https://www.google-analytics.com',
-                    'https://www.googletagmanager.com',
-                ],
-                'connect-src' => [
-                    "'self'",
-                    'blob:',
-                    'https://*.google-analytics.com',
-                    'https://cdn.jsdelivr.net',
-                    'https://cdn.twokinds.keenspot.com',
-                    'https://cdnjs.cloudflare.com',
-                    'https://region1.google-analytics.com',
-                    'https://twokindscomic.com',
-                ],
-                'object-src' => [
-                    "'none'",
-                ],
-                'frame-ancestors' => [
-                    "'self'",
-                ],
-                'base-uri' => [
-                    "'self'",
-                ],
-                'form-action' => [
-                    "'self'",
-                ],
-            ];
-
-            // Lokale Dev-Umgebungen dynamisch zu den Arrays hinzufügen
-            if ($isLocal) {
-                $localHosts = ['https://twokinds.4lima.local', 'http://localhost'];
-                foreach (
-                    [
-                        'default-src',
-                        'script-src',
-                        'style-src',
-                        'font-src',
-                        'img-src',
-                        'connect-src',
-                        'frame-ancestors',
-                        'base-uri',
-                        'form-action',
-                    ] as $directive
-                ) {
-                    $csp[$directive] = \array_merge($csp[$directive], $localHosts);
-                }
-            }
-
-            // CSP Array zu einem sauberen String kompilieren
-            $cspHeader = '';
-            foreach ($csp as $directive => $sources) {
-                $sourceString = $sources === [] ? '' : ' ' . \implode(' ', $sources);
-                $cspHeader .= $directive . $sourceString . '; ';
-            }
-
-            \header('Content-Security-Policy: ' . \trim($cspHeader));
+            $cspHeader = $this->buildCspHeader($nonce, $isLocal);
+            \header('Content-Security-Policy: ' . $cspHeader);
 
             // HSTS nur erzwingen, wenn wir NICHT in der lokalen Entwicklung sind
             if (!$isLocal) {
@@ -161,5 +59,95 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
         }
 
         return $next($request);
+    }
+
+    private function buildCspHeader(string $nonce, bool $isLocal): string
+    {
+        // Hochlesbare CSP Definition (Konsolidiert aus Public & Admin)
+        $csp = [
+            'default-src' => ["'self'", 'https://cdnjs.cloudflare.com'],
+            'upgrade-insecure-requests' => [],
+            'script-src' => [
+                "'self'",
+                "'nonce-{$nonce}'",
+                'https://cdn.jsdelivr.net',
+                'https://cdn.twokinds.keenspot.com',
+                'https://cdnjs.cloudflare.com',
+                'https://code.jquery.com',
+                'https://placehold.co',
+                'https://twokinds.4lima.de',
+                'https://www.googletagmanager.com',
+            ],
+            'style-src' => [
+                "'self'",
+                "'unsafe-inline'",
+                'https://cdn.jsdelivr.net',
+                'https://cdn.twokinds.keenspot.com',
+                'https://cdnjs.cloudflare.com',
+                'https://code.jquery.com',
+                'https://fonts.googleapis.com',
+                'https://twokinds.4lima.de',
+            ],
+            'font-src' => [
+                "'self'",
+                'data:',
+                'https://cdn.jsdelivr.net',
+                'https://cdn.twokinds.keenspot.com',
+                'https://cdnjs.cloudflare.com',
+                'https://fonts.gstatic.com',
+                'https://twokinds.4lima.de',
+            ],
+            'img-src' => [
+                "'self'",
+                'data:',
+                'blob:',
+                'https://cdn.twokinds.keenspot.com',
+                'https://i.creativecommons.org',
+                'https://licensebuttons.net',
+                'https://placehold.co',
+                'https://placehold.co/',
+                'https://twokinds.4lima.de',
+                'https://twokindscomic.com',
+                'https://www.2kinds.com',
+                'https://www.google-analytics.com',
+                'https://www.googletagmanager.com',
+            ],
+            'connect-src' => [
+                "'self'",
+                'blob:',
+                'https://*.google-analytics.com',
+                'https://cdn.jsdelivr.net',
+                'https://cdn.twokinds.keenspot.com',
+                'https://cdnjs.cloudflare.com',
+                'https://region1.google-analytics.com',
+                'https://twokindscomic.com',
+            ],
+            'object-src' => ["'none'"],
+            'frame-ancestors' => ["'self'"],
+            'base-uri' => ["'self'"],
+            'form-action' => ["'self'"],
+        ];
+
+        // Lokale Dev-Umgebungen dynamisch zu den Arrays hinzufügen
+        if ($isLocal) {
+            $localHosts = ['https://twokinds.4lima.local', 'http://localhost'];
+            foreach (
+                [
+                    'default-src', 'script-src', 'style-src', 'font-src', 'img-src',
+                    'connect-src', 'frame-ancestors', 'base-uri', 'form-action',
+                ] as $directive
+            ) {
+                $csp[$directive] = \array_merge($csp[$directive], $localHosts);
+            }
+        }
+
+        // CSP Array zu einem sauberen String kompilieren
+        $cspHeader = '';
+        foreach ($csp as $directive => $sources) {
+            $sourceString = $sources === [] ? '' : ' ' . \implode(' ', $sources);
+            $cspHeader .= $directive . $sourceString . '; ';
+        }
+
+        return \trim($cspHeader);
     }
 }

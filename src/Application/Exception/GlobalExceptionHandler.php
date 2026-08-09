@@ -88,11 +88,13 @@ final readonly class GlobalExceptionHandler
      *
      * @param Throwable $exception Die aufgetretene Ausnahme.
      * @param bool $isDev Gibt an, ob der Stacktrace (Dev-Mode) angezeigt werden darf.
+     *
+     * @SuppressWarnings("PHPMD.ExitExpression")
      */
     private function renderErrorPage(Throwable $exception, bool $isDev): void
     {
         if (!\headers_sent()) {
-            @\http_response_code(500);
+            \http_response_code(500);
         }
 
         $titleRaw = $this->config->get('site_title', 'Twokinds auf Deutsch');
