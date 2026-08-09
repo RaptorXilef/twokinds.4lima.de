@@ -9,7 +9,10 @@
 declare(strict_types=1);
 
 // 1. Sichere Base-URL Ermittlung (ohne Abhängigkeit von der Datenbank oder komplexen Configs)
-$scriptPath = \str_replace('\\', '/', \dirname((string) $_SERVER['SCRIPT_NAME']));
+$scriptNameRaw = $_SERVER['SCRIPT_NAME'] ?? '';
+$scriptName = \is_string($scriptNameRaw) ? $scriptNameRaw : '';
+$scriptPath = \str_replace('\\', '/', \dirname($scriptName));
+
 $rootPath = \rtrim($scriptPath, '/public');
 $baseUrl = \rtrim($rootPath, '/') . '/';
 
