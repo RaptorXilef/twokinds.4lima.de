@@ -16,10 +16,15 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 function setupComicTest(mixed $test): object
 {
-    // Erlaubt den Zugriff auf die protected 'createMock' Methode
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
+    $stub = \Closure::bind(fn (string $c) => $test->createStub($c), $test, $test::class);
 
-    return new class($mock(ComicRepositoryInterface::class), $mock(ComicRevisionRepositoryInterface::class), $mock(ClockInterface::class), $mock(SiteGeneratorInterface::class)) {
+    return new class (
+        $mock(ComicRepositoryInterface::class),
+        $mock(ComicRevisionRepositoryInterface::class),
+        $stub(ClockInterface::class),
+        $mock(SiteGeneratorInterface::class),
+    ) {
         public ComicService $service;
 
         public function __construct(

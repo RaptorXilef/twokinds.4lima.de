@@ -16,8 +16,15 @@ use PHPUnit\Framework\MockObject\MockObject;
 function setupAuthTest(mixed $test): object
 {
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
+    $stub = \Closure::bind(fn (string $c) => $test->createStub($c), $test, $test::class);
 
-    return new class($mock(ConfigInterface::class), $mock(RoleRepositoryInterface::class), $mock(RateLimiterInterface::class), $mock(AuthSessionInterface::class), $mock(UserRepositoryInterface::class)) {
+    return new class (
+        $stub(ConfigInterface::class), // Config ist hier nur ein Stub (liefert Daten)
+        $mock(RoleRepositoryInterface::class),
+        $mock(RateLimiterInterface::class),
+        $mock(AuthSessionInterface::class),
+        $mock(UserRepositoryInterface::class),
+    ) {
         public AuthService $service;
 
         public function __construct(
@@ -57,11 +64,9 @@ function setupAuthTest(mixed $test): object
 
     $app->rateLimiter->method('isBlocked')->willReturn(false);
 
-    $app->config->expects($this->any())
-        ->method('get')
-        ->willReturnMap([
-            ['backdoor', null, ['user' => 'admin_backdoor', 'pass' => $hash, 'label' => 'System-Inhaber']],
-        ]);
+    $app->config->method('get')->willReturnMap([
+        ['backdoor', null, ['user' => 'admin_backdoor', 'pass' => $hash, 'label' => 'System-Inhaber']],
+    ]);
 
     // Wir erwarten, dass die Session gesetzt wird
     $app->session->expects($this->once())
@@ -110,7 +115,7 @@ function setupAuthTest(mixed $test): object
         new Username('pendinguser'),
         new EmailAddress('wait@test.de'),
         \password_hash('mypassword', \PASSWORD_DEFAULT),
-        'pending', // Status pending!
+        'pending',
         new \DateTimeImmutable(),
     );
 
@@ -125,7 +130,6 @@ function setupAuthTest(mixed $test): object
     $app = \setupAuthTest($this);
     $app->rateLimiter->method('isBlocked')->willReturn(false);
 
-    // FIX: Config muss ein Array für 'structure' zurückgeben
     $app->config->method('get')->willReturnCallback(fn ($key, $default = null) => $key === 'structure' ? [] : $default);
 
     $user = new User(
@@ -139,14 +143,12 @@ function setupAuthTest(mixed $test): object
 
     $app->userRepo->method('findByEmail')->willReturn($user);
 
-    // Erwarten Session Generierung
     $app->session->expects($this->once())->method('regenerate');
     $app->session->expects($this->once())->method('rotateCsrfToken');
     $app->session->expects($this->once())
         ->method('setAuthSession')
         ->with('usr_3', 'editor', 'validuser', $user->passwordHash);
 
-    // Erwarten Rechte-Kompilierung (Rollen laden)
     $app->roleRepo->expects($this->once())->method('loadAll')->willReturn([]);
 
     $result = $app->service->login('valid@test.de', 'mypassword', '10.0.0.1');

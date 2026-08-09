@@ -107,70 +107,106 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
      *     refSheets: array<int, string>,
      *     warnings: array<int, string>
      * }
-     *
-     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
     private function resolveMediaUrls(ServerRequest $request, SaveSingleCharacterRequest $dto, ?Character $existing, string $safeName): array // phpcs:ignore Generic.Files.LineLength.TooLong
     {
         /** @var array{profile: ?string, main: ?string, swatch: ?string, refs: array<int, string>, warnings: array<int, string>} $processedMedia */
         $processedMedia = $this->mediaService->processCharacterImages($safeName, $request->files);
 
-        // --- Profilbild ---
-        $picUrl = $dto->picUrl !== '' ? $dto->picUrl : null;
-        if ($picUrl !== null) {
-            $picUrl = \str_replace(' ', '_', $picUrl);
-            // Simple Endungs-Ergänzung falls nicht vorhanden
-            if (\preg_match('/\.[a-z0-9]+$/i', $picUrl) !== 1) {
-                $picUrl .= '.webp'; // Standard-Fallback annehmen
-            }
-        }
-        if ($processedMedia['profile'] !== null) {
-            $picUrl = $processedMedia['profile'];
+        return [
+            'picUrl' => $this->resolveProfilePicUrl($dto->picUrl, $processedMedia['profile']),
+            'mainPic' => $this->resolveMainPicUrl($request->post, $existing, $processedMedia['main']),
+            'swatchPic' => $this->resolveSwatchPicUrl($request->post, $existing, $processedMedia['swatch']),
+            'refSheets' => $this->resolveRefSheetsUrls($request->post, $existing, $processedMedia['refs']),
+            'warnings' => $processedMedia['warnings'],
+        ];
+    }
+
+    private function resolveProfilePicUrl(?string $dtoPicUrl, ?string $processedProfile): ?string
+    {
+        if ($processedProfile !== null) {
+            return $processedProfile;
         }
 
-        // --- Hauptbild ---
-        $mainPicUrlRaw = $request->post['main_pic_url'] ?? '';
-        $mainPicUrl = \is_string($mainPicUrlRaw) ? \trim($mainPicUrlRaw) : '';
-        $mainPic = $mainPicUrl !== '' ? \str_replace(' ', '_', $mainPicUrl) : $existing?->mainPic;
-        if ($processedMedia['main'] !== null) {
-            $mainPic = $processedMedia['main'];
+        if ($dtoPicUrl === null || $dtoPicUrl === '') {
+            return null;
         }
 
-        // --- Swatch ---
-        $swatchPicUrlRaw = $request->post['swatch_pic_url'] ?? '';
-        $swatchPicUrl = \is_string($swatchPicUrlRaw) ? \trim($swatchPicUrlRaw) : '';
-        $swatchPic = $swatchPicUrl !== '' ? \str_replace(' ', '_', $swatchPicUrl) : $existing?->swatchPic;
-        if ($processedMedia['swatch'] !== null) {
-            $swatchPic = $processedMedia['swatch'];
+        $picUrl = \str_replace(' ', '_', $dtoPicUrl);
+        if (\preg_match('/\.[a-z0-9]+$/i', $picUrl) !== 1) {
+            $picUrl .= '.webp'; // Standard-Fallback annehmen
         }
 
-        // --- Ref Sheets ---
+        return $picUrl;
+    }
+
+    /**
+     * @param array<string, mixed> $postData
+     */
+    private function resolveMainPicUrl(array $postData, ?Character $existing, ?string $processedMain): ?string
+    {
+        if ($processedMain !== null) {
+            return $processedMain;
+        }
+
+        $rawUrl = $postData['main_pic_url'] ?? '';
+        $urlStr = \is_string($rawUrl) ? \trim($rawUrl) : '';
+
+        if ($urlStr !== '') {
+            return \str_replace(' ', '_', $urlStr);
+        }
+
+        return $existing?->mainPic;
+    }
+
+    /**
+     * @param array<string, mixed> $postData
+     */
+    private function resolveSwatchPicUrl(array $postData, ?Character $existing, ?string $processedSwatch): ?string
+    {
+        if ($processedSwatch !== null) {
+            return $processedSwatch;
+        }
+
+        $rawUrl = $postData['swatch_pic_url'] ?? '';
+        $urlStr = \is_string($rawUrl) ? \trim($rawUrl) : '';
+
+        if ($urlStr !== '') {
+            return \str_replace(' ', '_', $urlStr);
+        }
+
+        return $existing?->swatchPic;
+    }
+
+    /**
+     * @param array<string, mixed> $postData
+     * @param array<int, string> $processedRefs
+     *
+     * @return array<int, string>
+     */
+    private function resolveRefSheetsUrls(array $postData, ?Character $existing, array $processedRefs): array
+    {
         $refSheets = $existing->refSheets ?? [];
-        if (isset($request->post['ref_sheets_urls'])) {
-            $refSheetsUrlsRaw = $request->post['ref_sheets_urls'];
-            $refSheetsUrlsStr = \is_string($refSheetsUrlsRaw) ? \trim($refSheetsUrlsRaw) : '';
 
-            if ($refSheetsUrlsStr !== '') {
+        if (isset($postData['ref_sheets_urls'])) {
+            $rawUrls = $postData['ref_sheets_urls'];
+            $urlsStr = \is_string($rawUrls) ? \trim($rawUrls) : '';
+
+            if ($urlsStr !== '') {
                 $refSheets = \array_values(\array_filter(
                     \array_map(
                         fn ($sheetUrl): string => \str_replace(' ', '_', \trim($sheetUrl)),
-                        \explode(',', $refSheetsUrlsStr),
+                        \explode(',', $urlsStr),
                     ),
                     fn ($val): bool => $val !== '',
                 ));
             }
         }
 
-        if (isset($processedMedia['refs']) && \is_array($processedMedia['refs']) && $processedMedia['refs'] !== []) {
-            $refSheets = \array_merge($refSheets, $processedMedia['refs']);
+        if ($processedRefs !== []) {
+            return \array_merge($refSheets, $processedRefs);
         }
 
-        return [
-            'picUrl' => $picUrl,
-            'mainPic' => $mainPic,
-            'swatchPic' => $swatchPic,
-            'refSheets' => $refSheets,
-            'warnings' => $processedMedia['warnings'],
-        ];
+        return $refSheets;
     }
 }

@@ -16,7 +16,11 @@ function setupCharacterTest(mixed $test): object
 {
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
 
-    return new class($mock(CharacterRepositoryInterface::class), $mock(CharacterGroupRepositoryInterface::class), $mock(SiteGeneratorInterface::class)) {
+    return new class (
+        $mock(CharacterRepositoryInterface::class),
+        $mock(CharacterGroupRepositoryInterface::class),
+        $mock(SiteGeneratorInterface::class),
+    ) {
         public CharacterService $service;
 
         public function __construct(
@@ -34,6 +38,9 @@ function setupCharacterTest(mixed $test): object
 
     $charId = new CharacterId('char_1234');
     $character = new Character($charId, 'TestChar', null, null);
+
+    // Explizite Deklaration, dass das GroupRepo in diesem Test nicht aufgerufen wird (behebt PHPUnit Notice)
+    $app->groupRepo->expects($this->never())->method('findAll');
 
     $app->charRepo->expects($this->once())
         ->method('save')
@@ -83,6 +90,9 @@ function setupCharacterTest(mixed $test): object
 
     $group = new CharacterGroup('Heroes', [$charId1, $charId2]);
 
+    // Explizit unterdrücken
+    $app->siteGen->expects($this->never())->method('generateAll');
+
     $app->charRepo->expects($this->exactly(2))
         ->method('findById')
         ->willReturnMap([
@@ -97,6 +107,9 @@ function setupCharacterTest(mixed $test): object
 
 \it('successfully saves a group if all characters exist', function (): void {
     $app = \setupCharacterTest($this);
+
+    // Explizit unterdrücken
+    $app->siteGen->expects($this->never())->method('generateAll');
 
     $charId = new CharacterId('char_1111');
     $group = new CharacterGroup('Heroes', [$charId]);

@@ -36,49 +36,39 @@ final readonly class SaveUserAction implements ActionInterface
         }
 
         try {
-            $id = Sanitizer::string($request->post['user_id'] ?? '');
-            $usernameStr = Sanitizer::string($request->post['username'] ?? '');
-            $emailStr = Sanitizer::email($request->post['email'] ?? '');
-            $roleId = Sanitizer::string($request->post['role_id'] ?? 'user');
+            $input = $this->parseInput($request);
 
-            $passRaw = $request->post['password'] ?? '';
-            $password = \is_scalar($passRaw) ? (string) $passRaw : '';
-
-            $confirmRaw = $request->post['password_confirm'] ?? '';
-            $passwordConfirm = \is_scalar($confirmRaw) ? (string) $confirmRaw : '';
-
-            // ID wird nicht mehr als Pflichtfeld beim POST erwartet (wichtig für NEUE Benutzer)
-            if ($usernameStr === '' || $emailStr === '') {
+            if ($input['username'] === '' || $input['email'] === '') {
                 return JsonResponse::error('Name und E-Mail sind Pflichtfelder.', 400);
             }
 
-            // Generiere eine neue ID, wenn der Benutzer neu angelegt wird
+            $id = $input['id'];
             if ($id === '' || $id === 'new') {
                 $id = $this->auth->generateId('usr_');
             }
 
             $existingUser = $this->userRepo->findById($id);
 
-            $adminProtection = $this->checkAdminProtection($id, $roleId, $existingUser);
+            $adminProtection = $this->checkAdminProtection($id, $input['roleId'], $existingUser);
             if ($adminProtection instanceof JsonResponse) {
                 return $adminProtection;
             }
 
-            $hash = $this->resolvePasswordHash($password, $passwordConfirm, $existingUser);
+            $hash = $this->resolvePasswordHash($input['pass'], $input['confirm'], $existingUser);
             if ($hash instanceof JsonResponse) {
                 return $hash;
             }
 
-            $dupCheck = $this->checkDuplicates($usernameStr, $emailStr, $id);
+            $dupCheck = $this->checkDuplicates($input['username'], $input['email'], $id);
             if ($dupCheck instanceof JsonResponse) {
                 return $dupCheck;
             }
 
-            $user = $this->buildUser($id, $usernameStr, $emailStr, $hash, $roleId, $existingUser);
+            $user = $this->buildUser($id, $input['username'], $input['email'], $hash, $input['roleId'], $existingUser);
             $this->userRepo->save($user);
 
             return JsonResponse::success([
-                'message' => "Benutzer '{$usernameStr}' erfolgreich gespeichert.",
+                'message' => "Benutzer '{$input['username']}' erfolgreich gespeichert.",
             ]);
         } catch (InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
@@ -91,7 +81,24 @@ final readonly class SaveUserAction implements ActionInterface
     // PRIVATE HELPER
     // =========================================================================
 
-    // Admin-Schutz: Verhindere, dass normale Admins andere Administratoren bearbeiten/degradieren
+    /**
+     * @return array{id: string, username: string, email: string, roleId: string, pass: string, confirm: string}
+     */
+    private function parseInput(ServerRequest $request): array
+    {
+        $passRaw = $request->post['password'] ?? '';
+        $confirmRaw = $request->post['password_confirm'] ?? '';
+
+        return [
+            'id' => Sanitizer::string($request->post['user_id'] ?? ''),
+            'username' => Sanitizer::string($request->post['username'] ?? ''),
+            'email' => Sanitizer::email($request->post['email'] ?? ''),
+            'roleId' => Sanitizer::string($request->post['role_id'] ?? 'user'),
+            'pass' => \is_scalar($passRaw) ? (string) $passRaw : '',
+            'confirm' => \is_scalar($confirmRaw) ? (string) $confirmRaw : '',
+        ];
+    }
+
     private function checkAdminProtection(string $id, string $roleId, ?User $existingUser): ?JsonResponse
     {
         $isConfigAdmin = \str_starts_with($this->auth->getUserId(), 'sys_');

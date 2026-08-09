@@ -44,8 +44,6 @@ final readonly class CharacterListAction implements ActionInterface
      * @param array<array-key, Character> $characters
      *
      * @return array<string, array<int, string>>
-     *
-     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
     private function buildFilterData(array $characters): array
     {
@@ -58,43 +56,9 @@ final readonly class CharacterListAction implements ActionInterface
             'languages' => [],
         ];
 
-        foreach ($characters as $c) {
-            if ($c->gender !== null && $c->gender !== '') {
-                $filterData['gender'][$c->gender] = true;
-            }
-            if ($c->age !== null && $c->age !== '') {
-                $filterData['age'][$c->age] = true;
-            }
-            if ($c->species !== null && $c->species !== '') {
-                $filterData['species'][$c->species] = true;
-            }
-            if ($c->subspecies !== null && $c->subspecies !== '') {
-                $filterData['subspecies'][$c->subspecies] = true;
-            }
-
-            if ($c->rank !== null && $c->rank !== '') {
-                foreach (\array_map(trim(...), \explode(',', $c->rank)) as $r) {
-                    if ($r === '') {
-                        continue;
-                    }
-
-                    $filterData['rank'][$r] = true;
-                }
-            }
-            if ($c->languages === null) {
-                continue;
-            }
-            if ($c->languages === '') {
-                continue;
-            }
-
-            foreach (\array_map(trim(...), \explode(',', $c->languages)) as $l) {
-                if ($l === '') {
-                    continue;
-                }
-
-                $filterData['languages'][$l] = true;
-            }
+        foreach ($characters as $char) {
+            $this->appendDirectFilters($filterData, $char);
+            $this->appendCommaSeparatedFilters($filterData, $char);
         }
 
         // Keys extrahieren und natürlich alphabetisch sortieren
@@ -105,5 +69,54 @@ final readonly class CharacterListAction implements ActionInterface
         }
 
         return $filterData;
+    }
+
+    /**
+     * @param array<string, array<string, bool>> &$filterData
+     */
+    private function appendDirectFilters(array &$filterData, Character $char): void
+    {
+        if ($char->gender !== null && $char->gender !== '') {
+            $filterData['gender'][$char->gender] = true;
+        }
+        if ($char->age !== null && $char->age !== '') {
+            $filterData['age'][$char->age] = true;
+        }
+        if ($char->species !== null && $char->species !== '') {
+            $filterData['species'][$char->species] = true;
+        }
+        if ($char->subspecies === null || $char->subspecies === '') {
+            return;
+        }
+
+        $filterData['subspecies'][$char->subspecies] = true;
+    }
+
+    /**
+     * @param array<string, array<string, bool>> &$filterData
+     */
+    private function appendCommaSeparatedFilters(array &$filterData, Character $char): void
+    {
+        if ($char->rank !== null && $char->rank !== '') {
+            foreach (\array_map(trim(...), \explode(',', $char->rank)) as $rank) {
+                if ($rank === '') {
+                    continue;
+                }
+
+                $filterData['rank'][$rank] = true;
+            }
+        }
+
+        if ($char->languages === null || $char->languages === '') {
+            return;
+        }
+
+        foreach (\array_map(trim(...), \explode(',', $char->languages)) as $lang) {
+            if ($lang === '') {
+                continue;
+            }
+
+            $filterData['languages'][$lang] = true;
+        }
     }
 }
