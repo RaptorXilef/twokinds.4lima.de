@@ -1,5 +1,31 @@
 # Changelog
 
+## [6.16.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.1...v6.16.2) (2026-08-09)
+
+### 🐛 Bug Fixes
+
+* **bootstrap:** Remove redundant checks and dead catch blocks ([f4ab48a](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f4ab48a5a10b914a1c1b926a79b43ba252814d5d)), closes [#107](https://github.com/RaptorXilef/twokinds.4lima.de/issues/107)
+* **bootstrap:** Resolve PHPStan Level 10 mixed type and iterable errors ([c1d49dc](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c1d49dce5c5b48728339644f6a5f98e00abdfe83)), references [#107](https://github.com/RaptorXilef/twokinds.4lima.de/issues/107)
+* **contracts:** Resolve PHPStan Level 10 missing iterable type errors in Contracts ([98d2337](https://github.com/RaptorXilef/twokinds.4lima.de/commit/98d23378ac065755d62219afd7bc88d1ae71d345)), closes [#106](https://github.com/RaptorXilef/twokinds.4lima.de/issues/106)
+* **core:** Resolve leftover PHPStan Level 10 errors across Application and Core ([216e952](https://github.com/RaptorXilef/twokinds.4lima.de/commit/216e952d707d93b81c57643d64f1f99f9f230a69))
+* **core:** Resolve leftover PHPStan Level 10 errors across Application and Core ([d6810ab](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d6810ab480b3c1fb8344c4c7f31826b043974d3f))
+* **infrastructure:** Eliminate final Phase 4 PHPStan Level 10 leftovers ([c530d16](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c530d168b86ae29e24ad6ea570ea5a376a14ef78)), references [#109](https://github.com/RaptorXilef/twokinds.4lima.de/issues/109)
+* **infrastructure:** Eliminate final PHPStan Level 10 errors across all Repositories and Services ([3d7b77e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/3d7b77e4f3245a9bcbf284d55ab255a84da463fb)), references [#109](https://github.com/RaptorXilef/twokinds.4lima.de/issues/109)
+* **infrastructure:** Remove redundant type casts in MediaService ([deb8b8a](https://github.com/RaptorXilef/twokinds.4lima.de/commit/deb8b8a613bb35e723586e95c69bc41ce87f73ea)), references [#109](https://github.com/RaptorXilef/twokinds.4lima.de/issues/109)
+* **infrastructure:** Resolve final edge-case PHPStan Level 10 errors in Phase 5 ([97c782b](https://github.com/RaptorXilef/twokinds.4lima.de/commit/97c782b20847cd9916545d6f5cee2f4cc8d30cf7)), closes [#109](https://github.com/RaptorXilef/twokinds.4lima.de/issues/109)
+* **infrastructure:** Resolve final Phase 4 PHPStan Level 10 leftovers ([6011465](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6011465d7341e69af3da6cc4ebdee2f7c305709e)), references [#109](https://github.com/RaptorXilef/twokinds.4lima.de/issues/109)
+* **infrastructure:** Resolve Phase 3 PHPStan Level 10 errors in Media, Mail and Local Storage ([ac8da2b](https://github.com/RaptorXilef/twokinds.4lima.de/commit/ac8da2b5dd81bd2a2fad52849cdcc90e791a2455)), references [#109](https://github.com/RaptorXilef/twokinds.4lima.de/issues/109)
+* **infrastructure:** Resolve PHPStan Level 10 errors across all Repositories ([4f9dabb](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4f9dabbcec4f7f6b556ac4390229eead5be822aa)), references [#109](https://github.com/RaptorXilef/twokinds.4lima.de/issues/109)
+* **infrastructure:** Resolve PHPStan Level 10 errors for Phase 1 foundational classes ([0e28eba](https://github.com/RaptorXilef/twokinds.4lima.de/commit/0e28eba3c452af6005c1d26911cc82724ba62f3f)), references [#109](https://github.com/RaptorXilef/twokinds.4lima.de/issues/109)
+* **infrastructure:** Resolve PHPStan Level 10 errors for Phase 5 system jobs ([657e3cb](https://github.com/RaptorXilef/twokinds.4lima.de/commit/657e3cb973c7e1a5e7f55eb4521e6b8157746d6a)), references [#109](https://github.com/RaptorXilef/twokinds.4lima.de/issues/109)
+* **infrastructure:** Resolve PHPStan Level 10 errors in Storage Traits and JsonHelper ([fcf0ca1](https://github.com/RaptorXilef/twokinds.4lima.de/commit/fcf0ca12f20ed9a126bace96a143211d411da1a5)), references [#109](https://github.com/RaptorXilef/twokinds.4lima.de/issues/109)
+* **infrastructure:** Suppress network errors in admin Api during navigation/logout ([271886b](https://github.com/RaptorXilef/twokinds.4lima.de/commit/271886b5584aa373990900f780d257940854dd3c)), closes [#105](https://github.com/RaptorXilef/twokinds.4lima.de/issues/105)
+
+### 🧹 Chore / Maintenance
+
+* add commit to .git-blame-ignore-revs ([07bb197](https://github.com/RaptorXilef/twokinds.4lima.de/commit/07bb1972cce5cca0ee8454e63dae765c4d6eea0e))
+* **cs:** align php-cs-fixer and phpcs with modern PER-CS best practices ([15ffcda](https://github.com/RaptorXilef/twokinds.4lima.de/commit/15ffcda268a2c0b3ef64b5c066191dbee4dfd0f9)), closes [#108](https://github.com/RaptorXilef/twokinds.4lima.de/issues/108)
+
 ## [6.16.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.0...v6.16.1) (2026-08-08)
 
 ### 🐛 Bug Fixes
