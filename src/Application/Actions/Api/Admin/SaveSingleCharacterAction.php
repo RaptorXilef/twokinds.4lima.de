@@ -107,55 +107,49 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
      *     refSheets: array<int, string>,
      *     warnings: array<int, string>
      * }
+     *
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
     private function resolveMediaUrls(ServerRequest $request, SaveSingleCharacterRequest $dto, ?Character $existing, string $safeName): array // phpcs:ignore Generic.Files.LineLength.TooLong
     {
-        $picUrl = $dto->picUrl;
-        $mainPic = $existing?->mainPic;
-        $swatchPic = $existing?->swatchPic;
-        $refSheets = $existing->refSheets ?? [];
-
-        // Alles an die Infrastruktur delegieren!
         /** @var array{profile: ?string, main: ?string, swatch: ?string, refs: array<int, string>, warnings: array<int, string>} $processedMedia */
         $processedMedia = $this->mediaService->processCharacterImages($safeName, $request->files);
 
-        // Profilbild zuweisen
-        if ($processedMedia['profile'] !== null) {
-            $picUrl = $processedMedia['profile'];
-        } elseif ($picUrl !== null && $picUrl !== '') {
+        // --- Profilbild ---
+        $picUrl = $dto->picUrl !== '' ? $dto->picUrl : null;
+        if ($picUrl !== null) {
             $picUrl = \str_replace(' ', '_', $picUrl);
             // Simple Endungs-Ergänzung falls nicht vorhanden
             if (\preg_match('/\.[a-z0-9]+$/i', $picUrl) !== 1) {
                 $picUrl .= '.webp'; // Standard-Fallback annehmen
             }
-        } else {
-            $picUrl = null;
+        }
+        if ($processedMedia['profile'] !== null) {
+            $picUrl = $processedMedia['profile'];
         }
 
-        // Hauptbild
+        // --- Hauptbild ---
+        $mainPicUrlRaw = $request->post['main_pic_url'] ?? '';
+        $mainPicUrl = \is_string($mainPicUrlRaw) ? \trim($mainPicUrlRaw) : '';
+        $mainPic = $mainPicUrl !== '' ? \str_replace(' ', '_', $mainPicUrl) : $existing?->mainPic;
         if ($processedMedia['main'] !== null) {
             $mainPic = $processedMedia['main'];
-        } elseif (isset($request->post['main_pic_url'])) {
-            $mainPicUrlRaw = $request->post['main_pic_url'];
-            $mainPicUrl = \is_string($mainPicUrlRaw) ? \trim($mainPicUrlRaw) : '';
-            $mainPic = $mainPicUrl !== '' ? \str_replace(' ', '_', $mainPicUrl) : null;
         }
 
-        // Swatch
+        // --- Swatch ---
+        $swatchPicUrlRaw = $request->post['swatch_pic_url'] ?? '';
+        $swatchPicUrl = \is_string($swatchPicUrlRaw) ? \trim($swatchPicUrlRaw) : '';
+        $swatchPic = $swatchPicUrl !== '' ? \str_replace(' ', '_', $swatchPicUrl) : $existing?->swatchPic;
         if ($processedMedia['swatch'] !== null) {
             $swatchPic = $processedMedia['swatch'];
-        } elseif (isset($request->post['swatch_pic_url'])) {
-            $swatchPicUrlRaw = $request->post['swatch_pic_url'];
-            $swatchPicUrl = \is_string($swatchPicUrlRaw) ? \trim($swatchPicUrlRaw) : '';
-            $swatchPic = $swatchPicUrl !== '' ? \str_replace(' ', '_', $swatchPicUrl) : null;
         }
 
-        // Manuelle URLs für Reference Sheets
+        // --- Ref Sheets ---
+        $refSheets = $existing->refSheets ?? [];
         if (isset($request->post['ref_sheets_urls'])) {
             $refSheetsUrlsRaw = $request->post['ref_sheets_urls'];
             $refSheetsUrlsStr = \is_string($refSheetsUrlsRaw) ? \trim($refSheetsUrlsRaw) : '';
 
-            $refSheets = [];
             if ($refSheetsUrlsStr !== '') {
                 $refSheets = \array_values(\array_filter(
                     \array_map(
@@ -172,7 +166,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
         }
 
         return [
-            'picUrl' => $picUrl === '' ? null : $picUrl,
+            'picUrl' => $picUrl,
             'mainPic' => $mainPic,
             'swatchPic' => $swatchPic,
             'refSheets' => $refSheets,

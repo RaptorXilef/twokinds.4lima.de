@@ -57,20 +57,11 @@ final readonly class SaveUserAction implements ActionInterface
                 $id = $this->auth->generateId('usr_');
             }
 
-            $isConfigAdmin = \str_starts_with($this->auth->getUserId(), 'sys_');
             $existingUser = $this->userRepo->findById($id);
 
-            // Admin-Schutz: Verhindere, dass normale Admins andere Administratoren bearbeiten/degradieren
-            if ($existingUser instanceof User && $existingUser->roleId === 'admin' && !$isConfigAdmin) {
-                if ($this->auth->getUserId() !== $id) {
-                    return JsonResponse::error(
-                        'Du darfst keine anderen Administratoren bearbeiten. Dies obliegt dem Systembetreuer.',
-                        403,
-                    );
-                }
-                if ($roleId !== 'admin') {
-                    return JsonResponse::error('Du darfst dich nicht selbst degradieren.', 403);
-                }
+            $adminProtection = $this->checkAdminProtection($id, $roleId, $existingUser);
+            if ($adminProtection instanceof JsonResponse) {
+                return $adminProtection;
             }
 
             $hash = $this->resolvePasswordHash($password, $passwordConfirm, $existingUser);
@@ -83,20 +74,7 @@ final readonly class SaveUserAction implements ActionInterface
                 return $dupCheck;
             }
 
-            // Neues Benutzer-Objekt aufbauen
-            $user = new User(
-                $id,
-                new Username($usernameStr),
-                new EmailAddress($emailStr),
-                $hash,
-                $roleId,
-                $existingUser->createdAt ?? new DateTimeImmutable(),
-                $existingUser instanceof User && $existingUser->wantsNewsletter,
-                $existingUser instanceof User && $existingUser->wantsNewsletterTranscript,
-                $existingUser instanceof User && $existingUser->wantsNotificationReport,
-            );
-
-            // Speichern
+            $user = $this->buildUser($id, $usernameStr, $emailStr, $hash, $roleId, $existingUser);
             $this->userRepo->save($user);
 
             return JsonResponse::success([
@@ -113,6 +91,26 @@ final readonly class SaveUserAction implements ActionInterface
     // PRIVATE HELPER
     // =========================================================================
 
+    // Admin-Schutz: Verhindere, dass normale Admins andere Administratoren bearbeiten/degradieren
+    private function checkAdminProtection(string $id, string $roleId, ?User $existingUser): ?JsonResponse
+    {
+        $isConfigAdmin = \str_starts_with($this->auth->getUserId(), 'sys_');
+
+        if ($existingUser instanceof User && $existingUser->roleId === 'admin' && !$isConfigAdmin) {
+            if ($this->auth->getUserId() !== $id) {
+                return JsonResponse::error(
+                    'Du darfst keine anderen Administratoren bearbeiten. Dies obliegt dem Systembetreuer.',
+                    403,
+                );
+            }
+            if ($roleId !== 'admin') {
+                return JsonResponse::error('Du darfst dich nicht selbst degradieren.', 403);
+            }
+        }
+
+        return null;
+    }
+
     private function resolvePasswordHash(string $password, string $passwordConfirm, ?User $existingUser): JsonResponse|string // phpcs:ignore Generic.Files.LineLength.TooLong
     {
         $hash = $existingUser->passwordHash ?? '';
@@ -127,6 +125,7 @@ final readonly class SaveUserAction implements ActionInterface
             if (\strlen($password) < 8) {
                 return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
             }
+
             $hash = \password_hash($password, \PASSWORD_DEFAULT);
         } elseif (!$existingUser instanceof User) {
             return JsonResponse::error('Bei neuen Benutzern muss ein Passwort vergeben werden.', 400);
@@ -149,5 +148,27 @@ final readonly class SaveUserAction implements ActionInterface
         }
 
         return null;
+    }
+
+    private function buildUser(
+        string $id,
+        string $usernameStr,
+        string $emailStr,
+        string $hash,
+        string $roleId,
+        ?User $existingUser,
+    ): User {
+        // Neues Benutzer-Objekt aufbauen
+        return new User(
+            $id,
+            new Username($usernameStr),
+            new EmailAddress($emailStr),
+            $hash,
+            $roleId,
+            $existingUser->createdAt ?? new DateTimeImmutable(),
+            $existingUser instanceof User && $existingUser->wantsNewsletter,
+            $existingUser instanceof User && $existingUser->wantsNewsletterTranscript,
+            $existingUser instanceof User && $existingUser->wantsNotificationReport,
+        );
     }
 }
