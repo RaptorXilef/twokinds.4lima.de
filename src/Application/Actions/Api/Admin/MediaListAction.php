@@ -24,7 +24,11 @@ final readonly class MediaListAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (!$this->auth->hasPermission('media.upload') && !$this->auth->hasPermission('media.delete') && !$this->auth->hasPermission('characters.edit')) {
+        if (
+            !$this->auth->hasPermission('media.upload')
+            && !$this->auth->hasPermission('media.delete')
+            && !$this->auth->hasPermission('characters.edit')
+        ) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 

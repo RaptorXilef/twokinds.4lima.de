@@ -55,11 +55,17 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
         }
 
         try {
-            $updateSql = 'UPDATE `' . Table::MAIL_QUEUE . "` SET attempts = attempts + 100 WHERE attempts < 3 {$templateFilterSql} ORDER BY priority DESC, created_at ASC LIMIT {$limit}";
+            $updateSql = 'UPDATE `' . Table::MAIL_QUEUE . '` SET attempts = attempts + 100 '
+                       . "WHERE attempts < 3 {$templateFilterSql} "
+                       . "ORDER BY priority DESC, created_at ASC LIMIT {$limit}";
+
             $stmtUpdate = $this->pdo->prepare($updateSql);
             $stmtUpdate->execute($params);
 
-            $selectSql = 'SELECT * FROM `' . Table::MAIL_QUEUE . "` WHERE attempts >= 100 {$templateFilterSql} ORDER BY priority DESC, created_at ASC";
+            $selectSql = 'SELECT * FROM `' . Table::MAIL_QUEUE . '` '
+                       . "WHERE attempts >= 100 {$templateFilterSql} "
+                       . 'ORDER BY priority DESC, created_at ASC';
+
             $stmtSelect = $this->pdo->prepare($selectSql);
             $stmtSelect->execute($params);
 
@@ -72,33 +78,12 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
                 if (!\is_array($item)) {
                     continue;
                 }
-                /** @var array<string, mixed> $validItem */
-                $validItem = $item;
 
-                $recipient = \is_string($validItem['recipient'] ?? null) ? $validItem['recipient'] : '';
-                $subject = \is_string($validItem['subject'] ?? null) ? $validItem['subject'] : '';
-                $template = \is_string($validItem['template'] ?? null) ? $validItem['template'] : '';
-                $dataStr = \is_string($validItem['data'] ?? null) ? $validItem['data'] : '{}';
-
-                $rawId = $validItem['id'] ?? '';
-                $idStr = \is_string($rawId) ? $rawId : (\is_numeric($rawId) ? (string) $rawId : '');
-
-                $rawAttempts = $validItem['attempts'] ?? 0;
-                $attempts = \is_numeric($rawAttempts) ? (int) $rawAttempts : 0;
-
-                try {
-                    $processor($recipient, $subject, $template, $this->jsonHelper->decode($dataStr));
-                    $this->delete($idStr);
-                    ++$sentCount;
-                } catch (Throwable $t) {
-                    \error_log("MailQueue Error [ID {$idStr}]: " . $t->getMessage());
-                    $origAttempts = $attempts - 100 + 1;
-                    if ($origAttempts >= 3) {
-                        $this->delete($idStr);
-                    } else {
-                        $this->pdo->prepare('UPDATE `' . Table::MAIL_QUEUE . '` SET attempts = ? WHERE id = ?')->execute([$origAttempts, $idStr]);
-                    }
+                if (!$this->processSingleMailJob($item, $processor)) {
+                    continue;
                 }
+
+                ++$sentCount;
             }
         } finally {
             $this->pdo->query("SELECT RELEASE_LOCK('tk_mail_queue')");
@@ -107,8 +92,47 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
         return $sentCount;
     }
 
+    /**
+     * @param array<string, mixed> $item
+     */
+    private function processSingleMailJob(array $item, callable $processor): bool
+    {
+        $recipient = \is_string($item['recipient'] ?? null) ? $item['recipient'] : '';
+        $subject = \is_string($item['subject'] ?? null) ? $item['subject'] : '';
+        $template = \is_string($item['template'] ?? null) ? $item['template'] : '';
+        $dataStr = \is_string($item['data'] ?? null) ? $item['data'] : '{}';
+
+        $rawId = $item['id'] ?? '';
+        $idStr = \is_string($rawId) ? $rawId : (\is_numeric($rawId) ? (string) $rawId : '');
+
+        $rawAttempts = $item['attempts'] ?? 0;
+        $attempts = \is_numeric($rawAttempts) ? (int) $rawAttempts : 0;
+
+        try {
+            $processor($recipient, $subject, $template, $this->jsonHelper->decode($dataStr));
+            $this->delete($idStr);
+
+            return true;
+        } catch (Throwable $t) {
+            \error_log("MailQueue Error [ID {$idStr}]: " . $t->getMessage());
+
+            $origAttempts = $attempts - 100 + 1;
+            if ($origAttempts >= 3) {
+                $this->delete($idStr);
+
+                return false;
+            }
+
+            $this->pdo->prepare('UPDATE `' . Table::MAIL_QUEUE . '` SET attempts = ? WHERE id = ?')
+                      ->execute([$origAttempts, $idStr]);
+
+            return false;
+        }
+    }
+
     public function import(array $data): void
     {
+        unset($data); // Interface Vorgabe
     }
 
     public function findAllQueue(): array

@@ -32,6 +32,7 @@ final readonly class TemplateRenderer
         $rootPath = $this->config->get('root_path');
         $appRoot = \is_string($rootPath) ? \rtrim($rootPath, '/\\') : '';
 
+        // phpcs:disable Generic.Files.LineLength.TooLong
         $systemVars = [
             'appRoot' => $appRoot,
             'config' => $this->config,
@@ -45,6 +46,7 @@ final readonly class TemplateRenderer
             // Darf dieser User die Lesezeichen-Cloud nutzen? (Eingeloggt + Keine System-ID)
             'canUseCloudSync' => $this->sessionManager->getUserId() !== '' && !\str_starts_with($this->sessionManager->getUserId(), 'sys_'),
         ];
+        // phpcs:enable Generic.Files.LineLength.TooLong
 
         if (!isset($data['flashes'])) {
             // Lade alle Flashes automatisch in die View-Daten!
@@ -88,7 +90,7 @@ final readonly class TemplateRenderer
         return [
             'base_url' => $this->config->getBaseUrl(),
             'site_title' => \is_string($siteTitle) ? $siteTitle : 'Twokinds auf Deutsch',
-            'site_description' => \is_string($siteDesc) ? $siteDesc : 'Die deutsche Übersetzung des Webcomics Twokinds.',
+            'site_description' => \is_string($siteDesc) ? $siteDesc : 'Die deutsche Übersetzung des Webcomics Twokinds.', // phpcs:ignore Generic.Files.LineLength.TooLong
             'app_version' => $this->systemInfo->getCurrentVersion(),
             'google_analytics_id' => \is_string($gaId) ? $gaId : '',
             'email_user' => \is_string($emailUser) ? $emailUser : '',

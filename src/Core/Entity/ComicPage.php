@@ -33,7 +33,9 @@ final readonly class ComicPage
     ) {
         foreach ($characterIds as $charId) {
             if (!$charId instanceof CharacterId) {
-                throw new InvalidArgumentException('Das characterIds Array darf nur Instanzen von CharacterId enthalten.');
+                throw new InvalidArgumentException(
+                    'Das characterIds Array darf nur Instanzen von CharacterId enthalten.',
+                );
             }
         }
         $this->characterIds = \array_values($characterIds);

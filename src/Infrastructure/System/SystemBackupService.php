@@ -40,6 +40,10 @@ final readonly class SystemBackupService implements BackupServiceInterface
         \file_put_contents($htaccessPath, "Order allow,deny\nDeny from all\n");
     }
 
+    // =========================================================================
+    // PUBLIC API
+    // =========================================================================
+
     public function createBackup(?string $tableName = null): string
     {
         $tables = $tableName !== null && $tableName !== '' ? [$tableName] : $this->getAllTables();
@@ -104,7 +108,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
         return $filename;
     }
 
-    public function restoreBackup(string $filename, int $mode, ?string $tableName = null, ?string $customPassword = null): void
+    public function restoreBackup(string $filename, int $mode, ?string $tableName = null, ?string $customPassword = null): void // phpcs:ignore Generic.Files.LineLength.TooLong
     {
         $filepath = $this->backupDir . '/' . \basename($filename);
         if (!\file_exists($filepath)) {
@@ -139,21 +143,130 @@ final readonly class SystemBackupService implements BackupServiceInterface
         }
     }
 
+    public function listBackups(): array
+    {
+        if (!\is_dir($this->backupDir)) {
+            return [];
+        }
+
+        $scan = \scandir($this->backupDir);
+        $files = $scan !== false ? \array_diff($scan, ['.', '..', '.htaccess']) : [];
+        $backups = [];
+
+        foreach ($files as $file) {
+            $path = $this->backupDir . '/' . $file;
+            $size = \filesize($path);
+            $date = \filemtime($path);
+
+            if (\str_ends_with($file, '.zip')) {
+                $zip = new ZipArchive();
+                if ($zip->open($path) === true) {
+                    // Liest NUR den unverschlüsselten Meta-Kommentar
+                    $comment = $zip->getArchiveComment();
+                    $zip->close();
+
+                    $meta = \is_string($comment) ? \json_decode($comment, true) : [];
+                    $metaArray = \is_array($meta) ? $meta : [];
+
+                    $typeRaw = $metaArray['type'] ?? 'Unbekannt';
+                    $typeStr = \is_scalar($typeRaw) ? (string) $typeRaw : 'Unbekannt';
+
+                    $tablesRaw = $metaArray['tables'] ?? [];
+                    $tablesArr = \is_array($tablesRaw) ? $tablesRaw : [];
+
+                    $backups[] = [
+                        'filename' => $file,
+                        'size' => $size,
+                        'date' => $date,
+                        'type' => $typeStr,
+                        'tables' => $tablesArr,
+                    ];
+                }
+            } elseif (\str_ends_with($file, '.json')) {
+                // Legacy .json Dateien
+                $data = $this->jsonHelper->read($path);
+
+                $typeRaw = $data['type'] ?? 'unknown';
+                $typeStr = \is_scalar($typeRaw) ? (string) $typeRaw : 'unknown';
+
+                $tablesRaw = $data['tables'] ?? [];
+                $tablesArr = \is_array($tablesRaw) ? \array_keys($tablesRaw) : [];
+
+                $backups[] = [
+                    'filename' => $file,
+                    'size' => $size,
+                    'date' => $date,
+                    'type' => $typeStr,
+                    'tables' => $tablesArr,
+                ];
+            }
+        }
+
+        \usort($backups, fn (array $backupA, array $backupB): int => ($backupB['date'] ?? 0) <=> ($backupA['date'] ?? 0)); // phpcs:ignore Generic.Files.LineLength.TooLong
+
+        return $backups;
+    }
+
+    public function deleteBackup(string $filename): void
+    {
+        $filepath = $this->backupDir . '/' . \basename($filename);
+        if (!\file_exists($filepath)) {
+            return;
+        }
+
+        \unlink($filepath);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getAllTables(): array
+    {
+        $stmt = $this->pdo->query('SHOW TABLES');
+        if ($stmt === false) {
+            return [];
+        }
+
+        $tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        /** @var array<int, string> $validTables */
+        $validTables = [];
+        if (\is_array($tables)) {
+            foreach ($tables as $t) {
+                if (!\is_string($t)) {
+                    continue;
+                }
+
+                $validTables[] = $t;
+            }
+        }
+
+        return $validTables;
+    }
+
+    public function getBackupContent(string $filename): ?string
+    {
+        $filepath = $this->backupDir . '/' . \basename($filename);
+        if (\file_exists($filepath)) {
+            $content = \file_get_contents($filepath);
+
+            return $content !== false ? $content : null;
+        }
+
+        return null;
+    }
+
+    // =========================================================================
+    // PRIVATE HELPER: DATABASE RESTORE
+    // =========================================================================
+
     /**
      * @return array<string, mixed>
      */
     private function extractBackupData(string $filepath, string $filename, ?string $customPassword): array
     {
         if (!\str_ends_with($filename, '.zip')) {
-            $data = $this->jsonHelper->read($filepath);
-            if (!\is_array($data)) {
-                throw new RuntimeException('Ungültiges Legacy-Backup-Format.');
-            }
-
-            /** @var array<string, mixed> $validData */
-            $validData = $data;
-
-            return $validData;
+            return $this->jsonHelper->read($filepath);
         }
 
         $zip = new ZipArchive();
@@ -161,7 +274,6 @@ final readonly class SystemBackupService implements BackupServiceInterface
             throw new RuntimeException('Konnte ZIP-Backup nicht öffnen.');
         }
 
-        // Nutze Formular-Passwort, ansonsten Fallback auf Config
         $backupCfgRaw = $this->config->get('backup', []);
         $backupCfg = \is_array($backupCfgRaw) ? $backupCfgRaw : [];
         $configPasswordRaw = $backupCfg['zip_password'] ?? '';
@@ -173,7 +285,6 @@ final readonly class SystemBackupService implements BackupServiceInterface
             $zip->setPassword($configPassword);
         }
 
-        // Holt die Datei direkt in den Arbeitsspeicher (Entschlüsselt automatisch, wenn PW stimmt)
         $json = $zip->getFromName('data.json');
         $zip->close();
 
@@ -181,21 +292,13 @@ final readonly class SystemBackupService implements BackupServiceInterface
             throw new RuntimeException('Fehler beim Entschlüsseln. Falsches Passwort?');
         }
 
-        $data = $this->jsonHelper->decode($json);
-        if (!\is_array($data)) {
-            throw new RuntimeException('Ungültiges JSON-Backup-Format.');
-        }
-
-        /** @var array<string, mixed> $validData */
-        $validData = $data;
-
-        return $validData;
+        return $this->jsonHelper->decode($json);
     }
 
     /**
      * @param array<int, string> $allExistingTables
      */
-    private function restoreTableData(string $table, mixed $rows, int $mode, ?string $tableName, array $allExistingTables): void
+    private function restoreTableData(string $table, mixed $rows, int $mode, ?string $tableName, array $allExistingTables): void // phpcs:ignore Generic.Files.LineLength.TooLong
     {
         if ($tableName !== null && $table !== $tableName) {
             return;
@@ -233,6 +336,14 @@ final readonly class SystemBackupService implements BackupServiceInterface
             $this->deleteMissingRecords($table, $validRows, $primaryKeys);
         }
 
+        $this->insertRestoredRows($table, $validRows, $mode);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $validRows
+     */
+    private function insertRestoredRows(string $table, array $validRows, int $mode): void
+    {
         $firstRow = $validRows[0] ?? null;
         if (!\is_array($firstRow)) {
             return;
@@ -307,107 +418,6 @@ final readonly class SystemBackupService implements BackupServiceInterface
         $stmt->execute($keptIds);
     }
 
-    public function listBackups(): array
-    {
-        if (!\is_dir($this->backupDir)) {
-            return [];
-        }
-
-        $scan = \scandir($this->backupDir);
-        $files = $scan !== false ? \array_diff($scan, ['.', '..', '.htaccess']) : [];
-        $backups = [];
-
-        foreach ($files as $file) {
-            $path = $this->backupDir . '/' . $file;
-            $size = \filesize($path);
-            $date = \filemtime($path);
-
-            if (\str_ends_with($file, '.zip')) {
-                $zip = new ZipArchive();
-                if ($zip->open($path) === true) {
-                    // Liest NUR den unverschlüsselten Meta-Kommentar
-                    $comment = $zip->getArchiveComment();
-                    $zip->close();
-
-                    $meta = \is_string($comment) ? \json_decode($comment, true) : [];
-                    $metaArray = \is_array($meta) ? $meta : [];
-
-                    $typeRaw = $metaArray['type'] ?? 'Unbekannt';
-                    $typeStr = \is_scalar($typeRaw) ? (string) $typeRaw : 'Unbekannt';
-
-                    $tablesRaw = $metaArray['tables'] ?? [];
-                    $tablesArr = \is_array($tablesRaw) ? $tablesRaw : [];
-
-                    $backups[] = [
-                        'filename' => $file,
-                        'size' => $size,
-                        'date' => $date,
-                        'type' => $typeStr,
-                        'tables' => $tablesArr,
-                    ];
-                }
-            } elseif (\str_ends_with($file, '.json')) {
-                // Legacy .json Dateien
-                $data = $this->jsonHelper->read($path);
-
-                $typeRaw = $data['type'] ?? 'unknown';
-                $typeStr = \is_scalar($typeRaw) ? (string) $typeRaw : 'unknown';
-
-                $tablesRaw = $data['tables'] ?? [];
-                $tablesArr = \is_array($tablesRaw) ? \array_keys($tablesRaw) : [];
-
-                $backups[] = [
-                    'filename' => $file,
-                    'size' => $size,
-                    'date' => $date,
-                    'type' => $typeStr,
-                    'tables' => $tablesArr,
-                ];
-            }
-        }
-
-        \usort($backups, fn (array $backupA, array $backupB): int => ($backupB['date'] ?? 0) <=> ($backupA['date'] ?? 0));
-
-        return $backups;
-    }
-
-    public function deleteBackup(string $filename): void
-    {
-        $filepath = $this->backupDir . '/' . \basename($filename);
-        if (!\file_exists($filepath)) {
-            return;
-        }
-
-        \unlink($filepath);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getAllTables(): array
-    {
-        $stmt = $this->pdo->query('SHOW TABLES');
-        if ($stmt === false) {
-            return [];
-        }
-
-        $tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-        /** @var array<int, string> $validTables */
-        $validTables = [];
-        if (\is_array($tables)) {
-            foreach ($tables as $t) {
-                if (!\is_string($t)) {
-                    continue;
-                }
-
-                $validTables[] = $t;
-            }
-        }
-
-        return $validTables;
-    }
-
     /**
      * @return array<int, string>
      */
@@ -441,7 +451,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
     }
 
     // =========================================================================
-    // Off-Site FTP Upload & Local Cleanup
+    // PRIVATE HELPER: OFF-SITE FTP UPLOAD & CLEANUP
     // =========================================================================
 
     private function uploadToFtp(string $filepath, string $filename): void
@@ -494,9 +504,8 @@ final readonly class SystemBackupService implements BackupServiceInterface
         }
     }
 
-    private function getFtpConnection(string $host, int $port, int $timeout, bool $ssl, string $user, string $pass): Connection
+    private function getFtpConnection(string $host, int $port, int $timeout, bool $ssl, string $user, string $pass): Connection // phpcs:ignore Generic.Files.LineLength.TooLong
     {
-        // Verbindungsaufbau (SSL/FTPS falls aktiviert)
         $connId = $ssl ? \ftp_ssl_connect($host, $port, $timeout) : \ftp_connect($host, $port, $timeout);
         if ($connId === false) {
             throw new RuntimeException("Verbindung fehlgeschlagen (Timeout nach {$timeout}s).");
@@ -561,17 +570,5 @@ final readonly class SystemBackupService implements BackupServiceInterface
 
             \unlink($path);
         }
-    }
-
-    public function getBackupContent(string $filename): ?string
-    {
-        $filepath = $this->backupDir . '/' . \basename($filename);
-        if (\file_exists($filepath)) {
-            $content = \file_get_contents($filepath);
-
-            return $content !== false ? $content : null;
-        }
-
-        return null;
     }
 }

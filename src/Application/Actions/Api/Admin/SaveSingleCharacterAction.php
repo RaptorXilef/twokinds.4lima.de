@@ -108,14 +108,21 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
                 $refSheets = [];
                 if ($refSheetsUrlsStr !== '') {
                     $refSheets = \array_values(\array_filter(
-                        \array_map(fn ($s): string => \str_replace(' ', '_', \trim($s)), \explode(',', $refSheetsUrlsStr)),
+                        \array_map(
+                            fn ($s): string => \str_replace(' ', '_', \trim($s)),
+                            \explode(',', $refSheetsUrlsStr),
+                        ),
                         fn ($v): bool => $v !== '',
                     ));
                 }
             }
 
             // Neu hochgeladene Refs hinzufügen
-            if (isset($processedMedia['refs']) && \is_array($processedMedia['refs']) && $processedMedia['refs'] !== []) {
+            if (
+                isset($processedMedia['refs'])
+                && \is_array($processedMedia['refs'])
+                && $processedMedia['refs'] !== []
+            ) {
                 $refSheets = \array_merge($refSheets, $processedMedia['refs']);
             }
 
@@ -141,7 +148,8 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
 
             $msg = "Charakter '{$dto->name}' erfolgreich gespeichert.";
             if ($warnings !== []) {
-                $msg .= "<br><br><strong style='color:#856404;'><i class='fa-solid fa-triangle-exclamation'></i> Warnungen:</strong><br>- " . \implode('<br>- ', $warnings);
+                $msg .= "<br><br><strong style='color:#856404;'><i class='fa-solid fa-triangle-exclamation'></i> Warnungen:</strong><br>- " // phpcs:ignore Generic.Files.LineLength.TooLong
+                    . \implode('<br>- ', $warnings);
             }
 
             return JsonResponse::success([

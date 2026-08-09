@@ -99,7 +99,7 @@
     "chk:stan:contracts": "phpstan analyse src/Contracts --level max --memory-limit=2G",
     "chk:stan:bootstrap": "phpstan analyse src/Bootstrap --level max --memory-limit=2G",
     "chk:stan:infrastructure": "phpstan analyse src/Infrastructure --level max --memory-limit=2G",
-    "chk:stan:public": "phpstan analyse src/public --level max --memory-limit=2G",
+    "chk:stan:public": "phpstan analyse public --level max --memory-limit=2G",
 
     "// --- PHASE 2: TESTING ---": "Automatisierte Tests",
     "test": "pest --parallel",

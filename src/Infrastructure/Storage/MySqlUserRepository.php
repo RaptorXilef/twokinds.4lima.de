@@ -107,7 +107,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         if ($user instanceof User && $user->avatarUrl !== null) {
             $avatarPath = \dirname(__DIR__, 3) . '/public/assets/images/avatars/' . $user->avatarUrl;
             if (\file_exists($avatarPath)) {
-                @\unlink($avatarPath);
+                \unlink($avatarPath);
             }
         }
 
@@ -119,7 +119,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $stmtClean->execute([$id, $id]);
 
         // 3. Reports anonymisieren (DSGVO & Datenhygiene)
-        $stmtReports = $this->pdo->prepare('UPDATE `' . Table::REPORTS . "` SET `user_id` = NULL, `submitter_name` = 'Gelöschter Nutzer' WHERE `user_id` = ?");
+        $stmtReports = $this->pdo->prepare('UPDATE `' . Table::REPORTS . "` SET `user_id` = NULL, `submitter_name` = 'Gelöschter Nutzer' WHERE `user_id` = ?"); // phpcs:ignore Generic.Files.LineLength.TooLong
         $stmtReports->execute([$id]);
 
         // 4. User löschen
@@ -129,7 +129,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
 
     public function deleteUnverifiedAccounts(int $olderThanMinutes): int
     {
-        $stmt = $this->pdo->prepare('DELETE FROM `' . Table::USERS . "` WHERE role_id = 'pending' AND created_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)");
+        $stmt = $this->pdo->prepare('DELETE FROM `' . Table::USERS . "` WHERE role_id = 'pending' AND created_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)");  // phpcs:ignore Generic.Files.LineLength.TooLong
         $stmt->execute([$olderThanMinutes]);
 
         return $stmt->rowCount();

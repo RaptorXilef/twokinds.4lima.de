@@ -145,7 +145,12 @@ final readonly class GdMediaService implements MediaServiceInterface
             $g = (int) \hexdec(\substr($hex, 2, 2));
             $b = (int) \hexdec(\substr($hex, 4, 2));
 
-            $color = \imagecolorallocate($targetImage, \max(0, \min(255, $r)), \max(0, \min(255, $g)), \max(0, \min(255, $b)));
+            $color = \imagecolorallocate(
+                $targetImage,
+                \max(0, \min(255, $r)),
+                \max(0, \min(255, $g)),
+                \max(0, \min(255, $b)),
+            );
             if ($color !== false) {
                 \imagefilledrectangle($targetImage, 0, 0, $width, $height, $color);
             }

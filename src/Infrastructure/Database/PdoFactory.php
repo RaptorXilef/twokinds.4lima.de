@@ -31,7 +31,9 @@ final class PdoFactory
 
         $enabled = $db['enabled'] ?? false;
         if ($enabled !== true) {
-            throw new RuntimeException('Kritischer Fehler: Die Datenbank ist in der config/storage.php nicht aktiviert (enabled = false) oder nicht konfiguriert.');
+            throw new RuntimeException(
+                'Kritischer Fehler: Die Datenbank ist in der config/storage.php nicht aktiviert (enabled = false) oder nicht konfiguriert.', // phpcs:ignore Generic.Files.LineLength.TooLong
+            );
         }
 
         $port = $db['port'] ?? '';
@@ -59,7 +61,11 @@ final class PdoFactory
 
             // 1049 = Unknown database (Datenbank existiert noch nicht)
             if ($mysqlErrorCode !== 1049) {
-                throw new RuntimeException('MySQL Verbindungsfehler: ' . $e->getMessage(), (int) $e->getCode(), $e);
+                throw new RuntimeException(
+                    'MySQL Verbindungsfehler: ' . $e->getMessage(),
+                    (int) $e->getCode(),
+                    $e,
+                );
             }
 
             // Datenbank existiert nicht, versuche sie anzulegen
@@ -73,11 +79,15 @@ final class PdoFactory
                     PDO::ATTR_TIMEOUT => 2,
                 ]);
 
-                $sql = "CREATE DATABASE IF NOT EXISTS `{$dbname}` CHARACTER SET {$charset} COLLATE {$charset}_unicode_ci";
+                $sql = "CREATE DATABASE IF NOT EXISTS `{$dbname}` CHARACTER SET {$charset} COLLATE {$charset}_unicode_ci"; // phpcs:ignore Generic.Files.LineLength.TooLong
                 $pdo->exec($sql);
                 $pdo->exec("USE `{$dbname}`");
             } catch (PDOException $e2) {
-                throw new RuntimeException('MySQL Auto-Install Fehler (DB Create): ' . $e2->getMessage(), (int) $e->getCode(), $e);
+                throw new RuntimeException(
+                    'MySQL Auto-Install Fehler (DB Create): ' . $e2->getMessage(),
+                    (int) $e->getCode(),
+                    $e,
+                );
             }
         }
 
@@ -115,7 +125,11 @@ final class PdoFactory
                         $pdo->exec($sql); // CREATE TABLE IF NOT EXISTS ist sicher mehrfach auszuführen
                     }
                 } catch (PDOException $ex) {
-                    throw new RuntimeException('MySQL Auto-Install Fehler (Tabelle ' . $tableName . ' konnte nicht angelegt werden): ' . $ex->getMessage(), (int) $ex->getCode(), $ex);
+                    throw new RuntimeException(
+                        'MySQL Auto-Install Fehler (Tabelle ' . $tableName . ' konnte nicht angelegt werden): ' . $ex->getMessage(), // phpcs:ignore Generic.Files.LineLength.TooLong
+                        (int) $ex->getCode(),
+                        $ex,
+                    );
                 }
             }
         }

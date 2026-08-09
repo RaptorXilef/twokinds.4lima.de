@@ -21,7 +21,7 @@ final readonly class MySqlLoginAttemptRepository implements LoginAttemptReposito
 
     public function findByIp(string $ip): ?LoginAttempt
     {
-        $stmt = $this->pdo->prepare('SELECT ip_address, attempts, last_attempt FROM `' . Table::LOGIN_ATTEMPTS . '` WHERE ip_address = ?');
+        $stmt = $this->pdo->prepare('SELECT ip_address, attempts, last_attempt FROM `' . Table::LOGIN_ATTEMPTS . '` WHERE ip_address = ?'); // phpcs:ignore Generic.Files.LineLength.TooLong
         $stmt->execute([$ip]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -54,6 +54,6 @@ final readonly class MySqlLoginAttemptRepository implements LoginAttemptReposito
 
     public function deleteOlderThan(int $minutes): void
     {
-        $this->pdo->prepare('DELETE FROM `' . Table::LOGIN_ATTEMPTS . '` WHERE last_attempt < DATE_SUB(NOW(), INTERVAL ? MINUTE)')->execute([$minutes]);
+        $this->pdo->prepare('DELETE FROM `' . Table::LOGIN_ATTEMPTS . '` WHERE last_attempt < DATE_SUB(NOW(), INTERVAL ? MINUTE)')->execute([$minutes]); // phpcs:ignore Generic.Files.LineLength.TooLong
     }
 }

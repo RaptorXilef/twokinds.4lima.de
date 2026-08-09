@@ -92,12 +92,12 @@ final readonly class SaveSingleComicAction implements ActionInterface
             $hasNewImage = false;
 
             $uploadHires = $files['upload_hires'] ?? null;
-            $hiresUploaded = \is_array($uploadHires) && isset($uploadHires['error']) && $uploadHires['error'] === \UPLOAD_ERR_OK;
-            $tmpHires = $hiresUploaded && isset($uploadHires['tmp_name']) && \is_string($uploadHires['tmp_name']) ? $uploadHires['tmp_name'] : null;
+            $hiresUploaded = \is_array($uploadHires) && isset($uploadHires['error']) && $uploadHires['error'] === \UPLOAD_ERR_OK; // phpcs:ignore Generic.Files.LineLength.TooLong
+            $tmpHires = $hiresUploaded && isset($uploadHires['tmp_name']) && \is_string($uploadHires['tmp_name']) ? $uploadHires['tmp_name'] : null; // phpcs:ignore Generic.Files.LineLength.TooLong
 
             $uploadLowres = $files['upload_lowres'] ?? null;
-            $lowresUploaded = \is_array($uploadLowres) && isset($uploadLowres['error']) && $uploadLowres['error'] === \UPLOAD_ERR_OK;
-            $tmpLowres = $lowresUploaded && isset($uploadLowres['tmp_name']) && \is_string($uploadLowres['tmp_name']) ? $uploadLowres['tmp_name'] : null;
+            $lowresUploaded = \is_array($uploadLowres) && isset($uploadLowres['error']) && $uploadLowres['error'] === \UPLOAD_ERR_OK; // phpcs:ignore Generic.Files.LineLength.TooLong
+            $tmpLowres = $lowresUploaded && isset($uploadLowres['tmp_name']) && \is_string($uploadLowres['tmp_name']) ? $uploadLowres['tmp_name'] : null; // phpcs:ignore Generic.Files.LineLength.TooLong
 
             if ($hiresUploaded || $lowresUploaded) {
                 $hasNewImage = true;

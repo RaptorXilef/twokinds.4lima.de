@@ -37,11 +37,17 @@ final readonly class ProfileAction implements ActionInterface
 
         // Verhindert Zugriff auf Profil-Seite für System-Accounts (RaptorXilef/Systembetreuer)
         if (\str_starts_with($userId, 'sys_')) {
-            $this->sessionManager->addFlash('info', 'System-Accounts können nicht über das Frontend bearbeitet werden.');
+            $this->sessionManager->addFlash(
+                'info',
+                'System-Accounts können nicht über das Frontend bearbeitet werden.',
+            );
 
             return new RedirectResponse('/lesezeichen');
         }
 
-        return $this->renderer->render('pages/frontend/profile', ['pageTitle' => 'Mein Profil', 'user' => $user]);
+        return $this->renderer->render(
+            'pages/frontend/profile',
+            ['pageTitle' => 'Mein Profil', 'user' => $user],
+        );
     }
 }

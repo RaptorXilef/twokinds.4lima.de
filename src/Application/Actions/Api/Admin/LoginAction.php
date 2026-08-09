@@ -38,7 +38,9 @@ final readonly class LoginAction implements ActionInterface
                 $label = $this->auth->getUsername();
 
                 // Dynamische Weiterleitung: Admin/Backdoor ins Dashboard, User zu den Lesezeichen
-                $target = $role === 'admin' || $label === 'Systembetreuer' || $label === 'System-Inhaber' ? 'admin' : 'lesezeichen';
+                $target = $role === 'admin' || $label === 'Systembetreuer' || $label === 'System-Inhaber'
+                    ? 'admin'
+                    : 'lesezeichen';
 
                 return JsonResponse::success([
                     'message' => 'Erfolgreich eingeloggt.',

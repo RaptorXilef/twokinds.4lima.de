@@ -30,7 +30,10 @@ final readonly class VerifyAction implements ActionInterface
         $email = $this->magicLinkService->verifyAny($token);
 
         if ($email === null) {
-            $this->sessionManager->addFlash('error', 'Der Bestätigungslink ist ungültig oder abgelaufen.');
+            $this->sessionManager->addFlash(
+                'error',
+                'Der Bestätigungslink ist ungültig oder abgelaufen.',
+            );
 
             return new RedirectResponse('/login');
         }
@@ -50,9 +53,15 @@ final readonly class VerifyAction implements ActionInterface
             );
             $this->userRepository->save($updatedUser);
 
-            $this->sessionManager->addFlash('success', 'Dein Konto wurde erfolgreich bestätigt! Du kannst dich jetzt einloggen.');
+            $this->sessionManager->addFlash(
+                'success',
+                'Dein Konto wurde erfolgreich bestätigt! Du kannst dich jetzt einloggen.',
+            );
         } else {
-            $this->sessionManager->addFlash('info', 'Dieses Konto wurde bereits bestätigt.');
+            $this->sessionManager->addFlash(
+                'info',
+                'Dieses Konto wurde bereits bestätigt.',
+            );
         }
 
         return new RedirectResponse('/login');

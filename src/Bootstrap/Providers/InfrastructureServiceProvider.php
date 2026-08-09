@@ -121,7 +121,7 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new MySqlUserRepository($pdo);
         });
 
-        $container->bind(LoginAttemptRepositoryInterface::class, function () use ($container): MySqlLoginAttemptRepository {
+        $container->bind(LoginAttemptRepositoryInterface::class, function () use ($container): MySqlLoginAttemptRepository { // phpcs:ignore Generic.Files.LineLength.TooLong
             $pdo = $container->get(PDO::class);
             \assert($pdo instanceof PDO);
 
@@ -199,7 +199,7 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new MySqlComicRepository($pdo);
         });
 
-        $container->bind(ComicRevisionRepositoryInterface::class, function () use ($container): MySqlComicRevisionRepository {
+        $container->bind(ComicRevisionRepositoryInterface::class, function () use ($container): MySqlComicRevisionRepository { // phpcs:ignore Generic.Files.LineLength.TooLong
             $pdo = $container->get(PDO::class);
             \assert($pdo instanceof PDO);
             $clock = $container->get(ClockInterface::class);
@@ -217,7 +217,7 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new MySqlCharacterRepository($pdo);
         });
 
-        $container->bind(CharacterGroupRepositoryInterface::class, function () use ($container): MySqlCharacterGroupRepository {
+        $container->bind(CharacterGroupRepositoryInterface::class, function () use ($container): MySqlCharacterGroupRepository { // phpcs:ignore Generic.Files.LineLength.TooLong
             $pdo = $container->get(PDO::class);
             \assert($pdo instanceof PDO);
 
@@ -258,7 +258,7 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new GdMediaService($config);
         });
 
-        $container->bind(RemoteResourceProberInterface::class, fn (): CurlRemoteResourceProber => new CurlRemoteResourceProber());
+        $container->bind(RemoteResourceProberInterface::class, fn (): CurlRemoteResourceProber => new CurlRemoteResourceProber()); // phpcs:ignore Generic.Files.LineLength.TooLong
 
         $container->bind(SystemInfoInterface::class, function () use ($container): SystemInfoService {
             $config = $container->get(ConfigInterface::class);

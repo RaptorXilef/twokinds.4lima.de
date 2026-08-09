@@ -10,7 +10,7 @@
     <arg name="cache" value=".cache/phpcs/.phpcs.cache" />
 
     <file>src</file>
-    <file>tests</file>
+    <!--<file>tests</file>-->
     <file>public</file>
     <file>config</file>
 

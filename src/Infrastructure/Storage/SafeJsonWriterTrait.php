@@ -14,7 +14,7 @@ trait SafeJsonWriterTrait
      *
      * @param array<array-key, mixed> $data
      */
-    protected function writeJsonSafely(string $path, array $data, int $flags = \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE): void
+    protected function writeJsonSafely(string $path, array $data, int $flags = \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE): void // phpcs:ignore Generic.Files.LineLength.TooLong
     {
         // ! Sicher gehen, dass der Nutzer keine Pfade sieht, aber eine Info. Die Pfade werden protokolliert
         $json = \json_encode($data, $flags);
@@ -22,7 +22,7 @@ trait SafeJsonWriterTrait
             throw new RuntimeException("JSON-Encoding für $path fehlgeschlagen: " . \json_last_error_msg());
         }
 
-        $result = @\file_put_contents($path, $json, \LOCK_EX);
+        $result = \file_put_contents($path, $json, \LOCK_EX);
 
         if ($result === false) {
             throw new RuntimeException("Kritischer Schreibfehler: Dateisystem voll oder keine Rechte auf $path");

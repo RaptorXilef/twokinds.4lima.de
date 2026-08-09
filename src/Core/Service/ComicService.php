@@ -118,7 +118,9 @@ final readonly class ComicService
         }
 
         if ($this->comicRepository->findById($newId) instanceof ComicPage) {
-            throw new DomainException("Die neue Comic-ID {$newId->value} existiert bereits und kann nicht überschrieben werden!");
+            throw new DomainException(
+                "Die neue Comic-ID {$newId->value} existiert bereits und kann nicht überschrieben werden!",
+            );
         }
 
         $this->comicRepository->renameComicId($oldId, $newId);
@@ -191,7 +193,7 @@ final readonly class ComicService
             originalUrl: \is_string($revisionData['original_url'] ?? null) ? $revisionData['original_url'] : '',
             sketchUrl: \is_string($revisionData['sketch_url'] ?? null) ? $revisionData['sketch_url'] : '',
             userIds: $userIds,
-            imageUpdatedAt: \is_int($revisionData['image_updated_at'] ?? null) ? $revisionData['image_updated_at'] : null,
+            imageUpdatedAt: \is_int($revisionData['image_updated_at'] ?? null) ? $revisionData['image_updated_at'] : null, // phpcs:ignore Generic.Files.LineLength.TooLong
         );
     }
 }

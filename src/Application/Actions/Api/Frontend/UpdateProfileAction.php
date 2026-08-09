@@ -63,7 +63,17 @@ final readonly class UpdateProfileAction implements ActionInterface
             $wrRaw = $request->post['wants_notification_report'] ?? false;
             $wantsRep = \in_array($wrRaw, [true, 1, '1', 'true', 'on'], true);
 
-            $updated = new User($user->id, $user->username, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $wantsNews, $wantsTrans, $wantsRep);
+            $updated = new User(
+                $user->id,
+                $user->username,
+                $user->email,
+                $user->passwordHash,
+                $user->roleId,
+                $user->createdAt,
+                $wantsNews,
+                $wantsTrans,
+                $wantsRep,
+            );
             $this->userRepository->save($updated);
 
             return JsonResponse::success(['message' => 'Benachrichtigungs-Einstellungen aktualisiert!']);
@@ -98,7 +108,17 @@ final readonly class UpdateProfileAction implements ActionInterface
                 return JsonResponse::error('Dieser Benutzername ist leider schon vergeben.', 400);
             }
 
-            $updated = new User($user->id, new Username($newName), $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript, $user->wantsNotificationReport);
+            $updated = new User(
+                $user->id,
+                new Username($newName),
+                $user->email,
+                $user->passwordHash,
+                $user->roleId,
+                $user->createdAt,
+                $user->wantsNewsletter,
+                $user->wantsNewsletterTranscript,
+                $user->wantsNotificationReport,
+            );
             $this->userRepository->save($updated);
             $this->sessionManager->updateAdminUsername($newName); // Session updaten
 
@@ -127,7 +147,17 @@ final readonly class UpdateProfileAction implements ActionInterface
             }
 
             $newHash = \password_hash($newPass, \PASSWORD_DEFAULT);
-            $updated = new User($user->id, $user->username, $user->email, $newHash, $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript, $user->wantsNotificationReport);
+            $updated = new User(
+                $user->id,
+                $user->username,
+                $user->email,
+                $newHash,
+                $user->roleId,
+                $user->createdAt,
+                $user->wantsNewsletter,
+                $user->wantsNewsletterTranscript,
+                $user->wantsNotificationReport,
+            );
             $this->userRepository->save($updated);
 
             // Session mit neuem Hash versehen, sonst fliegt man beim nächsten Klick raus
@@ -146,7 +176,7 @@ final readonly class UpdateProfileAction implements ActionInterface
                 return JsonResponse::error('Das ist bereits deine aktuelle E-Mail-Adresse.', 400);
             }
             if ($this->userRepository->findByEmail($newEmailStr) instanceof User) {
-                return JsonResponse::error('Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet.', 400);
+                return JsonResponse::error('Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet.', 400); // phpcs:ignore Generic.Files.LineLength.TooLong
             }
 
             $tokenData = $this->magicLinkService->createToken($newEmailStr);
@@ -158,7 +188,7 @@ final readonly class UpdateProfileAction implements ActionInterface
             ]);
             $this->mailService->processQueue(5, ['verify_new_email']);
 
-            return JsonResponse::success(['message' => 'Bestätigungslink gesendet! Bitte prüfe den Posteingang deiner NEUEN E-Mail-Adresse.']);
+            return JsonResponse::success(['message' => 'Bestätigungslink gesendet! Bitte prüfe den Posteingang deiner NEUEN E-Mail-Adresse.']); // phpcs:ignore Generic.Files.LineLength.TooLong
         }
 
         if ($actionType === 'profile_details') {

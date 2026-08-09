@@ -109,7 +109,11 @@ final class ActionRegistry
     public function match(string $method, string $path): ?array
     {
         // Exact Match
-        if (isset($this->routes['exact'][$method]) && \is_array($this->routes['exact'][$method]) && isset($this->routes['exact'][$method][$path])) {
+        if (
+            isset($this->routes['exact'][$method])
+            && \is_array($this->routes['exact'][$method])
+            && isset($this->routes['exact'][$method][$path])
+        ) {
             $r = $this->routes['exact'][$method][$path];
 
             $class = \is_string($r['class']) ? $r['class'] : '';

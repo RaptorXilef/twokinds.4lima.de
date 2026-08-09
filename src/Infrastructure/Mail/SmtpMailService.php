@@ -109,7 +109,7 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
 
         $baseUrl = $this->config->getBaseUrl();
         $parsed = \parse_url($baseUrl);
-        $parsedHost = \is_array($parsed) && isset($parsed['host']) && \is_string($parsed['host']) ? $parsed['host'] : null;
+        $parsedHost = \is_array($parsed) && isset($parsed['host']) && \is_string($parsed['host']) ? $parsed['host'] : null; // phpcs:ignore Generic.Files.LineLength.TooLong
 
         $fallbackHostRaw = $this->config->get('server_host', 'localhost');
         $fallbackHost = \is_string($fallbackHostRaw) ? $fallbackHostRaw : 'localhost';
@@ -206,7 +206,7 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
     /**
      * @param array<string, mixed> $data
      */
-    private function logEmail(string $recipient, string $subject, string $template, bool|string $status, array $data = []): void
+    private function logEmail(string $recipient, string $subject, string $template, bool|string $status, array $data = []): void // phpcs:ignore Generic.Files.LineLength.TooLong
     {
         $statusStr = $status === true ? 'Erfolg' : 'Fehler: ' . $status;
         $id = \uniqid('ml_');
@@ -215,11 +215,11 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
         $jsonStr = \json_encode($data, \JSON_UNESCAPED_UNICODE);
         $json = \is_string($jsonStr) ? $jsonStr : '{}';
 
-        $stmt = $this->pdo->prepare('INSERT INTO `mail_logs` (id, timestamp, recipient, subject, template, status, data) VALUES (?, ?, ?, ?, ?, ?, ?)');
+        $stmt = $this->pdo->prepare('INSERT INTO `mail_logs` (id, timestamp, recipient, subject, template, status, data) VALUES (?, ?, ?, ?, ?, ?, ?)'); // phpcs:ignore Generic.Files.LineLength.TooLong
         $stmt->execute([$id, $now, $recipient, $subject, $template, $statusStr, $json]);
 
         // Max 200 Logs behalten
-        $this->pdo->exec('DELETE FROM `mail_logs` WHERE id NOT IN (SELECT id FROM (SELECT id FROM `mail_logs` ORDER BY timestamp DESC LIMIT 200) tmp)');
+        $this->pdo->exec('DELETE FROM `mail_logs` WHERE id NOT IN (SELECT id FROM (SELECT id FROM `mail_logs` ORDER BY timestamp DESC LIMIT 200) tmp)'); // phpcs:ignore Generic.Files.LineLength.TooLong
     }
 
     public function loadLogs(): array

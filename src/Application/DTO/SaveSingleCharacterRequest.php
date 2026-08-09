@@ -34,6 +34,7 @@ final readonly class SaveSingleCharacterRequest
             throw new ValidationException('Der Name des Charakters darf nicht leer sein.');
         }
 
+        // phpcs:disable Generic.Files.LineLength.TooLong
         return new self(
             id: Sanitizer::string($data['id'] ?? 'new'),
             name: Sanitizer::string($data['name']),
@@ -48,5 +49,6 @@ final readonly class SaveSingleCharacterRequest
             subspecies: isset($data['subspecies']) && $data['subspecies'] !== '' ? Sanitizer::string($data['subspecies']) : null,
             languages: isset($data['languages']) && $data['languages'] !== '' ? Sanitizer::string($data['languages']) : null,
         );
+        // phpcs:enable Generic.Files.LineLength.TooLong
     }
 }

@@ -23,7 +23,10 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
 
     public function save(ComicPage $comic): void
     {
-        // Da 'characterIds' ein Array aus Objekten ist, nutzen wir den Override, um es zu einem JSON-String aus reinen IDs zu machen.
+        /*
+         * Da 'characterIds' ein Array aus Objekten ist, nutzen wir den Override,
+         * um es zu einem JSON-String aus reinen IDs zu machen.
+         */
         $charIds = \array_map(fn (CharacterId $id): string => $id->value, $comic->characterIds);
 
         $data = $this->extractEntity($comic, [
@@ -89,7 +92,10 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
      */
     private function mapToEntity(array $row): ComicPage
     {
-        // Da die Property 'characterIds' CharacterId-Objekte erwartet, parsen wir sie manuell und geben sie als Override mit.
+        /*
+         * Da die Property 'characterIds' CharacterId-Objekte erwartet, parsen wir sie manuell
+         * und geben sie als Override mit.
+         */
         $rawCharIds = $row['character_ids'] ?? '[]';
         $charIdsRawJson = \is_string($rawCharIds) ? $rawCharIds : '[]';
         $charIdsRaw = \json_decode($charIdsRawJson, true);
@@ -118,7 +124,7 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
             $stmt1 = $this->pdo->prepare('UPDATE `' . Table::COMICS . '` SET `id` = ? WHERE `id` = ?');
             $stmt1->execute([$newId->value, $oldId->value]);
 
-            $stmt2 = $this->pdo->prepare('UPDATE `' . Table::COMIC_REVISIONS . '` SET `comic_id` = ? WHERE `comic_id` = ?');
+            $stmt2 = $this->pdo->prepare('UPDATE `' . Table::COMIC_REVISIONS . '` SET `comic_id` = ? WHERE `comic_id` = ?'); // phpcs:ignore Generic.Files.LineLength.TooLong
             $stmt2->execute([$newId->value, $oldId->value]);
 
             $stmt3 = $this->pdo->prepare('UPDATE `' . Table::REPORTS . '` SET `comic_id` = ? WHERE `comic_id` = ?');

@@ -42,7 +42,7 @@ final readonly class DeleteCharacterAction implements ActionInterface
 
             $this->characterService->deleteCharacter(new CharacterId($id));
 
-            return JsonResponse::success(['message' => 'Charakter wurde erfolgreich gelöscht und aus allen Gruppen entfernt.']);
+            return JsonResponse::success(['message' => 'Charakter wurde erfolgreich gelöscht und aus allen Gruppen entfernt.']); // phpcs:ignore Generic.Files.LineLength.TooLong
         } catch (ValidationException|InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
         } catch (Throwable $e) {

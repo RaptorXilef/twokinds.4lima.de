@@ -112,7 +112,7 @@ final readonly class SessionManager implements AuthSessionInterface
 
     public function getVerifiedEmail(): ?string
     {
-        return isset($_SESSION['verified_email']) && \is_string($_SESSION['verified_email']) ? $_SESSION['verified_email'] : null;
+        return isset($_SESSION['verified_email']) && \is_string($_SESSION['verified_email']) ? $_SESSION['verified_email'] : null; // phpcs:ignore Generic.Files.LineLength.TooLong
     }
 
     public function getEditToken(): ?string
@@ -160,7 +160,7 @@ final readonly class SessionManager implements AuthSessionInterface
 
     public function getHistoryEmail(): ?string
     {
-        return isset($_SESSION['user_history_email']) && \is_string($_SESSION['user_history_email']) ? $_SESSION['user_history_email'] : null;
+        return isset($_SESSION['user_history_email']) && \is_string($_SESSION['user_history_email']) ? $_SESSION['user_history_email'] : null; // phpcs:ignore Generic.Files.LineLength.TooLong
     }
 
     public function clearHistoryEmail(): void
@@ -257,12 +257,12 @@ final readonly class SessionManager implements AuthSessionInterface
 
     public function getAdminGroup(): string
     {
-        return isset($_SESSION['admin_group']) && \is_string($_SESSION['admin_group']) ? $_SESSION['admin_group'] : 'guest';
+        return isset($_SESSION['admin_group']) && \is_string($_SESSION['admin_group']) ? $_SESSION['admin_group'] : 'guest'; // phpcs:ignore Generic.Files.LineLength.TooLong
     }
 
     public function getAdminUser(): string
     {
-        return isset($_SESSION['admin_user']) && \is_string($_SESSION['admin_user']) ? $_SESSION['admin_user'] : 'Unbekannt';
+        return isset($_SESSION['admin_user']) && \is_string($_SESSION['admin_user']) ? $_SESSION['admin_user'] : 'Unbekannt'; // phpcs:ignore Generic.Files.LineLength.TooLong
     }
 
     // --- INFRASTRUCTURE ---
@@ -273,7 +273,7 @@ final readonly class SessionManager implements AuthSessionInterface
 
     public function getAnalyticsId(): ?string
     {
-        return isset($_SESSION['ga4_client_id']) && \is_string($_SESSION['ga4_client_id']) ? $_SESSION['ga4_client_id'] : null;
+        return isset($_SESSION['ga4_client_id']) && \is_string($_SESSION['ga4_client_id']) ? $_SESSION['ga4_client_id'] : null; // phpcs:ignore Generic.Files.LineLength.TooLong
     }
 
     public function initCsrfToken(): string

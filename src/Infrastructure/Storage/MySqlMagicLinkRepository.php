@@ -39,7 +39,9 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
             }
 
             $expiresRaw = $r['expires'] ?? 'now';
-            $expiresStr = \is_string($expiresRaw) ? $expiresRaw : (\is_numeric($expiresRaw) ? (string) $expiresRaw : 'now');
+            $expiresStr = \is_string($expiresRaw)
+                ? $expiresRaw
+                : (\is_numeric($expiresRaw) ? (string) $expiresRaw : 'now');
 
             $dt = \is_numeric($expiresStr)
                 ? (new DateTimeImmutable())->setTimestamp((int) $expiresStr)
@@ -48,7 +50,6 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
             $token = \is_string($r['token'] ?? null) ? $r['token'] : '';
             $emailStr = \is_string($r['email'] ?? null) ? $r['email'] : '';
             $codeStr = \is_string($r['code'] ?? null) ? $r['code'] : '';
-
             if ($token === '') {
                 continue;
             }
@@ -69,6 +70,8 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
 
     public function saveAll(array $links, bool $forceSql = false): void
     {
+        unset($forceSql); // Interface Vorgabe wird hier bewusst ignoriert, PHPCS Fix.
+
         $this->pdo->beginTransaction();
 
         try {
@@ -82,7 +85,10 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
                     'code' => $link->code,
                     'expires' => $link->expires->format('Y-m-d H:i:s'),
                 ];
-                $this->pdo->prepare('REPLACE INTO `' . Table::MAGIC_LINKS . '` (token, email, code, expires) VALUES (:token, :email, :code, :expires)')->execute($data);
+
+                $sql = 'REPLACE INTO `' . Table::MAGIC_LINKS . '` (token, email, code, expires) '
+                    . 'VALUES (:token, :email, :code, :expires)';
+                $this->pdo->prepare($sql)->execute($data);
             }
 
             $this->pdo->commit();
@@ -95,6 +101,7 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
 
     public function import(array $data): void
     {
+        unset($data); // Interface Vorgabe
     }
 
     public function deleteExpired(): int

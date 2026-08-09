@@ -39,15 +39,18 @@ interface MediaServiceInterface
      */
     public function processMassProfileUpload(array $files): int;
 
+    // phpcs:disable Generic.Files.LineLength.TooLong
+
     /**
      * Verarbeitet hochgeladene Bilder für einen einzelnen Charakter.
      * Gibt ein Array mit den neuen Dateinamen und eventuellen Warnungen zurück.
      *
      * @param array<string, mixed> $files
      *
-     * @return array{profile: ?string, main: ?string, swatch: ?string, refs: array<int, string>, warnings: array<int, string>}
+     * @return array{profile: ?string, main: ?string, swatch: ?string, refs: array<int, string>, warnings: array<int, string>} // phpcs:ignore Generic.Files.LineLength.TooLong
      */
     public function processCharacterImages(string $safeName, array $files): array;
+    // phpcs:enable Generic.Files.LineLength.TooLong
 
     /**
      * @param array<string, mixed> $file

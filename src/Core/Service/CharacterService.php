@@ -59,7 +59,9 @@ final readonly class CharacterService
         // Validierung: Existieren alle zugewiesenen Charaktere wirklich?
         foreach ($group->characterIds as $charId) {
             if (!$this->characterRepo->findById($charId) instanceof Character) {
-                throw new EntityNotFoundException("Charakter mit ID {$charId->value} existiert nicht und kann nicht der Gruppe hinzugefügt werden.");
+                throw new EntityNotFoundException(
+                    "Charakter mit ID {$charId->value} existiert nicht und kann nicht der Gruppe hinzugefügt werden.",
+                );
             }
         }
         $this->groupRepo->save($group);

@@ -30,7 +30,7 @@ final readonly class FeedService
         $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
         $lowResUrl = $baseUrl . '/assets/images/comics/lowres';
 
-        $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"></rss>');
+        $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"></rss>'); // phpcs:ignore Generic.Files.LineLength.TooLong
         $channel = $xml->addChild('channel');
 
         $channel->addChild('title', 'Twokinds auf Deutsch');
@@ -67,7 +67,7 @@ final readonly class FeedService
             $cb = $comic->imageUpdatedAt !== null ? '?c=' . $comic->imageUpdatedAt : '';
             $imgSrc = "{$lowResUrl}/{$comic->id->value}.webp{$cb}";
 
-            $descContent = "<p><img src=\"{$imgSrc}\" alt=\"{$titleText}\" style=\"max-width: 100%; height: auto;\" /></p>";
+            $descContent = "<p><img src=\"{$imgSrc}\" alt=\"{$titleText}\" style=\"max-width: 100%; height: auto;\" /></p>"; // phpcs:ignore Generic.Files.LineLength.TooLong
             if ($comic->transcript !== null && $comic->transcript !== '') {
                 $descContent .= $comic->transcript;
             }

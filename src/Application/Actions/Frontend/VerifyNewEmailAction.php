@@ -29,7 +29,11 @@ final readonly class VerifyNewEmailAction implements ActionInterface
     public function execute(ServerRequest $request): mixed
     {
         if (!$this->auth->isLoggedIn()) {
-            $this->sessionManager->addFlash('error', 'Bitte logge dich zuerst ein, um deine E-Mail-Adresse zu ändern. Öffne den Link anschließend erneut im selben Browser.');
+            $this->sessionManager->addFlash(
+                'error',
+                'Bitte logge dich zuerst ein, um deine E-Mail-Adresse zu ändern. '
+                    . 'Öffne den Link anschließend erneut im selben Browser.',
+            );
 
             return new RedirectResponse('/login');
         }
@@ -39,13 +43,19 @@ final readonly class VerifyNewEmailAction implements ActionInterface
         $newEmailStr = $this->magicLinkService->verifyAny($token);
 
         if ($newEmailStr === null) {
-            $this->sessionManager->addFlash('error', 'Der Bestätigungslink ist ungültig oder abgelaufen.');
+            $this->sessionManager->addFlash(
+                'error',
+                'Der Bestätigungslink ist ungültig oder abgelaufen.',
+            );
 
             return new RedirectResponse('/profil');
         }
 
         if ($this->userRepository->findByEmail($newEmailStr) instanceof User) {
-            $this->sessionManager->addFlash('error', 'Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet.');
+            $this->sessionManager->addFlash(
+                'error',
+                'Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet.',
+            );
 
             return new RedirectResponse('/profil');
         }

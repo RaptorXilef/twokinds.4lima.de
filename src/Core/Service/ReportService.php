@@ -44,7 +44,9 @@ final readonly class ReportService
         $recentReports = $this->reportRepository->countRecentByIpHash($ipHash, $since);
 
         if ($recentReports >= self::RATE_LIMIT_COUNT) {
-            throw new RateLimitExceededException('Du hast das Limit für Meldungen erreicht. Bitte versuche es später noch einmal.');
+            throw new RateLimitExceededException(
+                'Du hast das Limit für Meldungen erreicht. Bitte versuche es später noch einmal.',
+            );
         }
 
         // 2. Report Entity aufbauen (Validierung passiert automatisch in den VOs und der Entity)

@@ -24,12 +24,17 @@ final readonly class Username implements Stringable
             throw new InvalidArgumentException('Der Benutzername darf maximal 50 Zeichen lang sein.');
         }
 
-        // 3. SECURITY FIX: Erlaube nur lateinische Zeichen (inkl. europäischer Umlaute/Akzente), Zahlen und wenige Sonderzeichen.
-        // Das 'u' am Ende steht für UTF-8-Sicherheit.
-        // \p{Latin} erlaubt z.B. a-z, ä, ö, ü, é, è, å, ø
-        // Es blockiert z.B. Kyrillisch, Chinesisch, Arabisch, Emojis und unsichtbare Steuerzeichen.
+        /*
+         * 3. SECURITY FIX: Erlaube nur lateinische Zeichen (inkl. europäischer Umlaute/Akzente),
+         * Zahlen und wenige Sonderzeichen.
+         *
+         * Das 'u' am Ende steht für UTF-8-Sicherheit.
+         * \p{Latin} erlaubt z.B. a-z, ä, ö, ü, é, è, å, ø
+         */
         if (\preg_match('/^[\p{Latin}0-9 \-_.]+$/u', $val) !== 1) {
-            throw new InvalidArgumentException('Der Benutzername enthält ungültige Zeichen. Erlaubt sind nur Buchstaben, Zahlen, Leerzeichen, Binde- und Unterstriche sowie Punkte.');
+            throw new InvalidArgumentException(
+                'Der Benutzername enthält ungültige Zeichen. Erlaubt sind nur Buchstaben, Zahlen, Leerzeichen, Binde- und Unterstriche sowie Punkte.', // phpcs:ignore Generic.Files.LineLength.TooLong
+            );
         }
 
         $this->value = $val;

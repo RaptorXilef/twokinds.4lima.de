@@ -135,7 +135,7 @@ class Container implements ContainerInterface
         $reflectionClass = new ReflectionClass($className);
 
         if (!$reflectionClass->isInstantiable()) {
-            throw new RuntimeException("Container Autowiring Error: Klasse '{$className}' ist nicht instanziierbar (Interface oder Abstract).");
+            throw new RuntimeException("Container Autowiring Error: Klasse '{$className}' ist nicht instanziierbar (Interface oder Abstract)."); // phpcs:ignore Generic.Files.LineLength.TooLong
         }
 
         $constructor = $reflectionClass->getConstructor();
@@ -160,7 +160,7 @@ class Container implements ContainerInterface
                 }
 
                 throw new RuntimeException(\sprintf(
-                    "Container Autowiring Error: Kann Parameter '$%s' in Klasse '%s' nicht auflösen (Typ fehlt oder ist primitiv).",
+                    "Container Autowiring Error: Kann Parameter '$%s' in Klasse '%s' nicht auflösen (Typ fehlt oder ist primitiv).", // phpcs:ignore Generic.Files.LineLength.TooLong
                     $parameter->getName(),
                     $className,
                 ));

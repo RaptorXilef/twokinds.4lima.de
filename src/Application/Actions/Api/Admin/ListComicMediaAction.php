@@ -24,7 +24,11 @@ final readonly class ListComicMediaAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (!$this->auth->hasPermission('media.upload') && !$this->auth->hasPermission('media.delete') && !$this->auth->hasPermission('comics.edit')) {
+        if (
+            !$this->auth->hasPermission('media.upload')
+            && !$this->auth->hasPermission('media.delete')
+            && !$this->auth->hasPermission('comics.edit')
+        ) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 

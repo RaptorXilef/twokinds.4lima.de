@@ -42,7 +42,12 @@ final readonly class CsrfMiddleware implements MiddlewareInterface
                     $this->sessionManager->setFormData($postData);
                 }
 
-                $this->sessionManager->addFlash('error', 'Ihre Sitzung ist abgelaufen. Zu Ihrer Sicherheit wurde die Seite neu geladen. Ihre Eingaben wurden wiederhergestellt - bitte senden Sie das Formular erneut ab.');
+                $this->sessionManager->addFlash(
+                    'error',
+                    'Ihre Sitzung ist abgelaufen. '
+                        . 'Zu Ihrer Sicherheit wurde die Seite neu geladen. '
+                        . 'Ihre Eingaben wurden wiederhergestellt - bitte senden Sie das Formular erneut ab.',
+                );
 
                 return new RedirectResponse($this->fallbackUrl);
             }

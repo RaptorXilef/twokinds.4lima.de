@@ -50,7 +50,11 @@ final readonly class DashboardAction implements ActionInterface
     public function execute(ServerRequest $request): mixed
     {
         // ABSOLUTER SICHERHEITS-CHECK: Hat der Nutzer überhaupt etwas im Dashboard verloren?
-        if (!$this->auth->hasPermission('dashboard.view') && !$this->auth->hasPermission('admin.access') && $this->sessionManager->getAdminGroup() !== 'admin') {
+        if (
+            !$this->auth->hasPermission('dashboard.view')
+            && !$this->auth->hasPermission('admin.access')
+            && $this->sessionManager->getAdminGroup() !== 'admin'
+        ) {
             return new RedirectResponse($this->config->getBaseUrl() . '/403');
         }
 

@@ -18,9 +18,11 @@ final readonly class MySqlRoleRepository implements RoleRepositoryInterface
     public function __construct(
         private PDO $pdo,
         /**
+         * Wird für die DI Container Kompatibilität beibehalten, aber intern nicht mehr zwingend benötigt
+         *
          * @phpstan-ignore-next-line
          */
-        private JsonHelperInterface $jsonHelper, // Wird für die DI Container Kompatibilität beibehalten, aber intern nicht mehr zwingend benötigt
+        private JsonHelperInterface $jsonHelper,
     ) {
     }
 

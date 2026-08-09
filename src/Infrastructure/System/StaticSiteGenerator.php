@@ -49,6 +49,10 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
         $this->doGenerateRss();
     }
 
+    // =========================================================================
+    // PRIVATE HELPER: SITEMAP
+    // =========================================================================
+
     private function doGenerateSitemap(): void
     {
         $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
@@ -116,6 +120,27 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
         \file_put_contents($publicDir . '/sitemap.xml', $xml->outputMemory());
     }
 
+    private function addSitemapUrl(
+        XMLWriter $xml,
+        string $loc,
+        string $priority,
+        string $changefreq,
+        ?string $lastmod = null,
+    ): void {
+        $xml->startElement('url');
+        $xml->writeElement('loc', $loc);
+        if ($lastmod !== null) {
+            $xml->writeElement('lastmod', $lastmod);
+        }
+        $xml->writeElement('changefreq', $changefreq);
+        $xml->writeElement('priority', $priority);
+        $xml->endElement();
+    }
+
+    // =========================================================================
+    // PRIVATE HELPER: RSS FEED
+    // =========================================================================
+
     private function doGenerateRss(): void
     {
         $baseUrl = $this->config->getBaseUrl();
@@ -159,7 +184,10 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
         $feedComics = $this->filterComicsForFeed($comics, $publicDir);
 
         // Die neuesten zuerst (anhand der ID sortieren, da YYYYMMDD)
-        \usort($feedComics, fn (ComicPage $comicA, ComicPage $comicB): int => \strcmp($comicB->id->value, $comicA->id->value));
+        \usort(
+            $feedComics,
+            fn (ComicPage $comicA, ComicPage $comicB): int => \strcmp($comicB->id->value, $comicA->id->value),
+        );
 
         // Max Items aus der Config ziehen (Default 25, falls Eintrag fehlt)
         $maxItemsRaw = $this->config->get('rss_max_items', 25);
@@ -244,22 +272,5 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
         $xml->writeElement('pubDate', $pubDate->format(\DATE_RFC2822));
 
         $xml->endElement(); // item
-    }
-
-    private function addSitemapUrl(
-        XMLWriter $xml,
-        string $loc,
-        string $priority,
-        string $changefreq,
-        ?string $lastmod = null,
-    ): void {
-        $xml->startElement('url');
-        $xml->writeElement('loc', $loc);
-        if ($lastmod !== null) {
-            $xml->writeElement('lastmod', $lastmod);
-        }
-        $xml->writeElement('changefreq', $changefreq);
-        $xml->writeElement('priority', $priority);
-        $xml->endElement();
     }
 }

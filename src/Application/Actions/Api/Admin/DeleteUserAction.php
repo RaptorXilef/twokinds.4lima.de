@@ -45,7 +45,11 @@ final readonly class DeleteUserAction implements ActionInterface
             }
 
             $userToDelete = $this->userRepo->findById($id);
-            if ($userToDelete instanceof User && $userToDelete->roleId === 'admin' && !\str_starts_with($this->auth->getUserId(), 'sys_')) {
+            if (
+                $userToDelete instanceof User
+                && $userToDelete->roleId === 'admin'
+                && !\str_starts_with($this->auth->getUserId(), 'sys_')
+            ) {
                 return JsonResponse::error('Nur der Systembetreuer darf Administratoren löschen.', 403);
             }
 

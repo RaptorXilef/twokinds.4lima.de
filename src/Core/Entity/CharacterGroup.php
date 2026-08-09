@@ -26,7 +26,9 @@ final readonly class CharacterGroup
         // Strikte Typisierung für das Array erzwingen
         foreach ($characterIds as $charId) {
             if (!$charId instanceof CharacterId) {
-                throw new InvalidArgumentException('Das characterIds Array darf nur Instanzen von CharacterId enthalten.');
+                throw new InvalidArgumentException(
+                    'Das characterIds Array darf nur Instanzen von CharacterId enthalten.',
+                );
             }
         }
         $this->characterIds = \array_values($characterIds);

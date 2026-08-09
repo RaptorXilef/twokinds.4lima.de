@@ -47,7 +47,11 @@ final readonly class AnalyticsMiddleware implements MiddlewareInterface
         $scriptNameRaw = $request->server['SCRIPT_NAME'] ?? '';
         $scriptName = \is_string($scriptNameRaw) ? $scriptNameRaw : '';
 
-        if (\str_contains($scriptName, '/api/') || \str_contains($scriptName, 'cron.php') || \str_contains($scriptName, 'process_mail_queue.php')) {
+        if (
+            \str_contains($scriptName, '/api/')
+            || \str_contains($scriptName, 'cron.php')
+            || \str_contains($scriptName, 'process_mail_queue.php')
+        ) {
             return;
         }
 

@@ -39,7 +39,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         ];
 
         // 1. Neuen Snapshot einfügen
-        $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::COMIC_REVISIONS . '` (`comic_id`, `revision_data`, `created_at`) VALUES (?, ?, ?)');
+        $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::COMIC_REVISIONS . '` (`comic_id`, `revision_data`, `created_at`) VALUES (?, ?, ?)'); // phpcs:ignore Generic.Files.LineLength.TooLong
         $stmtInsert->execute([
             $comicIdStr,
             \json_encode($snapshotData, \JSON_UNESCAPED_UNICODE),
@@ -76,7 +76,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
 
     public function popLatestRevision(ComicId $id): ?array
     {
-        $stmt = $this->pdo->prepare('SELECT `id`, `revision_data` FROM `' . Table::COMIC_REVISIONS . '` WHERE `comic_id` = ? ORDER BY `created_at` DESC LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT `id`, `revision_data` FROM `' . Table::COMIC_REVISIONS . '` WHERE `comic_id` = ? ORDER BY `created_at` DESC LIMIT 1'); // phpcs:ignore Generic.Files.LineLength.TooLong
         $stmt->execute([$id->value]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 

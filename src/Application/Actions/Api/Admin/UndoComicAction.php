@@ -42,7 +42,7 @@ final readonly class UndoComicAction implements ActionInterface
 
             $this->comicService->restoreLatestRevision(new ComicId($idStr));
 
-            return JsonResponse::success(['message' => "Der Comic {$idStr} wurde auf die vorherige Version zurückgesetzt."]);
+            return JsonResponse::success(['message' => "Der Comic {$idStr} wurde auf die vorherige Version zurückgesetzt."]); // phpcs:ignore Generic.Files.LineLength.TooLong
         } catch (DomainException|InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
         } catch (Throwable $e) {

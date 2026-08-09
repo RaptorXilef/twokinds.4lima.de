@@ -34,7 +34,11 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
 
     public function findById(ReportId $id): ?Report
     {
-        $stmt = $this->pdo->prepare('SELECT r.*, u.avatar_url as submitter_avatar_url FROM `' . Table::REPORTS . '` r LEFT JOIN `' . Table::USERS . '` u ON r.user_id = u.id WHERE r.id = ? LIMIT 1');
+        $stmt = $this->pdo->prepare(
+            'SELECT r.*, u.avatar_url as submitter_avatar_url FROM `'
+                . Table::REPORTS . '` r LEFT JOIN `'
+                . Table::USERS . '` u ON r.user_id = u.id WHERE r.id = ? LIMIT 1',
+        );
         $stmt->execute([$id->value]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -50,7 +54,11 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
 
     public function findAll(): array
     {
-        $stmt = $this->pdo->query('SELECT r.*, u.avatar_url as submitter_avatar_url FROM `' . Table::REPORTS . '` r LEFT JOIN `' . Table::USERS . '` u ON r.user_id = u.id ORDER BY r.date DESC');
+        $stmt = $this->pdo->query(
+            'SELECT r.*, u.avatar_url as submitter_avatar_url FROM `'
+                . Table::REPORTS . '` r LEFT JOIN `'
+                . Table::USERS . '` u ON r.user_id = u.id ORDER BY r.date DESC',
+        );
         if ($stmt === false) {
             return [];
         }
@@ -78,7 +86,11 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
 
     public function findByStatus(string $status): array
     {
-        $stmt = $this->pdo->prepare('SELECT r.*, u.avatar_url as submitter_avatar_url FROM `' . Table::REPORTS . '` r LEFT JOIN `' . Table::USERS . '` u ON r.user_id = u.id WHERE r.status = ? ORDER BY r.date DESC');
+        $stmt = $this->pdo->prepare(
+            'SELECT r.*, u.avatar_url as submitter_avatar_url FROM `'
+                . Table::REPORTS . '` r LEFT JOIN `'
+                . Table::USERS . '` u ON r.user_id = u.id WHERE r.status = ? ORDER BY r.date DESC',
+        );
         $stmt->execute([$status]);
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);

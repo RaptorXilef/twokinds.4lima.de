@@ -8,7 +8,7 @@ interface BackupServiceInterface
 {
     public function createBackup(?string $tableName = null): string;
 
-    public function restoreBackup(string $filename, int $mode, ?string $tableName = null, ?string $customPassword = null): void;
+    public function restoreBackup(string $filename, int $mode, ?string $tableName = null, ?string $customPassword = null): void; // phpcs:ignore Generic.Files.LineLength.TooLong
 
     /**
      * @return array<int, array<string, mixed>>

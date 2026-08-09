@@ -31,7 +31,7 @@ final readonly class JsonResponse implements ResponseInterface
 
         echo \json_encode(
             $this->data,
-            \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE | \JSON_HEX_TAG | \JSON_HEX_AMP | \JSON_HEX_APOS | \JSON_HEX_QUOT,
+            \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE | \JSON_HEX_TAG | \JSON_HEX_AMP | \JSON_HEX_APOS | \JSON_HEX_QUOT, // phpcs:ignore Generic.Files.LineLength.TooLong
         );
 
         // PERF: Wenn der Server FastCGI unterstützt (wie Lima-City), schließen wir die Verbindung

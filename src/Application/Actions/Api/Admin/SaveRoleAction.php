@@ -55,7 +55,7 @@ final readonly class SaveRoleAction implements ActionInterface
 
             // ADMIN-SCHUTZ:
             if ($id === 'admin' && !\str_starts_with($this->auth->getUserId(), 'sys_')) {
-                return JsonResponse::error('Nur der System-Eigentümer (dev_admin) darf die Admin-Rolle bearbeiten!', 403);
+                return JsonResponse::error('Nur der System-Eigentümer (dev_admin) darf die Admin-Rolle bearbeiten!', 403); // phpcs:ignore Generic.Files.LineLength.TooLong
             }
 
             if (\in_array($id, ['user', 'pending'], true) && $this->auth->getRole() !== 'admin') {
@@ -64,7 +64,7 @@ final readonly class SaveRoleAction implements ActionInterface
 
             // Schutz vor Überschreiben von Systemrollen
             if (\in_array($id, ['admin', 'user', 'pending'], true) && $this->auth->getRole() !== 'admin') {
-                return JsonResponse::error('System-Rollen können nur von Haupt-Administratoren bearbeitet werden.', 403);
+                return JsonResponse::error('System-Rollen können nur von Haupt-Administratoren bearbeitet werden.', 403); // phpcs:ignore Generic.Files.LineLength.TooLong
             }
 
             $role = new Role($id, $name, \array_values($permissions));

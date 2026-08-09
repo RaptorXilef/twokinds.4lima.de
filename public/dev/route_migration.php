@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 $actionsDir = \dirname(__DIR__, 2) . '/src/Application/Actions';
 
+// phpcs:disable Generic.Files.LineLength.TooLong
 $map = [
     // Admin Views
     'AdminDashboardRenderAction.php' => ['dir' => 'Admin', 'class' => 'DashboardAction', 'auth' => true, 'routes' => [['GET', '/admin']]],
@@ -143,3 +144,4 @@ if (\is_dir($actionsDir . '/Frontend')) {
 }
 
 echo "\nMigration abgeschlossen! Vergiss nicht, die Datei cache/routes_v2.php zu löschen, falls vorhanden.</pre>";
+// phpcs:enable Generic.Files.LineLength.TooLong

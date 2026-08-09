@@ -13,7 +13,9 @@ final readonly class CharacterId implements Stringable
     {
         // Wir erlauben nun 'char_' gefolgt von BELIEBIG vielen Ziffern (\d+)
         if (\preg_match('/^char_\d+$/', $value) !== 1) {
-            throw new InvalidArgumentException("Ungültiges Character-ID Format. Erwartet char_XXXX, erhalten: {$value}");
+            throw new InvalidArgumentException(
+                "Ungültiges Character-ID Format. Erwartet char_XXXX, erhalten: {$value}",
+            );
         }
     }
 

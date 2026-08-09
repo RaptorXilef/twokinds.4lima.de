@@ -15,7 +15,9 @@ final readonly class ReportId implements Stringable
     {
         $value = \trim($value);
         if (!\str_starts_with($value, 'report_')) {
-            throw new InvalidArgumentException("Ungültiges Report-ID Format. Erwartet 'report_' Präfix, erhalten: {$value}");
+            throw new InvalidArgumentException(
+                "Ungültiges Report-ID Format. Erwartet 'report_' Präfix, erhalten: {$value}",
+            );
         }
         $this->value = $value;
     }

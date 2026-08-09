@@ -57,7 +57,7 @@ final readonly class SaveSingleComicRequest
         // Flexible URL-Behandlung für Originalbilder
         $originalUrl = Sanitizer::string($post['url_originalbild'] ?? '');
         if ($originalUrl !== '' && !\str_starts_with($originalUrl, 'http')) {
-            $originalUrl = 'https://cdn.twokinds.keenspot.com/comics/' . $originalUrl; // TODO ggf. URL in Config auslagern
+            $originalUrl = 'https://cdn.twokinds.keenspot.com/comics/' . $originalUrl; // TODO ggf. URL in Config
         }
 
         // Flexible URL-Behandlung für Skizzen

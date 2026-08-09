@@ -128,7 +128,19 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
             // Lokale Dev-Umgebungen dynamisch zu den Arrays hinzufügen
             if ($isLocal) {
                 $localHosts = ['https://twokinds.4lima.local', 'http://localhost'];
-                foreach (['default-src', 'script-src', 'style-src', 'font-src', 'img-src', 'connect-src', 'frame-ancestors', 'base-uri', 'form-action'] as $directive) {
+                foreach (
+                    [
+                        'default-src',
+                        'script-src',
+                        'style-src',
+                        'font-src',
+                        'img-src',
+                        'connect-src',
+                        'frame-ancestors',
+                        'base-uri',
+                        'form-action',
+                    ] as $directive
+                ) {
                     $csp[$directive] = \array_merge($csp[$directive], $localHosts);
                 }
             }

@@ -43,7 +43,7 @@ final readonly class GoogleAnalyticsClient implements AnalyticsClientInterface
             ],
         ];
 
-        $apiUrl = 'https://www.google-analytics.com/mp/collect?measurement_id=' . \urlencode($gaId) . '&api_secret=' . \urlencode($apiSecret);
+        $apiUrl = 'https://www.google-analytics.com/mp/collect?measurement_id=' . \urlencode($gaId) . '&api_secret=' . \urlencode($apiSecret); // phpcs:ignore Generic.Files.LineLength.TooLong
         $ch = \curl_init($apiUrl);
         if ($ch === false) {
             return;

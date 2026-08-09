@@ -11,7 +11,7 @@ trait DynamicSqlTrait
      *
      * @param string $table Der Name der Tabelle.
      * @param array<string, mixed> $data Assoziatives Array mit Spaltennamen als Keys und den entsprechenden Werten.
-     * @param array<int, string> $excludeUpdate Array mit Spaltennamen, die beim UPDATE ignoriert werden sollen (z.B. 'id', 'created_at').
+     * @param array<int, string> $excludeUpdate Array mit Spaltennamen, die beim UPDATE ignoriert werden.
      */
     protected function executeUpsert(string $table, array $data, array $excludeUpdate = ['id']): bool
     {
@@ -22,12 +22,15 @@ trait DynamicSqlTrait
         $columns = \array_keys($data);
 
         // 1. INSERT-Teil aufbauen (`col1`, `col2`) VALUES (:col1, :col2)
-        $colString = \implode(', ', \array_map(fn (string $c): string => "`$c`", $columns));
-        $valString = \implode(', ', \array_map(fn (string $c): string => ":$c", $columns));
+        $colString = \implode(', ', \array_map(fn (string $col): string => "`$col`", $columns));
+        $valString = \implode(', ', \array_map(fn (string $col): string => ":$col", $columns));
 
         // 2. UPDATE-Teil aufbauen, exklusive der geschützten Spalten
-        $updateCols = \array_filter($columns, fn (string $c): bool => !\in_array($c, $excludeUpdate, true));
-        $updString = \implode(', ', \array_map(fn (string $c): string => "`$c` = VALUES(`$c`)", $updateCols));
+        $updateCols = \array_filter($columns, fn (string $col): bool => !\in_array($col, $excludeUpdate, true));
+        $updString = \implode(
+            ', ',
+            \array_map(fn (string $col): string => "`$col` = VALUES(`$col`)", $updateCols),
+        );
 
         $sql = "INSERT INTO `$table` ($colString) VALUES ($valString)";
         if ($updString !== '' && $updString !== '0') {

@@ -63,7 +63,10 @@ final readonly class SaveUserAction implements ActionInterface
             // Admin-Schutz: Verhindere, dass normale Admins andere Administratoren bearbeiten/degradieren
             if ($existingUser instanceof User && $existingUser->roleId === 'admin' && !$isConfigAdmin) {
                 if ($this->auth->getUserId() !== $id) {
-                    return JsonResponse::error('Du darfst keine anderen Administratoren bearbeiten. Dies obliegt dem Systembetreuer.', 403);
+                    return JsonResponse::error(
+                        'Du darfst keine anderen Administratoren bearbeiten. Dies obliegt dem Systembetreuer.',
+                        403,
+                    );
                 }
                 if ($roleId !== 'admin') {
                     return JsonResponse::error('Du darfst dich nicht selbst degradieren.', 403);

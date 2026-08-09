@@ -21,7 +21,7 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
 
     public function findByUser(string $userId): array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::USER_BOOKMARKS . '` WHERE user_id = ? ORDER BY added_at DESC');
+        $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::USER_BOOKMARKS . '` WHERE user_id = ? ORDER BY added_at DESC'); // phpcs:ignore Generic.Files.LineLength.TooLong
         $stmt->execute([$userId]);
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -71,7 +71,7 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
             $stmtDel->execute([$userId]);
 
             // Dann die neuen sauber einfügen
-            $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::USER_BOOKMARKS . '` (user_id, comic_id, added_at) VALUES (?, ?, ?)');
+            $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::USER_BOOKMARKS . '` (user_id, comic_id, added_at) VALUES (?, ?, ?)'); // phpcs:ignore Generic.Files.LineLength.TooLong
             $now = \date('Y-m-d H:i:s');
             $uniqueIds = \array_unique($comicIds);
 

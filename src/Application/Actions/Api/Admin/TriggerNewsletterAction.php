@@ -54,7 +54,9 @@ final readonly class TriggerNewsletterAction implements ActionInterface
         $subscribers = $this->userRepository->findNewsletterSubscribers($isTranscript);
 
         if ($subscribers === []) {
-            return JsonResponse::success(['message' => 'Niemand hat diesen Newsletter abonniert. Es wurden keine E-Mails versendet.']);
+            return JsonResponse::success(
+                ['message' => 'Niemand hat diesen Newsletter abonniert. Es wurden keine E-Mails versendet.'],
+            );
         }
 
         $template = $isTranscript ? 'newsletter_transcript' : 'newsletter_full';
@@ -74,7 +76,7 @@ final readonly class TriggerNewsletterAction implements ActionInterface
         }
 
         return JsonResponse::success([
-            'message' => "Erfolg! {$count} E-Mails wurden für den CronJob (Priorität 10) in die Warteschlange eingereiht.",
+            'message' => "Erfolg! {$count} E-Mails wurden für den CronJob (Priorität 10) in die Warteschlange eingereiht.", // phpcs:ignore Generic.Files.LineLength.TooLong
         ]);
     }
 }

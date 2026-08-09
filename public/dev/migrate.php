@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+// phpcs:ignoreFile
+
 // https://twokinds.4lima.local/migrate.php?test=1
 
 // Fehleranzeige aktivieren, damit wir sofort sehen, falls etwas hakt

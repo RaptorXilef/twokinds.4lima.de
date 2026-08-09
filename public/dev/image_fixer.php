@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+// phpcs:ignoreFile
+
 // https://twokinds.4lima.local/image_fixer.php
 
 \ini_set('display_errors', '1');

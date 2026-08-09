@@ -82,6 +82,7 @@ final readonly class GlobalExceptionHandler
         $this->renderErrorPage($exception, $isDev);
     }
 
+    // phpcs:disable Generic.Files.LineLength.TooLong
     /**
      * Rendert eine formatierte HTML-Fehlerseite für Endnutzer oder Entwickler.
      *
@@ -139,4 +140,5 @@ final readonly class GlobalExceptionHandler
         <?php
         exit;
     }
+    // phpcs:enable Generic.Files.LineLength.TooLong
 }

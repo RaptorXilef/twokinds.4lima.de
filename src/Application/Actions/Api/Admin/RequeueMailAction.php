@@ -85,6 +85,8 @@ final readonly class RequeueMailAction implements ActionInterface
 
         $this->queueRepo->enqueue($job);
 
-        return JsonResponse::success(['message' => 'Die E-Mail wurde mit einem frischen Link zur erneuten Verarbeitung eingereiht!']);
+        return JsonResponse::success(
+            ['message' => 'Die E-Mail wurde mit einem frischen Link zur erneuten Verarbeitung eingereiht!'],
+        );
     }
 }

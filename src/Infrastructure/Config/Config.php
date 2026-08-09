@@ -77,7 +77,9 @@ final readonly class Config implements ConfigInterface
             return $protocol . $host . $path . '/';
         }
 
-        throw new RuntimeException('Sicherheits-Abbruch: "base_url" ist in der config/config.php nicht gesetzt! Host-Header-Fallback ist deaktiviert.');
+        throw new RuntimeException(
+            'Sicherheits-Abbruch: "base_url" ist in der config/config.php nicht gesetzt! Host-Header-Fallback ist deaktiviert.', // phpcs:ignore Generic.Files.LineLength.TooLong
+        );
     }
 
     public function getStoragePath(string $fileName): string

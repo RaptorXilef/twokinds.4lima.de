@@ -29,7 +29,9 @@ final readonly class CreateBackupAction implements ActionInterface
 
         try {
             $tableNameRaw = $request->post['table'] ?? null;
-            $table = \is_string($tableNameRaw) && $tableNameRaw !== 'all' && $tableNameRaw !== '' ? $tableNameRaw : null;
+            $table = \is_string($tableNameRaw) && $tableNameRaw !== 'all' && $tableNameRaw !== ''
+                ? $tableNameRaw
+                : null;
 
             $file = $this->backupService->createBackup($table);
 

@@ -48,7 +48,7 @@ final readonly class MailQueueService implements MailServiceInterface
 
     public function processQueue(int $limit = 5, array $allowedTemplates = []): int
     {
-        return $this->repository->processBatch($limit, function (string $rec, string $sub, string $tpl, array $dat): void {
+        return $this->repository->processBatch($limit, function (string $rec, string $sub, string $tpl, array $dat): void { // phpcs:ignore Generic.Files.LineLength.TooLong
             /** @var array<string, mixed> $dat */
             $result = $this->realMailService->sendTemplate($rec, $sub, $tpl, $dat);
             if ($result !== true) {

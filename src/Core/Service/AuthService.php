@@ -27,7 +27,9 @@ final readonly class AuthService
     public function login(string $identifier, string $password, string $ip = 'unknown'): bool
     {
         if ($this->rateLimiter->isBlocked($ip)) {
-            throw new RuntimeException('Zu viele fehlgeschlagene Login-Versuche. Ihre IP-Adresse wurde für 15 Minuten gesperrt.');
+            throw new RuntimeException(
+                'Zu viele fehlgeschlagene Login-Versuche. Ihre IP-Adresse wurde für 15 Minuten gesperrt.',
+            );
         }
 
         // ! Wichtig!
