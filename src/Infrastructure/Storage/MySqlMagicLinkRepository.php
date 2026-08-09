@@ -57,12 +57,7 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
                 continue;
             }
 
-            $links[$token] = new MagicLink(
-                $token,
-                new EmailAddress($emailStr),
-                $codeStr,
-                $dt,
-            );
+            $links[$token] = new MagicLink($token, new EmailAddress($emailStr), $codeStr, $dt);
         }
 
         return $links;
@@ -70,7 +65,7 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
 
     public function saveAll(array $links, bool $forceSql = false): void
     {
-        unset($forceSql); // Interface Vorgabe wird hier bewusst ignoriert, PHPCS Fix.
+        unset($forceSql); // Interface Vorgabe
 
         $this->pdo->beginTransaction();
 
@@ -78,16 +73,16 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
             $this->pdo->exec('DELETE FROM `' . Table::MAGIC_LINKS . '`');
 
             foreach ($links as $token => $link) {
-                $tokenStr = (string) $token;
                 $data = [
-                    'token' => $tokenStr,
+                    'token' => (string) $token,
                     'email' => $link->email->value,
                     'code' => $link->code,
                     'expires' => $link->expires->format('Y-m-d H:i:s'),
                 ];
 
                 $sql = 'REPLACE INTO `' . Table::MAGIC_LINKS . '` (token, email, code, expires) '
-                    . 'VALUES (:token, :email, :code, :expires)';
+                     . 'VALUES (:token, :email, :code, :expires)';
+
                 $this->pdo->prepare($sql)->execute($data);
             }
 

@@ -22,14 +22,10 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
 
     public function enqueue(MailJob $job): void
     {
-        // template ist in der Domain Entity MailJob garantiert ein String
-        $templateStr = $job->template;
-
         $data = $this->extractEntity($job, [
-            'template' => $templateStr,
+            'template' => $job->template,
         ]);
 
-        // MAGIE: Der Trait baut das SQL völlig dynamisch!
         $this->executeUpsert(Table::MAIL_QUEUE, $data, ['id']);
     }
 
@@ -47,7 +43,6 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
         $templateFilterSql = '';
         $params = [];
 
-        // Newsletter herausfiltern oder gezielt zulassen
         if ($allowedTemplates !== []) {
             $inQuery = \implode(',', \array_fill(0, \count($allowedTemplates), '?'));
             $templateFilterSql = " AND template IN ($inQuery)";

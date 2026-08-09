@@ -38,7 +38,11 @@ final readonly class ErrorLogger implements ErrorLoggerInterface
         $logDir = \rtrim($root, '/\\') . '/logs';
 
         if (!\is_dir($logDir)) {
-            @\mkdir($logDir, 0o755, true);
+            try {
+                \mkdir($logDir, 0o755, true);
+            } catch (Throwable) {
+                // Ignore missing permissions if we can't create the log folder
+            }
         }
 
         $logFile = $logDir . '/system_error.log';
@@ -55,11 +59,11 @@ final readonly class ErrorLogger implements ErrorLoggerInterface
             \str_repeat('=', 80),
         );
 
-        $result = @\file_put_contents(
-            $logFile,
-            $message,
-            \FILE_APPEND | \LOCK_EX,
-        );
+        try {
+            $result = \file_put_contents($logFile, $message, \FILE_APPEND | \LOCK_EX);
+        } catch (Throwable) {
+            $result = false;
+        }
 
         if ($result === false) {
             throw new RuntimeException('Kritischer Schreibfehler: system_error.log voll oder keine Rechte.');

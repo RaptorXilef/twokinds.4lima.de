@@ -117,6 +117,7 @@
                 <element value="@param" />
                 <element value="@return, @throws" />
                 <element value="@var" />
+                <element value="@SuppressWarnings" />
             </property>
         </properties>
     </rule>
