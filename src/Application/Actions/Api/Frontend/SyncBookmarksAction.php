@@ -67,7 +67,7 @@ final readonly class SyncBookmarksAction implements ActionInterface
 
         // Cloud-Daten abrufen
         $dbBookmarks = $this->bookmarkRepo->findByUser($userId);
-        $dbIds = \array_map(fn (Bookmark $b): string => $b->comicId, $dbBookmarks);
+        $dbIds = \array_map(fn (Bookmark $bookmark): string => $bookmark->comicId, $dbBookmarks);
 
         // Sortieren zum einfachen Vergleichen
         $sortedLocal = $localIds;
@@ -83,7 +83,7 @@ final readonly class SyncBookmarksAction implements ActionInterface
             ]);
         }
 
-        // Wenn wir nur prüfen sollen ("check") und es Unterschiede gibt: Konflikt melden!
+        // Wenn wir nur prüfen sollen ("check") und es gibt Unterschiede: Konflikt melden!
         if ($resolution === 'check') {
             return JsonResponse::success([
                 'status' => 'conflict',
@@ -92,26 +92,26 @@ final readonly class SyncBookmarksAction implements ActionInterface
             ]);
         }
 
-        // --- Konfliktlösungen ---
-        $finalIds = [];
+        // --- Konfliktlösungen (ohne Else-Expression) ---
 
         if ($resolution === 'merge') {
             $finalIds = \array_values(\array_unique(\array_merge($localIds, $dbIds)));
             $this->bookmarkRepo->replaceUserBookmarks($userId, $finalIds);
-        } elseif ($resolution === 'local_wins') {
-            $finalIds = $localIds;
-            $this->bookmarkRepo->replaceUserBookmarks($userId, $finalIds);
-        } elseif ($resolution === 'db_wins') {
-            $finalIds = $dbIds;
-        // Wir müssen an der DB nichts ändern, sie hat ja gewonnen.
-        } else {
-            return JsonResponse::error('Ungültige Lösungsmethode.', 400);
+
+            return JsonResponse::success(['status' => 'resolved', 'final_ids' => $finalIds]);
         }
 
-        // Dem Browser die finale Liste zum Überschreiben seines LocalStorage schicken
-        return JsonResponse::success([
-            'status' => 'resolved',
-            'final_ids' => $finalIds,
-        ]);
+        if ($resolution === 'local_wins') {
+            $this->bookmarkRepo->replaceUserBookmarks($userId, $localIds);
+
+            return JsonResponse::success(['status' => 'resolved', 'final_ids' => $localIds]);
+        }
+
+        if ($resolution === 'db_wins') {
+            // Wir müssen an der DB nichts ändern, sie hat ja gewonnen.
+            return JsonResponse::success(['status' => 'resolved', 'final_ids' => $dbIds]);
+        }
+
+        return JsonResponse::error('Ungültige Lösungsmethode.', 400);
     }
 }

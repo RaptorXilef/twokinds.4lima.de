@@ -48,10 +48,11 @@ final readonly class SubmitReportAction implements ActionInterface
                 $screenshotUrl = $this->mediaService->saveReportScreenshot($validFile);
             }
 
-            // NEU: Wenn eingeloggt, ID auslesen
+            // Wenn eingeloggt, ID auslesen
             $userId = $this->auth->isLoggedIn() ? $this->sessionManager->getUserId() : null;
 
-            $report = $this->reportService->submitReport(
+            // UnusedLocalVariable behoben, indem wir das Ergebnis einfach nicht abfangen
+            $this->reportService->submitReport(
                 $dto->comicId,
                 $userId, // An Service übergeben!
                 $dto->ipAddress,

@@ -14,6 +14,8 @@ final readonly class KeepAliveAction implements ActionInterface
 {
     public function execute(ServerRequest $request): mixed
     {
+        unset($request); // Interface Vorgabe
+
         // Da dieser Endpunkt durch die AuthMiddleware geschützt ist,
         // wird die Sitzung im SessionManager automatisch bei jedem Aufruf
         // validiert und die $_SESSION['last_activity'] aktualisiert.

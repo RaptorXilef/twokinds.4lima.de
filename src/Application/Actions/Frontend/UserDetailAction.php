@@ -13,6 +13,7 @@ use App\Contracts\Storage\BookmarkRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\Bookmark;
+use App\Core\Entity\ComicPage;
 use App\Core\Entity\User;
 
 #[Route('GET', '/user/{id}')]
@@ -66,8 +67,8 @@ final readonly class UserDetailAction implements ActionInterface
             }
         }
 
-        \usort($userComics, fn ($comicA, $comicB): int => \strcmp($comicB->id->value, $comicA->id->value));
-        \usort($bookmarks, fn ($comicA, $comicB): int => \strcmp($comicB->id->value, $comicA->id->value));
+        \usort($userComics, fn (ComicPage $comicA, ComicPage $comicB): int => \strcmp($comicB->id->value, $comicA->id->value)); // phpcs:ignore Generic.Files.LineLength.TooLong
+        \usort($bookmarks, fn (ComicPage $comicA, ComicPage $comicB): int => \strcmp($comicB->id->value, $comicA->id->value)); // phpcs:ignore Generic.Files.LineLength.TooLong
 
         return $this->renderer->render('pages/frontend/user_detail', [
             'pageTitle' => 'Profil von ' . $user->username->value,

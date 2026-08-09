@@ -19,6 +19,8 @@ final readonly class LogoutAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request); // Interface Vorgabe
+
         $this->sessionManager->destroy();
 
         return JsonResponse::success(['message' => 'Erfolgreich abgemeldet.', 'redirect' => '']);

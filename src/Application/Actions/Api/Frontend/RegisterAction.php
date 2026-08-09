@@ -20,6 +20,9 @@ use App\Core\ValueObject\EmailAddress;
 use App\Core\ValueObject\Username;
 use DateTimeImmutable;
 
+/**
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ */
 #[Route('POST', '/api/frontend_register')]
 final readonly class RegisterAction implements ActionInterface
 {
@@ -60,83 +63,93 @@ final readonly class RegisterAction implements ActionInterface
 
         $username = Sanitizer::string($request->post['username'] ?? '');
         $email = Sanitizer::email($request->post['email'] ?? '');
-
         $passRaw = $request->post['password'] ?? ''; // Passwörter NIE bereinigen!
         $password = \is_scalar($passRaw) ? (string) $passRaw : '';
-
         $confirmRaw = $request->post['password_confirm'] ?? '';
         $passwordConfirm = \is_scalar($confirmRaw) ? (string) $confirmRaw : '';
 
-        if ($username === '' || $email === '' || $password === '' || $passwordConfirm === '') {
+        $error = $this->validateInput($username, $email, $password, $passwordConfirm);
+        if ($error !== null) {
             $this->rateLimiter->recordFailedAttempt($ip);
 
-            return JsonResponse::error('Bitte alle Pflichtfelder ausfüllen.', 400);
+            return JsonResponse::error($error, 400);
         }
 
-        // Passwort Abgleich
-        if ($password !== $passwordConfirm) {
-            $this->rateLimiter->recordFailedAttempt($ip);
+        $this->createUserAndSendMail($username, $email, $password);
 
-            return JsonResponse::error('Die Passwörter stimmen nicht überein.', 400);
+        return JsonResponse::success([
+            'message' => $successMsg,
+            'redirect' => 'login',
+        ]);
+    }
+
+    // =========================================================================
+    // PRIVATE HELPER
+    // =========================================================================
+
+    private function validateInput(string $username, string $email, string $password, string $confirm): ?string
+    {
+        if ($username === '' || $email === '' || $password === '' || $confirm === '') {
+            return 'Bitte alle Pflichtfelder ausfüllen.';
         }
 
-        if (\filter_var($email, \FILTER_VALIDATE_EMAIL) === false) {
-            $this->rateLimiter->recordFailedAttempt($ip);
-
-            return JsonResponse::error('Ungültige E-Mail-Adresse.', 400);
-        }
-
-        // Admin-Namen vor Registrierung schützen!
-        $lowerUsername = \strtolower($username);
-        $restricted = [];
-
-        $bd = $this->config->get('backdoor');
-        if (\is_array($bd)) {
-            $bdUser = \is_string($bd['user'] ?? null) ? $bd['user'] : '';
-            $restricted[] = \strtolower($bdUser);
-        }
-
-        $sa = $this->config->get('superadmin');
-        if (\is_array($sa)) {
-            $saUser = \is_string($sa['user'] ?? null) ? $sa['user'] : '';
-            $restricted[] = \strtolower($saUser);
-        }
-
-        if (\in_array($lowerUsername, $restricted, true)) {
-            $this->rateLimiter->recordFailedAttempt($ip);
-
-            return JsonResponse::error('Dieser Benutzername ist systemseitig reserviert.', 400);
+        if ($password !== $confirm) {
+            return 'Die Passwörter stimmen nicht überein.';
         }
 
         if (\strlen($password) < 8) {
-            $this->rateLimiter->recordFailedAttempt($ip);
+            return 'Das Passwort muss mindestens 8 Zeichen lang sein.';
+        }
 
-            return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
+        if (\filter_var($email, \FILTER_VALIDATE_EMAIL) === false) {
+            return 'Ungültige E-Mail-Adresse.';
+        }
+
+        if ($this->isRestrictedUsername($username)) {
+            return 'Dieser Benutzername ist systemseitig reserviert.';
         }
 
         if ($this->userRepository->findByUsername($username) instanceof User) {
-            $this->rateLimiter->recordFailedAttempt($ip);
-
-            return JsonResponse::error('Dieser Benutzername ist bereits vergeben.', 400);
+            return 'Dieser Benutzername ist bereits vergeben.';
         }
 
         if ($this->userRepository->findByEmail($email) instanceof User) {
-            $this->rateLimiter->recordFailedAttempt($ip);
-
-            return JsonResponse::error('Diese E-Mail-Adresse wird bereits verwendet.', 400);
+            return 'Diese E-Mail-Adresse wird bereits verwendet.';
         }
-        // Admin-Namen vor Registrierung schützen! ENDE
 
         // 3. DNS MX Check (Stoppt Fake-Domains wie asdf123.xyz)
         $domainStr = \strrchr($email, '@');
         $domain = \is_string($domainStr) ? \substr($domainStr, 1) : '';
 
         if ($domain === '' || (!\checkdnsrr($domain, 'MX') && !\checkdnsrr($domain, 'A'))) {
-            $this->rateLimiter->recordFailedAttempt($ip);
-
-            return JsonResponse::error('Die E-Mail-Domain scheint keine E-Mails empfangen zu können.', 400);
+            return 'Die E-Mail-Domain scheint keine E-Mails empfangen zu können.';
         }
 
+        return null;
+    }
+
+    private function isRestrictedUsername(string $username): bool
+    {
+        $lowerName = \strtolower($username);
+        $restricted = [];
+
+        $backdoorCfg = $this->config->get('backdoor');
+        if (\is_array($backdoorCfg)) {
+            $bdUser = \is_string($backdoorCfg['user'] ?? null) ? $backdoorCfg['user'] : '';
+            $restricted[] = \strtolower($bdUser);
+        }
+
+        $superadminCfg = $this->config->get('superadmin');
+        if (\is_array($superadminCfg)) {
+            $saUser = \is_string($superadminCfg['user'] ?? null) ? $superadminCfg['user'] : '';
+            $restricted[] = \strtolower($saUser);
+        }
+
+        return \in_array($lowerName, $restricted, true);
+    }
+
+    private function createUserAndSendMail(string $username, string $email, string $password): void
+    {
         $newId = $this->auth->generateId('usr_');
         $hash = \password_hash($password, \PASSWORD_DEFAULT);
 
@@ -166,10 +179,5 @@ final readonly class RegisterAction implements ActionInterface
 
         // E-Mail sofort aus der Queue werfen!
         $this->mailService->processQueue(5, ['verify_account']);
-
-        return JsonResponse::success([
-            'message' => $successMsg,
-            'redirect' => 'login',
-        ]);
     }
 }
