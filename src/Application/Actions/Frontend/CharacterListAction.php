@@ -41,9 +41,11 @@ final readonly class CharacterListAction implements ActionInterface
     }
 
     /**
-     * @param array<int, Character> $characters
+     * @param array<array-key, Character> $characters
      *
      * @return array<string, array<int, string>>
+     *
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
     private function buildFilterData(array $characters): array
     {

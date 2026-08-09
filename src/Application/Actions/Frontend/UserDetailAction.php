@@ -55,7 +55,7 @@ final readonly class UserDetailAction implements ActionInterface
 
         if ($user->publicBookmarks) {
             $bms = $this->bookmarkRepo->findByUser($user->id);
-            $bmComicIds = \array_map(fn (Bookmark $b): string => $b->comicId, $bms);
+            $bmComicIds = \array_map(fn (Bookmark $bookmark): string => $bookmark->comicId, $bms);
 
             foreach ($allComics as $comic) {
                 if (!\in_array($comic->id->value, $bmComicIds, true)) {

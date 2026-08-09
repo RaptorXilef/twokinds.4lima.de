@@ -101,7 +101,7 @@ final readonly class ComicAction implements ActionInterface
     }
 
     /**
-     * @param array<int, ComicPage> $allComics
+     * @param array<array-key, ComicPage> $allComics
      *
      * @return array{comic: ?ComicPage, index: int}
      */
