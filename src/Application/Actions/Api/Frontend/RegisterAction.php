@@ -117,15 +117,20 @@ final readonly class RegisterAction implements ActionInterface
             return 'Diese E-Mail-Adresse wird bereits verwendet.';
         }
 
-        // 3. DNS MX Check (Stoppt Fake-Domains wie asdf123.xyz)
-        $domainStr = \strrchr($email, '@');
-        $domain = \is_string($domainStr) ? \substr($domainStr, 1) : '';
-
-        if ($domain === '' || (!\checkdnsrr($domain, 'MX') && !\checkdnsrr($domain, 'A'))) {
+        if (!$this->isValidDomain($email)) {
             return 'Die E-Mail-Domain scheint keine E-Mails empfangen zu können.';
         }
 
         return null;
+    }
+
+    private function isValidDomain(string $email): bool
+    {
+        // 3. DNS MX Check (Stoppt Fake-Domains wie asdf123.xyz)
+        $domainStr = \strrchr($email, '@');
+        $domain = \is_string($domainStr) ? \substr($domainStr, 1) : '';
+
+        return $domain !== '' && (\checkdnsrr($domain, 'MX') || \checkdnsrr($domain, 'A'));
     }
 
     private function isRestrictedUsername(string $username): bool

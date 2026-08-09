@@ -24,6 +24,8 @@ final readonly class ListComicMediaAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request); // Interface Vorgabe
+
         if (
             !$this->auth->hasPermission('media.upload')
             && !$this->auth->hasPermission('media.delete')
@@ -32,7 +34,7 @@ final readonly class ListComicMediaAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        $result = $this->imageStorage->listComicMediaFiles(); // <-- Dependency per Konstruktor injecten!
+        $result = $this->imageStorage->listComicMediaFiles();
 
         return JsonResponse::success(['files' => $result]);
     }

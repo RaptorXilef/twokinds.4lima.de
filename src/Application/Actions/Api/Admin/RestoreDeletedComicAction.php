@@ -26,6 +26,8 @@ final readonly class RestoreDeletedComicAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request); // Interface Vorgabe
+
         if (!$this->auth->hasPermission('comics.delete')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }

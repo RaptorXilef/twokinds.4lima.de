@@ -8,6 +8,7 @@ use App\Application\Attribute\RequiresAuth;
 use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
+use App\Application\Response\HtmlResponse;
 use App\Application\Response\JsonResponse;
 use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
@@ -26,6 +27,9 @@ use App\Core\Entity\Chapter;
 use App\Core\Security\PermissionRegistry;
 use App\Core\Service\AuthService;
 
+/**
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ */
 #[Route('GET', '/admin')]
 #[RequiresAuth]
 final readonly class DashboardAction implements ActionInterface
@@ -49,7 +53,6 @@ final readonly class DashboardAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        // ABSOLUTER SICHERHEITS-CHECK: Hat der Nutzer überhaupt etwas im Dashboard verloren?
         if (
             !$this->auth->hasPermission('dashboard.view')
             && !$this->auth->hasPermission('admin.access')
@@ -60,102 +63,84 @@ final readonly class DashboardAction implements ActionInterface
 
         $ajaxTab = $request->get['ajax_tab'] ?? null;
 
-        // Basis-Daten, die sehr schnell laden und global (z.B. für Modale) gebraucht werden
-        $characters = $this->charRepo->findAll();
-        $groups = $this->groupRepo->findAll();
+        if ($ajaxTab !== null && \is_string($ajaxTab)) {
+            return $this->handleAjaxRequest($ajaxTab);
+        }
 
-        // Wirkliche Kapitel aus der Datenbank laden
-        /** @var array<int, Chapter> $dbChapters */
-        $dbChapters = $this->chapterRepo->findAll();
+        return $this->handleFullPageRequest();
+    }
 
-        // (Wir behalten das $existingChapters Array für das Datalist-Dropdown bei Comics)
-        $existingChapters = \array_map(fn (Chapter $c): string => $c->id, $dbChapters);
+    // =========================================================================
+    // PRIVATE HELPER
+    // =========================================================================
 
-        $roles = $this->roleRepo->loadAll();
-
-        $canManageUsers = $this->auth->hasPermission('system.users.manage');
-        $canManageRoles = $this->auth->hasPermission('system.roles.manage');
-
-        $perms = [
-            'backup_manage' => $this->auth->hasPermission('system.backup.manage'),
-            'chap_del' => $this->auth->hasPermission('chapters.delete'),
-            'chap_edit' => $this->auth->hasPermission('chapters.edit'),
-            'char_del' => $this->auth->hasPermission('characters.delete'),
-            'char_edit' => $this->auth->hasPermission('characters.edit'),
-            'comic_del' => $this->auth->hasPermission('comics.delete'),
-            'comic_edit' => $this->auth->hasPermission('comics.edit'),
-            'group_manage' => $this->auth->hasPermission('groups.manage'),
-            'media_del' => $this->auth->hasPermission('media.delete'),
-            'media_up' => $this->auth->hasPermission('media.upload'),
-            'rep_del' => $this->auth->hasPermission('reports.delete'),
-            'rep_resolve' => $this->auth->hasPermission('reports.resolve'),
-            'rep_view' => $this->auth->hasPermission('reports.view'),
-            'system_manage' => $this->auth->hasPermission('system.manage'),
-        ];
-
+    private function handleAjaxRequest(string $ajaxTab): JsonResponse
+    {
         $rootPath = $this->config->get('root_path');
         $rootStr = \is_string($rootPath) ? $rootPath : '';
 
-        // --- AJAX HYDRATION MODUS ---
-        // Wenn JS einen spezifischen Tab anfordert, rendern wir NUR diesen Tab!
-        if ($ajaxTab !== null && \is_string($ajaxTab)) {
-            $data = [
-                'appRoot' => \rtrim($rootStr, '/\\'),
-                'baseUrl' => \rtrim($this->config->getBaseUrl(), '/'),
-                'canManageRoles' => $canManageRoles,
-                'canManageUsers' => $canManageUsers,
-                'characters' => $characters,
-                'currentUserId' => $this->sessionManager->getUserId(),
-                'dbChapters' => $dbChapters,
-                'existingChapters' => $existingChapters,
-                'groups' => $groups,
-                'hiresMinHeight' => $this->config->get('hires_min_height', 1800),
-                'hiresMinWidth' => $this->config->get('hires_min_width', 1000),
-                'permissionsTree' => PermissionRegistry::getStructure(),
-                'perms' => $perms,
-                'roles' => $roles,
-            ];
+        /** @var array<int, Chapter> $dbChapters */
+        $dbChapters = $this->chapterRepo->findAll();
 
-            $htmlContent = ''; // Leerer String als Basis
+        $data = [
+            'appRoot' => \rtrim($rootStr, '/\\'),
+            'baseUrl' => \rtrim($this->config->getBaseUrl(), '/'),
+            'canManageRoles' => $this->auth->hasPermission('system.roles.manage'),
+            'canManageUsers' => $this->auth->hasPermission('system.users.manage'),
+            'characters' => $this->charRepo->findAll(),
+            'currentUserId' => $this->sessionManager->getUserId(),
+            'dbChapters' => $dbChapters,
+            'existingChapters' => \array_map(fn (Chapter $chapter): string => $chapter->id, $dbChapters),
+            'groups' => $this->groupRepo->findAll(),
+            'hiresMinHeight' => $this->config->get('hires_min_height', 1800),
+            'hiresMinWidth' => $this->config->get('hires_min_width', 1000),
+            'permissionsTree' => PermissionRegistry::getStructure(),
+            'perms' => $this->getPermissionsArray(),
+            'roles' => $this->roleRepo->loadAll(),
+        ];
 
-            if ($ajaxTab === 'comics') {
-                $data['comics'] = $this->comicRepo->findAll();
-                $htmlContent = $this->renderer->render('partials/admin/_section_comics', $data)->html;
-            } elseif ($ajaxTab === 'reports') {
-                $data['allReports'] = $this->reportRepo->findAll();
-                $htmlContent = $this->renderer->render('partials/admin/_section_reports', $data)->html;
-            } elseif ($ajaxTab === 'users') {
-                $data['users'] = $this->userRepo->findAll();
-                $htmlContent = $this->renderer->render('partials/admin/_section_users', $data)->html;
-            } elseif ($ajaxTab === 'upload') {
-                $htmlContent = $this->renderer->render('partials/admin/_section_upload', $data)->html;
-            } elseif ($ajaxTab === 'archive') {
-                $htmlContent = $this->renderer->render('partials/admin/_section_archive', $data)->html;
-            } elseif ($ajaxTab === 'characters') {
-                $htmlContent = $this->renderer->render('partials/admin/_section_characters', $data)->html;
-            } elseif ($ajaxTab === 'groups') {
-                $assignedIds = [];
-                foreach ($groups as $group) {
-                    foreach ($group->characterIds as $cid) {
-                        $assignedIds[] = $cid->value;
-                    }
+        $htmlContent = '';
+
+        if ($ajaxTab === 'comics') {
+            $data['comics'] = $this->comicRepo->findAll();
+            $htmlContent = $this->renderer->render('partials/admin/_section_comics', $data)->html;
+        } elseif ($ajaxTab === 'reports') {
+            $data['allReports'] = $this->reportRepo->findAll();
+            $htmlContent = $this->renderer->render('partials/admin/_section_reports', $data)->html;
+        } elseif ($ajaxTab === 'users') {
+            $data['users'] = $this->userRepo->findAll();
+            $htmlContent = $this->renderer->render('partials/admin/_section_users', $data)->html;
+        } elseif ($ajaxTab === 'upload') {
+            $htmlContent = $this->renderer->render('partials/admin/_section_upload', $data)->html;
+        } elseif ($ajaxTab === 'archive') {
+            $htmlContent = $this->renderer->render('partials/admin/_section_archive', $data)->html;
+        } elseif ($ajaxTab === 'characters') {
+            $htmlContent = $this->renderer->render('partials/admin/_section_characters', $data)->html;
+        } elseif ($ajaxTab === 'groups') {
+            $assignedIds = [];
+            foreach ($data['groups'] as $group) {
+                foreach ($group->characterIds as $cid) {
+                    $assignedIds[] = $cid->value;
                 }
-                $data['assignedIds'] = \array_unique($assignedIds);
-                $htmlContent = $this->renderer->render('partials/admin/_section_groups', $data)->html;
-            } elseif ($ajaxTab === 'media') {
-                $htmlContent = $this->renderer->render('partials/admin/_section_media', $data)->html;
-            } elseif ($ajaxTab === 'backup') {
-                $htmlContent = $this->renderer->render('partials/admin/_section_backup', $data)->html;
-            } elseif ($ajaxTab === 'mails') {
-                $data['mailQueue'] = $this->mailQueueRepo->findAllQueue();
-                $data['mailLogs'] = $this->mailLogRepo->loadLogs();
-                $htmlContent = $this->renderer->render('partials/admin/_section_mails', $data)->html;
             }
-
-            return JsonResponse::success(['html' => $htmlContent]);
+            $data['assignedIds'] = \array_unique($assignedIds);
+            $htmlContent = $this->renderer->render('partials/admin/_section_groups', $data)->html;
+        } elseif ($ajaxTab === 'media') {
+            $htmlContent = $this->renderer->render('partials/admin/_section_media', $data)->html;
+        } elseif ($ajaxTab === 'backup') {
+            $htmlContent = $this->renderer->render('partials/admin/_section_backup', $data)->html;
+        } elseif ($ajaxTab === 'mails') {
+            $data['mailQueue'] = $this->mailQueueRepo->findAllQueue();
+            $data['mailLogs'] = $this->mailLogRepo->loadLogs();
+            $htmlContent = $this->renderer->render('partials/admin/_section_mails', $data)->html;
         }
 
-        // --- NORMALER PAGE LOAD MODUS (EXTREM SCHNELL) ---
+        return JsonResponse::success(['html' => $htmlContent]);
+    }
+
+    private function handleFullPageRequest(): HtmlResponse
+    {
+        $groups = $this->groupRepo->findAll();
         $assignedIds = [];
         foreach ($groups as $group) {
             foreach ($group->characterIds as $cid) {
@@ -165,9 +150,11 @@ final readonly class DashboardAction implements ActionInterface
         $assignedIds = \array_unique($assignedIds);
 
         // TODO ggf. Konstante für Pfad definieren
-        // Bilder-Scan für Charakter-Modal (Geht superschnell)
+        $rootPath = $this->config->get('root_path');
+        $rootStr = \is_string($rootPath) ? $rootPath : '';
         $imageDir = \rtrim($rootStr, '/\\') . '/public/assets/images/characters/profiles';
         $availableImages = [];
+
         if (\is_dir($imageDir)) {
             $files = \scandir($imageDir);
             if (\is_array($files)) {
@@ -186,22 +173,25 @@ final readonly class DashboardAction implements ActionInterface
             }
         }
 
+        /** @var array<int, Chapter> $dbChapters */
+        $dbChapters = $this->chapterRepo->findAll();
+
         return $this->renderer->render('pages/admin/dashboard', [
             'pageTitle' => 'Admin Dashboard',
             'adminUser' => $this->sessionManager->getAdminUser(),
             'currentUserId' => $this->sessionManager->getUserId(),
             'dbChapters' => $dbChapters,
-            'characters' => $characters,
+            'characters' => $this->charRepo->findAll(),
             'groups' => $groups,
             'assignedIds' => $assignedIds,
             'existingRanks' => [],
-            'existingChapters' => $existingChapters,
+            'existingChapters' => \array_map(fn (Chapter $chapter): string => $chapter->id, $dbChapters),
             'availableImages' => $availableImages,
-            'roles' => $roles,
+            'roles' => $this->roleRepo->loadAll(),
             'permissionsTree' => PermissionRegistry::getStructure(),
-            'canManageUsers' => $canManageUsers,
-            'canManageRoles' => $canManageRoles,
-            'perms' => $perms,
+            'canManageUsers' => $this->auth->hasPermission('system.users.manage'),
+            'canManageRoles' => $this->auth->hasPermission('system.roles.manage'),
+            'perms' => $this->getPermissionsArray(),
             'hiresMinWidth' => $this->config->get('hires_min_width', 1000),
             'hiresMinHeight' => $this->config->get('hires_min_height', 1800),
             'allUsers' => $this->userRepo->findAll(),
@@ -212,5 +202,28 @@ final readonly class DashboardAction implements ActionInterface
             'users' => [],
             'openReports' => [],
         ]);
+    }
+
+    /**
+     * @return array<string, bool>
+     */
+    private function getPermissionsArray(): array
+    {
+        return [
+            'backup_manage' => $this->auth->hasPermission('system.backup.manage'),
+            'chap_del' => $this->auth->hasPermission('chapters.delete'),
+            'chap_edit' => $this->auth->hasPermission('chapters.edit'),
+            'char_del' => $this->auth->hasPermission('characters.delete'),
+            'char_edit' => $this->auth->hasPermission('characters.edit'),
+            'comic_del' => $this->auth->hasPermission('comics.delete'),
+            'comic_edit' => $this->auth->hasPermission('comics.edit'),
+            'group_manage' => $this->auth->hasPermission('groups.manage'),
+            'media_del' => $this->auth->hasPermission('media.delete'),
+            'media_up' => $this->auth->hasPermission('media.upload'),
+            'rep_del' => $this->auth->hasPermission('reports.delete'),
+            'rep_resolve' => $this->auth->hasPermission('reports.resolve'),
+            'rep_view' => $this->auth->hasPermission('reports.view'),
+            'system_manage' => $this->auth->hasPermission('system.manage'),
+        ];
     }
 }

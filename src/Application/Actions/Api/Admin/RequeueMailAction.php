@@ -55,21 +55,10 @@ final readonly class RequeueMailAction implements ActionInterface
         $data = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
         $template = \is_string($log['template'] ?? null) ? $log['template'] : '';
 
-        // === Dynamische Tokens für Sicherheits-Mails erneuern ===
+        // Dynamische Tokens erneuern
         if (\in_array($template, ['verify_account', 'forgot_password', 'verify_new_email'], true)) {
-            $recipient = \is_string($log['recipient'] ?? null) ? $log['recipient'] : '';
-            $tokenData = $this->magicLinkService->createToken($recipient);
-            $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
-
-            if ($template === 'verify_account') {
-                $data['verifyUrl'] = $baseUrl . '/verifizieren?token=' . $tokenData['token'];
-            } elseif ($template === 'forgot_password') {
-                $data['resetUrl'] = $baseUrl . '/passwort-reset?token=' . $tokenData['token'];
-            } elseif ($template === 'verify_new_email') {
-                $data['verifyUrl'] = $baseUrl . '/email-bestaetigen?token=' . $tokenData['token'];
-            }
+            $data = $this->regenerateSecurityUrls($template, $log, $data);
         }
-        // =============================================================
 
         // Packe sie mit extrem hoher Priorität (100) als neuen Job in die Queue
         $job = new MailJob(
@@ -88,5 +77,30 @@ final readonly class RequeueMailAction implements ActionInterface
         return JsonResponse::success(
             ['message' => 'Die E-Mail wurde mit einem frischen Link zur erneuten Verarbeitung eingereiht!'],
         );
+    }
+
+    /**
+     * Dynamische Tokens für Sicherheits-Mails erneuern
+     *
+     * @param array<string, mixed> $log
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
+     */
+    private function regenerateSecurityUrls(string $template, array $log, array $data): array
+    {
+        $recipient = \is_string($log['recipient'] ?? null) ? $log['recipient'] : '';
+        $tokenData = $this->magicLinkService->createToken($recipient);
+        $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
+
+        if ($template === 'verify_account') {
+            $data['verifyUrl'] = $baseUrl . '/verifizieren?token=' . $tokenData['token'];
+        } elseif ($template === 'forgot_password') {
+            $data['resetUrl'] = $baseUrl . '/passwort-reset?token=' . $tokenData['token'];
+        } elseif ($template === 'verify_new_email') {
+            $data['verifyUrl'] = $baseUrl . '/email-bestaetigen?token=' . $tokenData['token'];
+        }
+
+        return $data;
     }
 }

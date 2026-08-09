@@ -60,22 +60,13 @@ final readonly class UploadComicMediaAction implements ActionInterface
                 ], 404);
             }
 
-            $files = $request->files;
-
-            $uploadHires = $files['upload_hires'] ?? null;
-            $hiresUploaded = \is_array($uploadHires) && isset($uploadHires['error']) && $uploadHires['error'] === \UPLOAD_ERR_OK; // phpcs:ignore Generic.Files.LineLength.TooLong
-            $tmpHires = $hiresUploaded && isset($uploadHires['tmp_name']) && \is_string($uploadHires['tmp_name']) ? $uploadHires['tmp_name'] : null; // phpcs:ignore Generic.Files.LineLength.TooLong
-
-            $uploadLowres = $files['upload_lowres'] ?? null;
-            $lowresUploaded = \is_array($uploadLowres) && isset($uploadLowres['error']) && $uploadLowres['error'] === \UPLOAD_ERR_OK; // phpcs:ignore Generic.Files.LineLength.TooLong
-            $tmpLowres = $lowresUploaded && isset($uploadLowres['tmp_name']) && \is_string($uploadLowres['tmp_name']) ? $uploadLowres['tmp_name'] : null; // phpcs:ignore Generic.Files.LineLength.TooLong
-
-            if (!$hiresUploaded && !$lowresUploaded) {
+            $uploads = $this->checkValidUploads($request->files);
+            if (!$uploads['hasUpload']) {
                 return JsonResponse::error('Keine gültigen Bilder hochgeladen.', 400);
             }
 
             // Gesamte Datei-System und Skalierungslogik an Infrastruktur delegiert!
-            $this->mediaService->processAndStoreComicMedia($comicIdStr, $tmpHires, $tmpLowres);
+            $this->mediaService->processAndStoreComicMedia($comicIdStr, $uploads['tmpHires'], $uploads['tmpLowres']);
 
             if ($comic instanceof ComicPage) {
                 $updatedComic = new ComicPage(
@@ -98,5 +89,27 @@ final readonly class UploadComicMediaAction implements ActionInterface
         } catch (Throwable $e) {
             return JsonResponse::error('Fehler: ' . $e->getMessage(), 500);
         }
+    }
+
+    /**
+     * @param array<string, mixed> $files
+     *
+     * @return array{hasUpload: bool, tmpHires: ?string, tmpLowres: ?string}
+     */
+    private function checkValidUploads(array $files): array
+    {
+        $uploadHires = $files['upload_hires'] ?? null;
+        $hiresUploaded = \is_array($uploadHires) && isset($uploadHires['error']) && $uploadHires['error'] === \UPLOAD_ERR_OK; // phpcs:ignore Generic.Files.LineLength.TooLong
+        $tmpHires = $hiresUploaded && isset($uploadHires['tmp_name']) && \is_string($uploadHires['tmp_name']) ? $uploadHires['tmp_name'] : null; // phpcs:ignore Generic.Files.LineLength.TooLong
+
+        $uploadLowres = $files['upload_lowres'] ?? null;
+        $lowresUploaded = \is_array($uploadLowres) && isset($uploadLowres['error']) && $uploadLowres['error'] === \UPLOAD_ERR_OK; // phpcs:ignore Generic.Files.LineLength.TooLong
+        $tmpLowres = $lowresUploaded && isset($uploadLowres['tmp_name']) && \is_string($uploadLowres['tmp_name']) ? $uploadLowres['tmp_name'] : null; // phpcs:ignore Generic.Files.LineLength.TooLong
+
+        return [
+            'hasUpload' => $hiresUploaded || $lowresUploaded,
+            'tmpHires' => $tmpHires,
+            'tmpLowres' => $tmpLowres,
+        ];
     }
 }

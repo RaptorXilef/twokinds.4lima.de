@@ -24,6 +24,8 @@ final readonly class LoginAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request); // Interface Vorgabe
+
         // Wenn der User schon eingeloggt ist, direkt ins Dashboard leiten
         if ($this->sessionManager->getUserId() !== '') {
             $baseUrl = \rtrim($this->config->getBaseUrl(), '/');

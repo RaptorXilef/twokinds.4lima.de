@@ -73,32 +73,14 @@ final readonly class SaveUserAction implements ActionInterface
                 }
             }
 
-            $hash = $existingUser->passwordHash ?? '';
-
-            // Passwort-Logik
-            if ($password !== '') {
-                // Abgleich
-                if ($password !== $passwordConfirm) {
-                    return JsonResponse::error('Die Passwörter stimmen nicht überein.', 400);
-                }
-
-                if (\strlen($password) < 8) {
-                    return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
-                }
-                $hash = \password_hash($password, \PASSWORD_DEFAULT);
-            } elseif (!$existingUser instanceof User) {
-                return JsonResponse::error('Bei neuen Benutzern muss ein Passwort vergeben werden.', 400);
+            $hash = $this->resolvePasswordHash($password, $passwordConfirm, $existingUser);
+            if ($hash instanceof JsonResponse) {
+                return $hash;
             }
 
-            // Prüfe auf Namens- und E-Mail-Duplikate
-            $checkName = $this->userRepo->findByUsername($usernameStr);
-            if ($checkName instanceof User && $checkName->id !== $id) {
-                return JsonResponse::error('Dieser Benutzername ist bereits vergeben.', 400);
-            }
-
-            $checkEmail = $this->userRepo->findByEmail($emailStr);
-            if ($checkEmail instanceof User && $checkEmail->id !== $id) {
-                return JsonResponse::error('Diese E-Mail wird bereits verwendet.', 400);
+            $dupCheck = $this->checkDuplicates($usernameStr, $emailStr, $id);
+            if ($dupCheck instanceof JsonResponse) {
+                return $dupCheck;
             }
 
             // Neues Benutzer-Objekt aufbauen
@@ -125,5 +107,47 @@ final readonly class SaveUserAction implements ActionInterface
         } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Speichern: ' . $e->getMessage(), 500);
         }
+    }
+
+    // =========================================================================
+    // PRIVATE HELPER
+    // =========================================================================
+
+    private function resolvePasswordHash(string $password, string $passwordConfirm, ?User $existingUser): JsonResponse|string // phpcs:ignore Generic.Files.LineLength.TooLong
+    {
+        $hash = $existingUser->passwordHash ?? '';
+
+        // Passwort-Logik
+        if ($password !== '') {
+            // Abgleich
+            if ($password !== $passwordConfirm) {
+                return JsonResponse::error('Die Passwörter stimmen nicht überein.', 400);
+            }
+
+            if (\strlen($password) < 8) {
+                return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
+            }
+            $hash = \password_hash($password, \PASSWORD_DEFAULT);
+        } elseif (!$existingUser instanceof User) {
+            return JsonResponse::error('Bei neuen Benutzern muss ein Passwort vergeben werden.', 400);
+        }
+
+        return $hash;
+    }
+
+    private function checkDuplicates(string $usernameStr, string $emailStr, string $id): ?JsonResponse
+    {
+        // Prüfe auf Namens- und E-Mail-Duplikate
+        $checkName = $this->userRepo->findByUsername($usernameStr);
+        if ($checkName instanceof User && $checkName->id !== $id) {
+            return JsonResponse::error('Dieser Benutzername ist bereits vergeben.', 400);
+        }
+
+        $checkEmail = $this->userRepo->findByEmail($emailStr);
+        if ($checkEmail instanceof User && $checkEmail->id !== $id) {
+            return JsonResponse::error('Diese E-Mail wird bereits verwendet.', 400);
+        }
+
+        return null;
     }
 }

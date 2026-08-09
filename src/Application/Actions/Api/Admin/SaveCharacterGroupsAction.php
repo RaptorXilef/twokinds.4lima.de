@@ -42,57 +42,11 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
             }
 
             $existingGroups = $this->groupRepo->findAll();
-            $existingNames = \array_map(fn (CharacterGroup $g): string => $g->name, $existingGroups);
-            $newNames = [];
+            $existingNames = \array_map(fn (CharacterGroup $group): string => $group->name, $existingGroups);
 
-            $sortOrder = 0; // Hochzählen für die Drag&Drop Reihenfolge
+            $newNames = $this->processGroups($inputGroups);
 
-            // 1. Alle reinkommenden Gruppen speichern/updaten
-            foreach ($inputGroups as $groupData) {
-                if (!\is_array($groupData)) {
-                    continue;
-                }
-
-                $name = \is_string($groupData['name'] ?? null) ? \trim($groupData['name']) : '';
-                if ($name === '') {
-                    continue;
-                }
-
-                $newNames[] = $name;
-
-                $msRaw = $groupData['manual_sort'] ?? false;
-                $manualSort = \in_array($msRaw, [true, 1, '1', 'true', 'on'], true);
-
-                $charIds = [];
-                // Eindeutige Zuweisung, falls ein Charakter versehentlich doppelt reingezogen wurde
-                $charsRaw = $groupData['characters'] ?? [];
-
-                // Wir müssen garantieren, dass es ein Array von Strings ist, bevor wir unique aufrufen
-                /** @var array<int, string> $stringChars */
-                $stringChars = [];
-                if (\is_array($charsRaw)) {
-                    foreach ($charsRaw as $cr) {
-                        if (!\is_string($cr)) {
-                            continue;
-                        }
-
-                        $stringChars[] = $cr;
-                    }
-                }
-
-                $uniqueChars = \array_unique($stringChars);
-
-                foreach ($uniqueChars as $cid) {
-                    try {
-                        $charIds[] = new CharacterId($cid);
-                    } catch (InvalidArgumentException) {
-                    }
-                }
-
-                $this->groupRepo->save(new CharacterGroup($name, $charIds, $sortOrder++, $manualSort));
-            }
-
-            // 2. Gruppen löschen, die der User im Frontend entfernt hat
+            // Gruppen löschen, die der User im Frontend entfernt hat
             $toDelete = \array_diff($existingNames, $newNames);
             foreach ($toDelete as $delName) {
                 $this->groupRepo->delete($delName);
@@ -102,5 +56,64 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
         } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Speichern der Gruppen: ' . $e->getMessage(), 500);
         }
+    }
+
+    /**
+     * @param array<int|string, mixed> $inputGroups
+     *
+     * @return array<int, string>
+     */
+    private function processGroups(array $inputGroups): array
+    {
+        $newNames = [];
+        $sortOrder = 0; // Hochzählen für die Drag&Drop Reihenfolge
+
+        // Alle reinkommenden Gruppen speichern/updaten
+        foreach ($inputGroups as $groupData) {
+            if (!\is_array($groupData)) {
+                continue;
+            }
+
+            $name = \is_string($groupData['name'] ?? null) ? \trim($groupData['name']) : '';
+            if ($name === '') {
+                continue;
+            }
+
+            $newNames[] = $name;
+
+            $msRaw = $groupData['manual_sort'] ?? false;
+            $manualSort = \in_array($msRaw, [true, 1, '1', 'true', 'on'], true);
+
+            $charIds = [];
+            // Eindeutige Zuweisung, falls ein Charakter versehentlich doppelt reingezogen wurde
+            $charsRaw = $groupData['characters'] ?? [];
+
+            // Wir müssen garantieren, dass es ein Array von Strings ist, bevor wir unique aufrufen
+            /** @var array<int, string> $stringChars */
+            $stringChars = [];
+            if (\is_array($charsRaw)) {
+                foreach ($charsRaw as $cr) {
+                    if (!\is_string($cr)) {
+                        continue;
+                    }
+
+                    $stringChars[] = $cr;
+                }
+            }
+
+            $uniqueChars = \array_unique($stringChars);
+
+            foreach ($uniqueChars as $cid) {
+                try {
+                    $charIds[] = new CharacterId($cid);
+                } catch (InvalidArgumentException) {
+                    // Ignorieren: Fehlerhafte IDs überspringen wir stumm
+                }
+            }
+
+            $this->groupRepo->save(new CharacterGroup($name, $charIds, $sortOrder++, $manualSort));
+        }
+
+        return $newNames;
     }
 }

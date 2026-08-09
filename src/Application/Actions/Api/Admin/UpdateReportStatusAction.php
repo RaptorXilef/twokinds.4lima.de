@@ -20,6 +20,9 @@ use App\Core\Service\ReportService;
 use App\Core\ValueObject\ReportId;
 use Throwable;
 
+/**
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects")
+ */
 #[Route('POST', '/api/update_report_status')]
 #[RequiresAuth]
 final readonly class UpdateReportStatusAction implements ActionInterface
@@ -64,35 +67,48 @@ final readonly class UpdateReportStatusAction implements ActionInterface
             $this->reportService->updateReportStatus($reportIdObj, $status);
 
             if ($status === 'closed') {
-                $report = $this->reportRepository->findById($reportIdObj);
-
-                if ($report instanceof Report && $report->userId !== null) {
-                    $user = $this->userRepository->findById($report->userId);
-
-                    // Nur senden, wenn User existiert und Benachrichtigungen wünscht
-                    if ($user instanceof User && $user->wantsNotificationReport) {
-                        $comicIdVal = $report->comicId->value ?? '';
-                        $pageUrl = \in_array($comicIdVal, ['', '0'], true)
-                            ? \rtrim($this->config->getBaseUrl(), '/')
-                            : \rtrim($this->config->getBaseUrl(), '/') . '/comics/' . $comicIdVal;
-
-                        $this->mailService->sendTemplate(
-                            $user->email->value,
-                            'Dein Fehlerbericht wurde bearbeitet!',
-                            'report_resolved',
-                            [
-                                'username' => $user->username->value,
-                                'comicId' => $comicIdVal !== '' ? $comicIdVal : 'Allgemeine Webseite',
-                                'pageUrl' => $pageUrl,
-                            ],
-                        );
-                    }
-                }
+                $this->notifyUserIfClosed($reportIdObj);
             }
 
             return JsonResponse::success(['message' => 'Status erfolgreich aktualisiert.']);
         } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Aktualisieren: ' . $e->getMessage(), 500);
         }
+    }
+
+    // =========================================================================
+    // PRIVATE HELPER
+    // =========================================================================
+
+    private function notifyUserIfClosed(ReportId $reportIdObj): void
+    {
+        $report = $this->reportRepository->findById($reportIdObj);
+
+        if (!$report instanceof Report || $report->userId === null) {
+            return;
+        }
+
+        $user = $this->userRepository->findById($report->userId);
+
+        // Nur senden, wenn User existiert und Benachrichtigungen wünscht
+        if (!$user instanceof User || !$user->wantsNotificationReport) {
+            return;
+        }
+
+        $comicIdVal = $report->comicId->value ?? '';
+        $pageUrl = \in_array($comicIdVal, ['', '0'], true)
+            ? \rtrim($this->config->getBaseUrl(), '/')
+            : \rtrim($this->config->getBaseUrl(), '/') . '/comics/' . $comicIdVal;
+
+        $this->mailService->sendTemplate(
+            $user->email->value,
+            'Dein Fehlerbericht wurde bearbeitet!',
+            'report_resolved',
+            [
+                'username' => $user->username->value,
+                'comicId' => $comicIdVal !== '' ? $comicIdVal : 'Allgemeine Webseite',
+                'pageUrl' => $pageUrl,
+            ],
+        );
     }
 }
