@@ -112,6 +112,8 @@
                 <element value="@link" />
                 <element value="@author" />
                 <element value="@since" />
+                <!-- Templates und Generics IMMER vor param definieren -->
+                <element value="@template, @template-covariant, @template-extends, @template-implements, @extends, @implements" />
                 <element value="@param" />
                 <element value="@return, @throws" />
                 <element value="@var" />

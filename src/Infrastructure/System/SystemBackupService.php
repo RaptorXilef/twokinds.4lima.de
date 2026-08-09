@@ -165,7 +165,19 @@ final readonly class SystemBackupService implements BackupServiceInterface
                     continue;
                 }
 
-                if ($rows === []) {
+                /** @var array<int, array<string, mixed>> $validRows */
+                $validRows = [];
+                foreach ($rows as $r) {
+                    if (!\is_array($r)) {
+                        continue;
+                    }
+
+                    /** @var array<string, mixed> $validR */
+                    $validR = $r;
+                    $validRows[] = $validR;
+                }
+
+                if ($validRows === []) {
                     if ($mode === 2) {
                         // Exakte Kopie (Wenn Backup leer ist, Tabelle leeren)
                         $this->pdo->exec("TRUNCATE TABLE `$table`");
@@ -178,10 +190,10 @@ final readonly class SystemBackupService implements BackupServiceInterface
 
                 // Daten, die im Backup fehlen, auf dem Server löschen
                 if ($mode === 2) {
-                    $this->deleteMissingRecords($table, $rows, $primaryKeys);
+                    $this->deleteMissingRecords($table, $validRows, $primaryKeys);
                 }
 
-                $firstRow = $rows[0] ?? null;
+                $firstRow = $validRows[0] ?? null;
                 if (!\is_array($firstRow)) {
                     continue;
                 }
@@ -194,10 +206,8 @@ final readonly class SystemBackupService implements BackupServiceInterface
                     // Nur fehlende ergänzen
                     $sql = "INSERT IGNORE INTO `$table` ($colNames) VALUES ($placeholders)";
                     $stmt = $this->pdo->prepare($sql);
-                    foreach ($rows as $row) {
-                        if (\is_array($row)) {
-                            $stmt->execute($row);
-                        }
+                    foreach ($validRows as $row) {
+                        $stmt->execute($row);
                     }
                 } else {
                     // Migrieren (Einfügen + Update)
@@ -208,10 +218,8 @@ final readonly class SystemBackupService implements BackupServiceInterface
                     $updateSql = \implode(', ', $updateCols);
                     $sql = "INSERT INTO `$table` ($colNames) VALUES ($placeholders) ON DUPLICATE KEY UPDATE $updateSql";
                     $stmt = $this->pdo->prepare($sql);
-                    foreach ($rows as $row) {
-                        if (\is_array($row)) {
-                            $stmt->execute($row);
-                        }
+                    foreach ($validRows as $row) {
+                        $stmt->execute($row);
                     }
                 }
             }
@@ -238,9 +246,16 @@ final readonly class SystemBackupService implements BackupServiceInterface
 
             $keptIds = [];
             foreach ($rows as $r) {
-                if (\is_array($r) && isset($r[$pkStr]) && \is_scalar($r[$pkStr])) {
-                    $keptIds[] = (string) $r[$pkStr];
+                if (!\is_array($r)) {
+                    continue;
                 }
+                if (!isset($r[$pkStr])) {
+                    continue;
+                }
+                if (!\is_scalar($r[$pkStr])) {
+                    continue;
+                }
+                $keptIds[] = (string) $r[$pkStr];
             }
 
             if ($keptIds === []) {
@@ -251,7 +266,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
 
             $inStr = \str_repeat('?,', \count($keptIds) - 1) . '?';
             $stmt = $this->pdo->prepare("DELETE FROM `$table` WHERE `$pkStr` NOT IN ($inStr)");
-            $stmt->execute(\array_values($keptIds));
+            $stmt->execute($keptIds); // array_values entfernt, da es bereits eine non-empty-list ist
         } else {
             // Composite Key (Oder keine Keys) - Hier ist Truncate der sicherste Weg für eine 1:1 Kopie
             $this->pdo->exec("TRUNCATE TABLE `$table`");
@@ -348,9 +363,11 @@ final readonly class SystemBackupService implements BackupServiceInterface
         $validTables = [];
         if (\is_array($tables)) {
             foreach ($tables as $t) {
-                if (\is_string($t)) {
-                    $validTables[] = $t;
+                if (!\is_string($t)) {
+                    continue;
                 }
+
+                $validTables[] = $t;
             }
         }
 
@@ -374,9 +391,16 @@ final readonly class SystemBackupService implements BackupServiceInterface
 
         $keys = [];
         foreach ($rows as $row) {
-            if (\is_array($row) && isset($row['Column_name']) && \is_string($row['Column_name'])) {
-                $keys[] = $row['Column_name'];
+            if (!\is_array($row)) {
+                continue;
             }
+            if (!isset($row['Column_name'])) {
+                continue;
+            }
+            if (!\is_string($row['Column_name'])) {
+                continue;
+            }
+            $keys[] = $row['Column_name'];
         }
 
         return $keys;
@@ -495,5 +519,17 @@ final readonly class SystemBackupService implements BackupServiceInterface
 
             @\unlink($path);
         }
+    }
+
+    public function getBackupContent(string $filename): ?string
+    {
+        $filepath = $this->backupDir . '/' . \basename($filename);
+        if (\file_exists($filepath)) {
+            $content = \file_get_contents($filepath);
+
+            return $content !== false ? $content : null;
+        }
+
+        return null;
     }
 }

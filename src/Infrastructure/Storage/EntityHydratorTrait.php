@@ -74,13 +74,13 @@ trait EntityHydratorTrait
     /**
      * Baut aus einem Datenbank-Row (snake_case) vollautomatisch dein Objekt zusammen.
      *
+     * @template T of object
+     *
      * @param class-string<T> $className
      * @param array<string, mixed> $row
      * @param array<string, mixed> $overrides Werte, die direkt in den Konstruktor gegeben werden sollen (camelCase keys).
      *
      * @return T
-     *
-     * @template T of object
      */
     protected function hydrateEntity(string $className, array $row, array $overrides = []): object
     {
