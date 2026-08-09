@@ -85,6 +85,7 @@ final readonly class LocalImageStorage implements ImageStorageInterface
                     \unlink($file);
                     ++$deleted;
                 } catch (Throwable) {
+                    // Ignorieren, Datei existiert nicht oder Rechte fehlen
                 }
             }
         }
