@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.16.4](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.3...v6.16.4) (2026-08-09)
+
+### 🐛 Bug Fixes
+
+* **bootstrap:** Resolve PSR-4 autoloading error by extracting SystemBootstrapper ([95ec7ed](https://github.com/RaptorXilef/twokinds.4lima.de/commit/95ec7edfd08853e4398f5f1c163e21fedd65d70f))
+* **tests:** Resolve PHPUnit 11 deprecations and strict mock object notices ([31bd380](https://github.com/RaptorXilef/twokinds.4lima.de/commit/31bd38006121f64bb364253cf8690584b7574041))
+* **tests:** Resolve PHPUnit 11 mock object notices and final PHPStan/PHPMD warnings ([26b2997](https://github.com/RaptorXilef/twokinds.4lima.de/commit/26b299792f59d6cba0970e0eb99b045c012430e7))
+* **tests:** Resolve PHPUnit 11 strict expectation and deprecation notices ([db0064b](https://github.com/RaptorXilef/twokinds.4lima.de/commit/db0064b1dc006bf5a81ac7c7d2ff7336e41f01bf))
+* **tests:** Resolve TypeError in test setup caused by strict MockObject intersection types ([607d407](https://github.com/RaptorXilef/twokinds.4lima.de/commit/607d4078e9f83c3bc71ccb4221141c507e0d1757))
+
+### 🧹 Chore / Maintenance
+
+* **qa:** Adjust PHP-CS-Fixer config to prevent inline constructor arguments for anonymous classes ([ab8661c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/ab8661cdaa5ee5214ffdbe1172d7293e3784070f))
+
 ## [6.16.3](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.2...v6.16.3) (2026-08-09)
 
 ### 🐛 Bug Fixes
