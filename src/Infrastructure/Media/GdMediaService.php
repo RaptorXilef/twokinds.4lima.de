@@ -9,12 +9,17 @@ use App\Contracts\System\MediaServiceInterface;
 use GdImage;
 use InvalidArgumentException;
 use RuntimeException;
+use Throwable;
 
 final readonly class GdMediaService implements MediaServiceInterface
 {
     public function __construct(private ConfigInterface $config)
     {
     }
+
+    // =========================================================================
+    // PUBLIC API (Interface Compliance)
+    // =========================================================================
 
     /**
      * Skaliert ein Bild unter Beibehaltung des Seitenverhältnisses.
@@ -27,7 +32,12 @@ final readonly class GdMediaService implements MediaServiceInterface
             return false;
         }
 
-        $info = @\getimagesize($sourcePath);
+        try {
+            $info = \getimagesize($sourcePath);
+        } catch (Throwable) {
+            return false;
+        }
+
         if ($info === false) {
             return false;
         }
@@ -43,7 +53,11 @@ final readonly class GdMediaService implements MediaServiceInterface
         // Smart-Copy: Wenn es schon WebP ist UND (kleiner als Max-Breite ODER Hires(4000px) ist)
         // -> Kein Re-Encoding! 1:1 kopieren für 100% Original-Qualität.
         if ($type === \IMAGETYPE_WEBP && ($width <= $maxWidth || $maxWidth >= 4000)) {
-            return \copy($sourcePath, $targetPath);
+            try {
+                return \copy($sourcePath, $targetPath);
+            } catch (Throwable) {
+                return false;
+            }
         }
 
         $ratio = $width > $maxWidth ? $maxWidth / $width : 1;
@@ -62,13 +76,21 @@ final readonly class GdMediaService implements MediaServiceInterface
 
         $this->applyBackground($targetImage, $newWidth, $newHeight);
 
-        \imagecopyresampled($targetImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+        try {
+            \imagecopyresampled($targetImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+        } catch (Throwable) {
+            return false;
+        }
 
         $isLossless = $this->config->get('webp_lossless', false) === true;
         $qRaw = $this->config->get('webp_quality', 85);
         $quality = $isLossless ? 100 : (\is_scalar($qRaw) ? (int) $qRaw : 85);
 
-        return \imagewebp($targetImage, $targetPath, $quality);
+        try {
+            return \imagewebp($targetImage, $targetPath, $quality);
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     /**
@@ -80,7 +102,12 @@ final readonly class GdMediaService implements MediaServiceInterface
             return false;
         }
 
-        $info = @\getimagesize($sourcePath);
+        try {
+            $info = \getimagesize($sourcePath);
+        } catch (Throwable) {
+            return false;
+        }
+
         if ($info === false) {
             return false;
         }
@@ -111,61 +138,21 @@ final readonly class GdMediaService implements MediaServiceInterface
         $srcX = (int) \round(($width - $minSize) / 2);
         $srcY = (int) \round(($height - $minSize) / 2);
 
-        \imagecopyresampled($targetImage, $image, 0, 0, $srcX, $srcY, $safeSize, $safeSize, $minSize, $minSize);
+        try {
+            \imagecopyresampled($targetImage, $image, 0, 0, $srcX, $srcY, $safeSize, $safeSize, $minSize, $minSize);
+        } catch (Throwable) {
+            return false;
+        }
 
         $isLossless = $this->config->get('webp_lossless', false) === true;
         $qRaw = $this->config->get('webp_quality_thumb', 80);
         $quality = $isLossless ? 100 : (\is_scalar($qRaw) ? (int) $qRaw : 80);
 
-        return \imagewebp($targetImage, $targetPath, $quality);
-    }
-
-    /**
-     * Setzt den Hintergrund basierend auf der Config (Transparent oder Hex-Farbe)
-     */
-    private function applyBackground(GdImage $targetImage, int $width, int $height): void
-    {
-        $bgColorRaw = $this->config->get('image_background_color', 'transparent');
-        $bgColor = \is_string($bgColorRaw) ? $bgColorRaw : 'transparent';
-
-        if (\strtolower($bgColor) === 'transparent') {
-            \imagealphablending($targetImage, false);
-            \imagesavealpha($targetImage, true);
-            $transparent = \imagecolorallocatealpha($targetImage, 255, 255, 255, 127);
-            if ($transparent !== false) {
-                \imagefilledrectangle($targetImage, 0, 0, $width, $height, $transparent);
-            }
-        } else {
-            // Hex Color in RGB umwandeln
-            $hex = \ltrim($bgColor, '#');
-            if (\strlen($hex) === 3) {
-                $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
-            }
-            $r = (int) \hexdec(\substr($hex, 0, 2));
-            $g = (int) \hexdec(\substr($hex, 2, 2));
-            $b = (int) \hexdec(\substr($hex, 4, 2));
-
-            $color = \imagecolorallocate(
-                $targetImage,
-                \max(0, \min(255, $r)),
-                \max(0, \min(255, $g)),
-                \max(0, \min(255, $b)),
-            );
-            if ($color !== false) {
-                \imagefilledrectangle($targetImage, 0, 0, $width, $height, $color);
-            }
+        try {
+            return \imagewebp($targetImage, $targetPath, $quality);
+        } catch (Throwable) {
+            return false;
         }
-    }
-
-    private function createImageFromFile(string $path, int $type): GdImage|false
-    {
-        return match ($type) {
-            \IMAGETYPE_JPEG => @\imagecreatefromjpeg($path),
-            \IMAGETYPE_PNG => @\imagecreatefrompng($path),
-            \IMAGETYPE_WEBP => @\imagecreatefromwebp($path),
-            \IMAGETYPE_GIF => @\imagecreatefromgif($path),
-            default => false,
-        };
     }
 
     /**
@@ -187,7 +174,10 @@ final readonly class GdMediaService implements MediaServiceInterface
                 continue;
             }
 
-            @\rename($oldFile, $newFile);
+            try {
+                \rename($oldFile, $newFile);
+            } catch (Throwable) {
+            }
         }
     }
 
@@ -207,10 +197,15 @@ final readonly class GdMediaService implements MediaServiceInterface
         // Ordnererstellung in die Infrastruktur verlagert
         $dir = \dirname($targetPath);
         if (!\is_dir($dir)) {
-            @\mkdir($dir, 0o755, true);
+            \mkdir($dir, 0o755, true);
         }
 
-        $info = @\getimagesize($sourcePath);
+        try {
+            $info = \getimagesize($sourcePath);
+        } catch (Throwable) {
+            return false;
+        }
+
         if ($info === false) {
             return false;
         }
@@ -234,13 +229,16 @@ final readonly class GdMediaService implements MediaServiceInterface
             return false;
         }
 
-        // @ unterdrückt irrelevante GD Warnings, die das JSON zerstören könnten
-        $croppedImage = @\imagecrop($sourceImage, [
-            'x' => $cropX,
-            'y' => $cropY,
-            'width' => $cropWidth,
-            'height' => $cropHeight,
-        ]);
+        try {
+            $croppedImage = \imagecrop($sourceImage, [
+                'x' => $cropX,
+                'y' => $cropY,
+                'width' => $cropWidth,
+                'height' => $cropHeight,
+            ]);
+        } catch (Throwable) {
+            return false;
+        }
 
         if ($croppedImage === false) {
             return false;
@@ -259,72 +257,38 @@ final readonly class GdMediaService implements MediaServiceInterface
             \imagefill($finalImage, 0, 0, $white);
         }
 
-        @\imagecopyresampled(
-            $finalImage,
-            $croppedImage,
-            0,
-            0,
-            0,
-            0,
-            $fw,
-            $fh,
-            $cropWidth,
-            $cropHeight,
-        );
+        try {
+            \imagecopyresampled(
+                $finalImage,
+                $croppedImage,
+                0,
+                0,
+                0,
+                0,
+                $fw,
+                $fh,
+                $cropWidth,
+                $cropHeight,
+            );
+        } catch (Throwable) {
+            return false;
+        }
 
         $ext = \strtolower(\pathinfo($targetPath, \PATHINFO_EXTENSION));
 
-        if ($ext === 'jpg' || $ext === 'jpeg') {
-            return \imagejpeg($finalImage, $targetPath, 90);
+        try {
+            if ($ext === 'jpg' || $ext === 'jpeg') {
+                return \imagejpeg($finalImage, $targetPath, 90);
+            }
+
+            $isLossless = $this->config->get('webp_lossless', false) === true;
+            $qRaw = $this->config->get('webp_quality_thumb', 80);
+            $quality = $isLossless ? 100 : (\is_scalar($qRaw) ? (int) $qRaw : 80);
+
+            return \imagewebp($finalImage, $targetPath, $quality);
+        } catch (Throwable) {
+            return false;
         }
-
-        $isLossless = $this->config->get('webp_lossless', false) === true;
-        $qRaw = $this->config->get('webp_quality_thumb', 80);
-        $quality = $isLossless ? 100 : (\is_scalar($qRaw) ? (int) $qRaw : 80);
-
-        return \imagewebp($finalImage, $targetPath, $quality);
-    }
-
-    public function autoGenerateSocialMediaJpg(string $sourcePath, string $targetPath): void
-    {
-        $content = \file_get_contents($sourcePath);
-        if ($content === false) {
-            return;
-        }
-
-        $img = @\imagecreatefromstring($content);
-        if ($img === false) {
-            return;
-        }
-
-        $width = \imagesx($img);
-        $height = \imagesy($img);
-
-        $targetRatio = 1200 / 630;
-        $sourceRatio = $width / $height;
-
-        $cropW = $width;
-        $cropH = $height;
-
-        if ($sourceRatio > $targetRatio) {
-            $cropW = (int) ($height * $targetRatio);
-        } else {
-            $cropH = (int) ($width / $targetRatio);
-        }
-
-        $cropX = (int) (($width - $cropW) / 2);
-        $cropY = (int) (($height - $cropH) / 2);
-
-        $this->generateManualCrop(
-            $sourcePath,
-            $targetPath,
-            $cropX,
-            $cropY,
-            $cropW,
-            $cropH,
-            1200,
-            630,
-        );
     }
 
     public function processAndStoreComicMedia(string $comicId, ?string $tmpHires, ?string $tmpLowres): void
@@ -339,7 +303,7 @@ final readonly class GdMediaService implements MediaServiceInterface
                 continue;
             }
 
-            @\mkdir($path, 0o755, true);
+            \mkdir($path, 0o755, true);
         }
 
         $baseProcessPath = '';
@@ -377,7 +341,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         $targetDir = \rtrim($rootStr, '/\\') . '/public/assets/images/characters/profiles';
 
         if (!\is_dir($targetDir)) {
-            @\mkdir($targetDir, 0o755, true);
+            \mkdir($targetDir, 0o755, true);
         }
 
         $processedCount = 0;
@@ -434,94 +398,15 @@ final readonly class GdMediaService implements MediaServiceInterface
                 continue;
             }
 
-            @\mkdir($dir, 0o755, true);
+            \mkdir($dir, 0o755, true);
         }
 
         $result = ['profile' => null, 'main' => null, 'swatch' => null, 'refs' => [], 'warnings' => []];
 
-        // Profilbild
-        if (isset($files['profile_image']) && \is_array($files['profile_image'])) {
-            $pImg = $files['profile_image'];
-            $errRaw = $pImg['error'] ?? \UPLOAD_ERR_NO_FILE;
-            $err = \is_numeric($errRaw) ? (int) $errRaw : \UPLOAD_ERR_NO_FILE;
-
-            if ($err !== \UPLOAD_ERR_NO_FILE) {
-                if ($err === \UPLOAD_ERR_OK) {
-                    $tmpName = \is_string($pImg['tmp_name'] ?? null) ? $pImg['tmp_name'] : '';
-                    if ($tmpName !== '') {
-                        $fileName = $safeName . '-profile.webp';
-                        if ($this->generateScaledImage($tmpName, $baseTargetDir . '/profiles/' . $fileName, 1000)) {
-                            $result['profile'] = $fileName;
-                        } else {
-                            $result['warnings'][] = 'Profilbild: Konnte vom Server nicht verarbeitet werden.';
-                        }
-                    }
-                } else {
-                    $result['warnings'][] = 'Profilbild: PHP Upload-Fehler (Code: ' . $err . ')';
-                }
-            }
-        }
-
-        // Hauptbild (Portrait)
-        if (isset($files['main_pic']) && \is_array($files['main_pic'])) {
-            $mImg = $files['main_pic'];
-            if (($mImg['error'] ?? \UPLOAD_ERR_NO_FILE) === \UPLOAD_ERR_OK) {
-                $tmpName = \is_string($mImg['tmp_name'] ?? null) ? $mImg['tmp_name'] : '';
-                if ($tmpName !== '') {
-                    $fileName = $safeName . '-portrait.webp';
-                    if ($this->generateScaledImage($tmpName, $baseTargetDir . '/portraits/' . $fileName, 2000)) {
-                        $result['main'] = $fileName;
-                    } else {
-                        $result['warnings'][] = 'Hauptbild: Fehler bei Verarbeitung.';
-                    }
-                }
-            }
-        }
-
-        // Farbpalette
-        if (isset($files['swatch_pic']) && \is_array($files['swatch_pic'])) {
-            $sImg = $files['swatch_pic'];
-            if (($sImg['error'] ?? \UPLOAD_ERR_NO_FILE) === \UPLOAD_ERR_OK) {
-                $tmpName = \is_string($sImg['tmp_name'] ?? null) ? $sImg['tmp_name'] : '';
-                if ($tmpName !== '') {
-                    $fileName = $safeName . '-palette.webp';
-                    if ($this->generateScaledImage($tmpName, $baseTargetDir . '/palettes/' . $fileName, 1500)) {
-                        $result['swatch'] = $fileName;
-                    }
-                }
-            }
-        }
-
-        // Reference Sheets
-        if (isset($files['ref_sheets']) && \is_array($files['ref_sheets'])) {
-            $refFiles = $files['ref_sheets'];
-            $names = $refFiles['name'] ?? [];
-            $errors = $refFiles['error'] ?? [];
-            $tmpNames = $refFiles['tmp_name'] ?? [];
-
-            if (\is_array($names) && \is_array($errors) && \is_array($tmpNames)) {
-                $count = \count($names);
-                for ($i = 0; $i < $count; ++$i) {
-                    if (!isset($errors[$i])) {
-                        continue;
-                    }
-                    if ($errors[$i] !== \UPLOAD_ERR_OK) {
-                        continue;
-                    }
-                    $tmpName = \is_string($tmpNames[$i] ?? null) ? $tmpNames[$i] : '';
-                    if ($tmpName === '') {
-                        continue;
-                    }
-
-                    $fileName = $safeName . '-ref-' . \uniqid() . '.webp';
-                    if (!$this->generateScaledImage($tmpName, $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
-                        continue;
-                    }
-
-                    $result['refs'][] = $fileName;
-                }
-            }
-        }
+        $this->processProfileImage($safeName, $files['profile_image'] ?? null, $baseTargetDir, $result);
+        $this->processPortraitImage($safeName, $files['main_pic'] ?? null, $baseTargetDir, $result);
+        $this->processPaletteImage($safeName, $files['swatch_pic'] ?? null, $baseTargetDir, $result);
+        $this->processReferenceSheets($safeName, $files['ref_sheets'] ?? null, $baseTargetDir, $result);
 
         return $result;
     }
@@ -533,7 +418,11 @@ final readonly class GdMediaService implements MediaServiceInterface
             throw new InvalidArgumentException('Keine gültige Datei hochgeladen.');
         }
 
-        $info = @\getimagesize($tmpFile);
+        try {
+            $info = \getimagesize($tmpFile);
+        } catch (Throwable) {
+            throw new InvalidArgumentException('Die Datei konnte vom Server nicht gelesen werden.');
+        }
 
         if (!\is_array($info)) {
             throw new InvalidArgumentException('Die hochgeladene Datei ist kein gültiges Bild.');
@@ -544,16 +433,11 @@ final readonly class GdMediaService implements MediaServiceInterface
         $targetDir = \rtrim($rootStr, '/\\') . '/public/assets/images/avatars';
 
         if (!\is_dir($targetDir)) {
-            @\mkdir($targetDir, 0o755, true);
+            \mkdir($targetDir, 0o755, true);
         }
 
         $type = $info[2];
-        $srcImage = match ($type) {
-            \IMAGETYPE_JPEG => @\imagecreatefromjpeg($tmpFile),
-            \IMAGETYPE_PNG => @\imagecreatefrompng($tmpFile),
-            \IMAGETYPE_WEBP => @\imagecreatefromwebp($tmpFile),
-            default => false,
-        };
+        $srcImage = $this->createImageFromFile($tmpFile, $type);
 
         if ($srcImage === false) {
             throw new InvalidArgumentException('Nicht unterstütztes Bildformat.');
@@ -572,14 +456,26 @@ final readonly class GdMediaService implements MediaServiceInterface
             \imagefilledrectangle($targetImage, 0, 0, $finalSize, $finalSize, $transparent);
         }
 
-        \imagecopyresampled($targetImage, $srcImage, 0, 0, 0, 0, $finalSize, $finalSize, $info[0], $info[1]);
+        try {
+            \imagecopyresampled($targetImage, $srcImage, 0, 0, 0, 0, $finalSize, $finalSize, $info[0], $info[1]);
+        } catch (Throwable) {
+            throw new RuntimeException('Fehler beim Skalieren des Avatars.');
+        }
 
         if ($oldAvatarUrl !== null && \file_exists($targetDir . '/' . $oldAvatarUrl)) {
-            @\unlink($targetDir . '/' . $oldAvatarUrl);
+            try {
+                \unlink($targetDir . '/' . $oldAvatarUrl);
+            } catch (Throwable) {
+            }
         }
 
         $newFilename = $userId . '_' . \time() . '.webp';
-        $success = \imagewebp($targetImage, $targetDir . '/' . $newFilename, 75);
+
+        try {
+            $success = \imagewebp($targetImage, $targetDir . '/' . $newFilename, 75);
+        } catch (Throwable) {
+            $success = false;
+        }
 
         if (!$success) {
             throw new RuntimeException('Fehler beim Konvertieren und Speichern des Bildes.');
@@ -595,7 +491,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         $targetDir = \rtrim($rootStr, '/\\') . '/public/assets/images/reports';
 
         if (!\is_dir($targetDir)) {
-            @\mkdir($targetDir, 0o777, true);
+            \mkdir($targetDir, 0o777, true);
         }
 
         $fileName = 'rep_' . \uniqid('', true) . '.webp';
@@ -610,6 +506,250 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         return null;
+    }
+
+    // =========================================================================
+    // PRIVATE HELPER: CHARACTER IMAGE PROCESSING
+    // =========================================================================
+
+    private function processProfileImage(string $safeName, mixed $file, string $baseTargetDir, array &$result): void
+    {
+        if (!\is_array($file)) {
+            return;
+        }
+
+        $errRaw = $file['error'] ?? \UPLOAD_ERR_NO_FILE;
+        $err = \is_numeric($errRaw) ? (int) $errRaw : \UPLOAD_ERR_NO_FILE;
+
+        if ($err === \UPLOAD_ERR_NO_FILE) {
+            return;
+        }
+
+        if ($err !== \UPLOAD_ERR_OK) {
+            $result['warnings'][] = 'Profilbild: PHP Upload-Fehler (Code: ' . $err . ')';
+
+            return;
+        }
+
+        $tmpName = \is_string($file['tmp_name'] ?? null) ? $file['tmp_name'] : '';
+        if ($tmpName === '') {
+            return;
+        }
+
+        $fileName = $safeName . '-profile.webp';
+        if ($this->generateScaledImage($tmpName, $baseTargetDir . '/profiles/' . $fileName, 1000)) {
+            $result['profile'] = $fileName;
+
+            return;
+        }
+
+        $result['warnings'][] = 'Profilbild: Konnte vom Server nicht verarbeitet werden.';
+    }
+
+    private function processPortraitImage(string $safeName, mixed $file, string $baseTargetDir, array &$result): void
+    {
+        if (!\is_array($file)) {
+            return;
+        }
+
+        $errRaw = $file['error'] ?? \UPLOAD_ERR_NO_FILE;
+        $err = \is_numeric($errRaw) ? (int) $errRaw : \UPLOAD_ERR_NO_FILE;
+
+        if ($err === \UPLOAD_ERR_NO_FILE) {
+            return;
+        }
+
+        if ($err !== \UPLOAD_ERR_OK) {
+            return;
+        }
+
+        $tmpName = \is_string($file['tmp_name'] ?? null) ? $file['tmp_name'] : '';
+        if ($tmpName === '') {
+            return;
+        }
+
+        $fileName = $safeName . '-portrait.webp';
+        if ($this->generateScaledImage($tmpName, $baseTargetDir . '/portraits/' . $fileName, 2000)) {
+            $result['main'] = $fileName;
+
+            return;
+        }
+
+        $result['warnings'][] = 'Hauptbild: Fehler bei Verarbeitung.';
+    }
+
+    private function processPaletteImage(string $safeName, mixed $file, string $baseTargetDir, array &$result): void
+    {
+        if (!\is_array($file)) {
+            return;
+        }
+
+        $errRaw = $file['error'] ?? \UPLOAD_ERR_NO_FILE;
+        $err = \is_numeric($errRaw) ? (int) $errRaw : \UPLOAD_ERR_NO_FILE;
+
+        if ($err === \UPLOAD_ERR_NO_FILE) {
+            return;
+        }
+
+        if ($err !== \UPLOAD_ERR_OK) {
+            return;
+        }
+
+        $tmpName = \is_string($file['tmp_name'] ?? null) ? $file['tmp_name'] : '';
+        if ($tmpName === '') {
+            return;
+        }
+
+        $fileName = $safeName . '-palette.webp';
+        if (!$this->generateScaledImage($tmpName, $baseTargetDir . '/palettes/' . $fileName, 1500)) {
+            return;
+        }
+
+        $result['swatch'] = $fileName;
+    }
+
+    private function processReferenceSheets(string $safeName, mixed $files, string $baseTargetDir, array &$result): void
+    {
+        if (!\is_array($files)) {
+            return;
+        }
+
+        $names = $files['name'] ?? [];
+        $errors = $files['error'] ?? [];
+        $tmpNames = $files['tmp_name'] ?? [];
+
+        if (!\is_array($names) || !\is_array($errors) || !\is_array($tmpNames)) {
+            return;
+        }
+
+        $count = \count($names);
+        for ($i = 0; $i < $count; ++$i) {
+            if (!isset($errors[$i])) {
+                continue;
+            }
+            if ($errors[$i] !== \UPLOAD_ERR_OK) {
+                continue;
+            }
+            $tmpName = \is_string($tmpNames[$i] ?? null) ? $tmpNames[$i] : '';
+            if ($tmpName === '') {
+                continue;
+            }
+
+            $fileName = $safeName . '-ref-' . \uniqid() . '.webp';
+            if (!$this->generateScaledImage($tmpName, $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
+                continue;
+            }
+
+            $result['refs'][] = $fileName;
+        }
+    }
+
+    // =========================================================================
+    // PRIVATE HELPER: CORE GD & UTILS
+    // =========================================================================
+
+    private function autoGenerateSocialMediaJpg(string $sourcePath, string $targetPath): void
+    {
+        $content = \file_get_contents($sourcePath);
+        if ($content === false) {
+            return;
+        }
+
+        try {
+            $img = \imagecreatefromstring($content);
+        } catch (Throwable) {
+            return;
+        }
+
+        if ($img === false) {
+            return;
+        }
+
+        $width = \imagesx($img);
+        $height = \imagesy($img);
+
+        $targetRatio = 1200 / 630;
+        $sourceRatio = $width / $height;
+
+        $cropW = $width;
+        $cropH = (int) ($width / $targetRatio);
+
+        if ($sourceRatio > $targetRatio) {
+            $cropW = (int) ($height * $targetRatio);
+            $cropH = $height;
+        }
+
+        $cropX = (int) (($width - $cropW) / 2);
+        $cropY = (int) (($height - $cropH) / 2);
+
+        $this->generateManualCrop(
+            $sourcePath,
+            $targetPath,
+            $cropX,
+            $cropY,
+            $cropW,
+            $cropH,
+            1200,
+            630,
+        );
+    }
+
+    /**
+     * Setzt den Hintergrund basierend auf der Config (Transparent oder Hex-Farbe)
+     */
+    private function applyBackground(GdImage $targetImage, int $width, int $height): void
+    {
+        $bgColorRaw = $this->config->get('image_background_color', 'transparent');
+        $bgColor = \is_string($bgColorRaw) ? $bgColorRaw : 'transparent';
+
+        if (\strtolower($bgColor) === 'transparent') {
+            \imagealphablending($targetImage, false);
+            \imagesavealpha($targetImage, true);
+            $transparent = \imagecolorallocatealpha($targetImage, 255, 255, 255, 127);
+            if ($transparent !== false) {
+                \imagefilledrectangle($targetImage, 0, 0, $width, $height, $transparent);
+            }
+
+            return;
+        }
+
+        // Hex Color in RGB umwandeln
+        $hex = \ltrim($bgColor, '#');
+        if (\strlen($hex) === 3) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        }
+
+        $red = (int) \hexdec(\substr($hex, 0, 2));
+        $green = (int) \hexdec(\substr($hex, 2, 2));
+        $blue = (int) \hexdec(\substr($hex, 4, 2));
+
+        $color = \imagecolorallocate(
+            $targetImage,
+            \max(0, \min(255, $red)),
+            \max(0, \min(255, $green)),
+            \max(0, \min(255, $blue)),
+        );
+
+        if ($color === false) {
+            return;
+        }
+
+        \imagefilledrectangle($targetImage, 0, 0, $width, $height, $color);
+    }
+
+    private function createImageFromFile(string $path, int $type): GdImage|false
+    {
+        try {
+            return match ($type) {
+                \IMAGETYPE_JPEG => \imagecreatefromjpeg($path),
+                \IMAGETYPE_PNG => \imagecreatefrompng($path),
+                \IMAGETYPE_WEBP => \imagecreatefromwebp($path),
+                \IMAGETYPE_GIF => \imagecreatefromgif($path),
+                default => false,
+            };
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     // Weitgehend Identisch zu Sanitizer

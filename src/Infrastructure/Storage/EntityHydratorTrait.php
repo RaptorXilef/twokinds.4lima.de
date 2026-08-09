@@ -139,7 +139,6 @@ trait EntityHydratorTrait
 
         $rawValue = $row[$dbColumn];
         $type = $parameter->getType();
-        $typeName = $type instanceof ReflectionNamedType ? $type->getName() : null;
 
         // NULL Handling: Wenn die DB NULL liefert, das Feld aber einen Default-Wert (z.B. []) hat
         if ($rawValue === null) {
@@ -149,6 +148,13 @@ trait EntityHydratorTrait
 
             return null;
         }
+
+        return $this->castHydrationValueForType($rawValue, $type);
+    }
+
+    private function castHydrationValueForType(mixed $rawValue, mixed $type): mixed
+    {
+        $typeName = $type instanceof ReflectionNamedType ? $type->getName() : null;
 
         if (\in_array($typeName, [DateTimeImmutable::class, DateTime::class, DateTimeInterface::class], true)) {
             $timeStr = \is_scalar($rawValue) ? (string) $rawValue : 'now';

@@ -6,6 +6,7 @@ namespace App\Infrastructure\Storage;
 
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\ImageStorageInterface;
+use Throwable;
 
 final readonly class LocalImageStorage implements ImageStorageInterface
 {
@@ -21,7 +22,7 @@ final readonly class LocalImageStorage implements ImageStorageInterface
         $publicDir = \rtrim($rootStr, '/\\') . '/public/assets/images/' . \trim($folder, '/');
 
         if (!\is_dir($publicDir)) {
-            @\mkdir($publicDir, 0o755, true);
+            \mkdir($publicDir, 0o755, true);
         }
 
         $tmpPath = \is_string($file['tmp_name'] ?? null) ? $file['tmp_name'] : '';
@@ -38,7 +39,11 @@ final readonly class LocalImageStorage implements ImageStorageInterface
 
         $targetPath = $publicDir . '/' . $id . '.' . $ext;
 
-        return @\move_uploaded_file($tmpPath, $targetPath);
+        try {
+            return \move_uploaded_file($tmpPath, $targetPath);
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     public function getImageUrl(string $folder, string $id, string $fallbackIcon): string
@@ -76,8 +81,11 @@ final readonly class LocalImageStorage implements ImageStorageInterface
                     continue;
                 }
 
-                @\unlink($file);
-                ++$deleted;
+                try {
+                    \unlink($file);
+                    ++$deleted;
+                } catch (Throwable) {
+                }
             }
         }
 
@@ -98,7 +106,11 @@ final readonly class LocalImageStorage implements ImageStorageInterface
         $filePath = "$targetDir/$filename";
 
         if ($filename !== '' && \file_exists($filePath)) {
-            return @\unlink($filePath);
+            try {
+                return \unlink($filePath);
+            } catch (Throwable) {
+                return false;
+            }
         }
 
         return false;
@@ -170,7 +182,10 @@ final readonly class LocalImageStorage implements ImageStorageInterface
             ];
         }
 
-        \usort($result, fn (array $a, array $b): int => \strcmp((string) $b['id'], (string) $a['id']));
+        \usort(
+            $result,
+            fn (array $mediaA, array $mediaB): int => \strcmp((string) $mediaB['id'], (string) $mediaA['id']),
+        );
 
         return $result;
     }

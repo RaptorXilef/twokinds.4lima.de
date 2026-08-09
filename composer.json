@@ -140,6 +140,7 @@
     "// --- MASTER COMMANDS ---": "Zusammengefasste Workflows",
     "chk": ["@qa"],
     "fix": ["@fmt", "@fix:cs"],
+    "fix:2": ["@fmt", "@fix:cs", "@fmt", "@fix:cs"],
     "fmt": ["@fix:modern", "@fix:style"],
     "qa": [
       "@chk:style",
