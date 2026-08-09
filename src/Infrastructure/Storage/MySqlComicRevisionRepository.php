@@ -97,7 +97,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         /** @var array<string, mixed> $validData */
         $validData = \is_array($data) ? $data : [];
 
-        return empty($validData) ? null : $validData;
+        return $validData === [] ? null : $validData;
     }
 
     public function popLatestDeletedRevision(): ?array

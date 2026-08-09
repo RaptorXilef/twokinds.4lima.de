@@ -39,9 +39,11 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
             }
 
             $expiresRaw = $r['expires'] ?? 'now';
-            $dt = \is_numeric($expiresRaw)
-                ? (new DateTimeImmutable())->setTimestamp((int) $expiresRaw)
-                : new DateTimeImmutable((string) $expiresRaw);
+            $expiresStr = \is_scalar($expiresRaw) ? (string) $expiresRaw : 'now';
+
+            $dt = \is_numeric($expiresStr)
+                ? (new DateTimeImmutable())->setTimestamp((int) $expiresStr)
+                : new DateTimeImmutable($expiresStr);
 
             $token = \is_string($r['token'] ?? null) ? $r['token'] : '';
             $emailStr = \is_string($r['email'] ?? null) ? $r['email'] : '';
@@ -73,7 +75,7 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
             $this->pdo->exec('DELETE FROM `' . Table::MAGIC_LINKS . '`');
 
             foreach ($links as $token => $link) {
-                $tokenStr = \is_scalar($token) ? (string) $token : '';
+                $tokenStr = (string) $token;
                 $data = [
                     'token' => $tokenStr,
                     'email' => $link->email->value,

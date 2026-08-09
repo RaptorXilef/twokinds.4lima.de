@@ -90,7 +90,8 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
     private function mapToEntity(array $row): ComicPage
     {
         // Da die Property 'characterIds' CharacterId-Objekte erwartet, parsen wir sie manuell und geben sie als Override mit.
-        $charIdsRawJson = \is_string($row['character_ids'] ?? '') ? $row['character_ids'] : '[]';
+        $rawCharIds = $row['character_ids'] ?? '[]';
+        $charIdsRawJson = \is_string($rawCharIds) ? $rawCharIds : '[]';
         $charIdsRaw = \json_decode($charIdsRawJson, true);
         $charIdsArr = \is_array($charIdsRaw) ? $charIdsRaw : [];
 

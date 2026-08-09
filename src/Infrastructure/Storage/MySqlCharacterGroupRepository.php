@@ -86,7 +86,8 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
      */
     private function mapToEntity(array $row): CharacterGroup
     {
-        $charIdsRawJson = \is_string($row['character_ids'] ?? '') ? $row['character_ids'] : '[]';
+        $rawCharIds = $row['character_ids'] ?? '[]';
+        $charIdsRawJson = \is_string($rawCharIds) ? $rawCharIds : '[]';
         $charIdsRaw = \json_decode($charIdsRawJson, true);
         $charIdsArr = \is_array($charIdsRaw) ? $charIdsRaw : [];
 

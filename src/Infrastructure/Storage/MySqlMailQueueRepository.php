@@ -79,8 +79,12 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
                 $subject = \is_string($validItem['subject'] ?? null) ? $validItem['subject'] : '';
                 $template = \is_string($validItem['template'] ?? null) ? $validItem['template'] : '';
                 $dataStr = \is_string($validItem['data'] ?? null) ? $validItem['data'] : '{}';
-                $idStr = \is_scalar($validItem['id'] ?? '') ? (string) $validItem['id'] : '';
-                $attempts = \is_numeric($validItem['attempts'] ?? 0) ? (int) $validItem['attempts'] : 0;
+
+                $rawId = $validItem['id'] ?? '';
+                $idStr = \is_scalar($rawId) ? (string) $rawId : '';
+
+                $rawAttempts = $validItem['attempts'] ?? 0;
+                $attempts = \is_numeric($rawAttempts) ? (int) $rawAttempts : 0;
 
                 try {
                     $processor($recipient, $subject, $template, $this->jsonHelper->decode($dataStr));

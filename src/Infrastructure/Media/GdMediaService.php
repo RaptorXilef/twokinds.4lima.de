@@ -28,7 +28,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         $info = @\getimagesize($sourcePath);
-        if ($info === false) {
+        if (!\is_array($info)) {
             return false;
         }
 
@@ -81,7 +81,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         $info = @\getimagesize($sourcePath);
-        if ($info === false) {
+        if (!\is_array($info)) {
             return false;
         }
 
@@ -206,7 +206,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         $info = @\getimagesize($sourcePath);
-        if ($info === false) {
+        if (!\is_array($info)) {
             return false;
         }
 
@@ -528,7 +528,7 @@ final readonly class GdMediaService implements MediaServiceInterface
 
         $info = @\getimagesize($tmpFile);
 
-        if ($info === false) {
+        if (!\is_array($info)) {
             throw new InvalidArgumentException('Die hochgeladene Datei ist kein gültiges Bild.');
         }
 
@@ -540,7 +540,9 @@ final readonly class GdMediaService implements MediaServiceInterface
             @\mkdir($targetDir, 0o755, true);
         }
 
-        $type = $info[2];
+        $typeRaw = $info[2] ?? 0;
+        $type = \is_scalar($typeRaw) ? $typeRaw : 0;
+
         $srcImage = match ($type) {
             \IMAGETYPE_JPEG => @\imagecreatefromjpeg($tmpFile),
             \IMAGETYPE_PNG => @\imagecreatefrompng($tmpFile),
@@ -565,7 +567,12 @@ final readonly class GdMediaService implements MediaServiceInterface
             \imagefilledrectangle($targetImage, 0, 0, $finalSize, $finalSize, $transparent);
         }
 
-        \imagecopyresampled($targetImage, $srcImage, 0, 0, 0, 0, $finalSize, $finalSize, $info[0], $info[1]);
+        $srcWRaw = $info[0] ?? 0;
+        $srcHRaw = $info[1] ?? 0;
+        $srcW = \is_scalar($srcWRaw) ? $srcWRaw : 0;
+        $srcH = \is_scalar($srcHRaw) ? $srcHRaw : 0;
+
+        \imagecopyresampled($targetImage, $srcImage, 0, 0, 0, 0, $finalSize, $finalSize, $srcW, $srcH);
 
         if ($oldAvatarUrl !== null && \file_exists($targetDir . '/' . $oldAvatarUrl)) {
             @\unlink($targetDir . '/' . $oldAvatarUrl);
