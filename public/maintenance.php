@@ -18,7 +18,9 @@ $isAdminMaintenance = false;
 $configFile = __DIR__ . '/../config/config.php';
 if (\file_exists($configFile)) {
     $settings = require $configFile;
-    $isAdminMaintenance = !empty($settings['maintenance_mode_admin']);
+    if (\is_array($settings)) {
+        $isAdminMaintenance = ($settings['maintenance_mode_admin'] ?? false) === true;
+    }
 }
 
 // 3. Fallback Logo-Pfad (Prüft, ob ein spezifisches Logo da ist)

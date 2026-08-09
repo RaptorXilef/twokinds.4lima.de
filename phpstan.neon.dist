@@ -16,7 +16,7 @@ parameters:
     # Level 5 prüft Typen, erlaubt aber noch etwas Flexibilität.
     # Level 9 wäre "Maximaler Schmerz" (nur für neue Projekte empfohlen).
     # TODO: Vor release auf "max" setzen ohne "
-    level: 6
+    level: max
     # Erstmal 0 um Architekturbrüche zu finden, danach wieder 6
 
     # Welche Ordner sollen analysiert werden?
@@ -28,6 +28,7 @@ parameters:
 
     scanDirectories:
         - src
+        - public
 
     bootstrapFiles:
         - vendor/autoload.php
@@ -35,6 +36,7 @@ parameters:
     # Exklusionen (Vendor und Node_Modules sollten ignoriert werden)
     excludePaths:
         analyse:
+            - tests
             - vendor
             - node_modules
             - public/dist (?)
