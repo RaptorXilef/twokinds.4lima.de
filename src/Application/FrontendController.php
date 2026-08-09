@@ -67,12 +67,11 @@ final readonly class FrontendController
         $basePathRaw = \parse_url($this->config->getBaseUrl(), \PHP_URL_PATH);
         $basePath = \is_string($basePathRaw) ? $basePathRaw : '/';
 
-        $relativePath = '/';
+        // Default: Fallback Pfad
+        $relativePath = '/' . \ltrim($path, '/');
 
         if (\str_starts_with($path, $basePath)) {
             $relativePath = '/' . \ltrim(\substr($path, \strlen($basePath)), '/');
-        } else {
-            $relativePath = '/' . \ltrim($path, '/');
         }
 
         if (\str_ends_with($relativePath, '.php')) {
@@ -186,7 +185,7 @@ final readonly class FrontendController
             return new HtmlResponse('404 Not Found', 404);
         });
 
-        if (!($response instanceof ResponseInterface)) {
+        if (!$response instanceof ResponseInterface) {
             return;
         }
 

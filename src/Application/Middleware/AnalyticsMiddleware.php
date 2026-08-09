@@ -95,11 +95,8 @@ final readonly class AnalyticsMiddleware implements MiddlewareInterface
         }
 
         $consent = \json_decode($consentCookie, true);
-        if (!\is_array($consent) || !isset($consent['analytics']) || $consent['analytics'] !== true) {
-            return false; // Nutzer hat Analytics abgelehnt
-        }
 
-        return true;
+        return \is_array($consent) && isset($consent['analytics']) && $consent['analytics'] === true;
     }
 
     private function resolveClientId(): string
