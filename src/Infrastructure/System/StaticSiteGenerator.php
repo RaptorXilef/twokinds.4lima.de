@@ -181,7 +181,7 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
     /**
      * WICHTIG: Schlauer Filter mit Fallback auf die Festplatte
      *
-     * @param array<int, ComicPage> $comics
+     * @param array<array-key, ComicPage> $comics
      *
      * @return array<int, ComicPage>
      */

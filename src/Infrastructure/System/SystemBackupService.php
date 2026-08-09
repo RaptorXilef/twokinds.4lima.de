@@ -8,6 +8,7 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\BackupServiceInterface;
 use App\Contracts\System\JsonHelperInterface;
 use Exception;
+use FTP\Connection;
 use PDO;
 use RuntimeException;
 use Throwable;
@@ -144,7 +145,15 @@ final readonly class SystemBackupService implements BackupServiceInterface
     private function extractBackupData(string $filepath, string $filename, ?string $customPassword): array
     {
         if (!\str_ends_with($filename, '.zip')) {
-            return $this->jsonHelper->read($filepath);
+            $data = $this->jsonHelper->read($filepath);
+            if (!\is_array($data)) {
+                throw new RuntimeException('Ungültiges Legacy-Backup-Format.');
+            }
+
+            /** @var array<string, mixed> $validData */
+            $validData = $data;
+
+            return $validData;
         }
 
         $zip = new ZipArchive();
@@ -172,7 +181,15 @@ final readonly class SystemBackupService implements BackupServiceInterface
             throw new RuntimeException('Fehler beim Entschlüsseln. Falsches Passwort?');
         }
 
-        return $this->jsonHelper->decode($json);
+        $data = $this->jsonHelper->decode($json);
+        if (!\is_array($data)) {
+            throw new RuntimeException('Ungültiges JSON-Backup-Format.');
+        }
+
+        /** @var array<string, mixed> $validData */
+        $validData = $data;
+
+        return $validData;
     }
 
     /**
@@ -477,7 +494,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
         }
     }
 
-    private function getFtpConnection(string $host, int $port, int $timeout, bool $ssl, string $user, string $pass): mixed
+    private function getFtpConnection(string $host, int $port, int $timeout, bool $ssl, string $user, string $pass): Connection
     {
         // Verbindungsaufbau (SSL/FTPS falls aktiviert)
         $connId = $ssl ? \ftp_ssl_connect($host, $port, $timeout) : \ftp_connect($host, $port, $timeout);
@@ -498,7 +515,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
         return $connId;
     }
 
-    private function createFtpDirectories(mixed $connId, string $path): void
+    private function createFtpDirectories(Connection $connId, string $path): void
     {
         // Verzeichnisse iterativ erstellen, falls sie nicht existieren
         $parts = \explode('/', \trim($path, '/'));
