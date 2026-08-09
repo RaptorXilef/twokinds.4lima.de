@@ -266,12 +266,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
     private function extractBackupData(string $filepath, string $filename, ?string $customPassword): array
     {
         if (!\str_ends_with($filename, '.zip')) {
-            $data = $this->jsonHelper->read($filepath);
-
-            /** @var array<string, mixed> $validData */
-            $validData = \is_array($data) ? $data : [];
-
-            return $validData;
+            return $this->jsonHelper->read($filepath);
         }
 
         $zip = new ZipArchive();
@@ -279,6 +274,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
             throw new RuntimeException('Konnte ZIP-Backup nicht öffnen.');
         }
 
+        // Nutze Formular-Passwort, ansonsten Fallback auf Config
         $backupCfgRaw = $this->config->get('backup', []);
         $backupCfg = \is_array($backupCfgRaw) ? $backupCfgRaw : [];
         $configPasswordRaw = $backupCfg['zip_password'] ?? '';
@@ -290,6 +286,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
             $zip->setPassword($configPassword);
         }
 
+        // Holt die Datei direkt in den Arbeitsspeicher (Entschlüsselt automatisch, wenn PW stimmt)
         $json = $zip->getFromName('data.json');
         $zip->close();
 
@@ -297,12 +294,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
             throw new RuntimeException('Fehler beim Entschlüsseln. Falsches Passwort?');
         }
 
-        $data = $this->jsonHelper->decode($json);
-
-        /** @var array<string, mixed> $validData */
-        $validData = \is_array($data) ? $data : [];
-
-        return $validData;
+        return $this->jsonHelper->decode($json);
     }
 
     /**
@@ -355,7 +347,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
     private function insertRestoredRows(string $table, array $validRows, int $mode): void
     {
         $firstRow = $validRows[0] ?? null;
-        if ($firstRow === null) {
+        if (!\is_array($firstRow)) {
             return;
         }
 
@@ -546,7 +538,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
                 continue;
             }
 
-            \mkdir($part, 0o755);
+            \ftp_mkdir($connId, $part);
             \ftp_chdir($connId, $part);
         }
     }

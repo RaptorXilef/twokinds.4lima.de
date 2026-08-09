@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
+
 /**
  * Globaler Anwendungs-Bootstrap und Initialisierungs-Skript.
  * Startet die PHP-Sitzung, ermittelt dynamisch den App-Root-Pfad, lädt und aggregiert
@@ -120,6 +122,7 @@ final class SystemBootstrapper
      */
     private static function loadConfigurations(string $appRoot): array
     {
+        /** @var array<string, mixed> $settings */
         $settings = [];
 
         // A. Die feste Registry laden (Ehemalige sql_schema & permissions)
