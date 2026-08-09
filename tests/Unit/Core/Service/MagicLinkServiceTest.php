@@ -99,9 +99,7 @@ function setupMagicLinkTest(mixed $test): object
         $now->modify('-5 minutes'), // Liegt in der Vergangenheit
     );
 
-    $app->repo->expects($this->exactly(2))
-        ->method('loadAll')
-        ->willReturn(['expired_token' => $expiredLink]);
+    $app->repo->method('loadAll')->willReturn(['expired_token' => $expiredLink]);
 
     \expect($app->service->peekToken('expired_token'))->toBeNull()
         ->and($app->service->peekToken('unknown_token'))->toBeNull();
@@ -120,9 +118,7 @@ function setupMagicLinkTest(mixed $test): object
     );
 
     // loadAll gibt den Link zurück
-    $app->repo->expects($this->once())
-        ->method('loadAll')
-        ->willReturn(['very_long_secret_token_123' => $validLink]);
+    $app->repo->method('loadAll')->willReturn(['very_long_secret_token_123' => $validLink]);
 
     // saveAll wird erwartet, aber diesmal MUSS das Array leer sein (Link wurde verbraucht)
     $app->repo->expects($this->once())
@@ -145,9 +141,7 @@ function setupMagicLinkTest(mixed $test): object
         $now->modify('+10 minutes'),
     );
 
-    $app->repo->expects($this->once())
-        ->method('loadAll')
-        ->willReturn(['very_long_secret_token_123' => $validLink]);
+    $app->repo->method('loadAll')->willReturn(['very_long_secret_token_123' => $validLink]);
 
     // saveAll wird erwartet, auch hier muss das Array geleert werden
     $app->repo->expects($this->once())

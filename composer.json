@@ -93,6 +93,10 @@
 
     "//chk:style:s": "phpcs tests/Unit/Core/Service/ -s",
 
+    "// --- Frontend Checks ---": "Frontend",
+    "chk:js": "npx eslint src/assets/js/",
+    "chk:css": "npx stylelint \"src/assets/scss/**/*.scss\"",
+
     "// --- PHASE 1.1: PHPStan ANALYSIS PRO SCHICHT (CHECKING) ---": "Read-Only Qualitätsprüfungen",
     "chk:stan:core": "phpstan analyse src/Core --level max --memory-limit=2G",
     "chk:stan:application": "phpstan analyse src/Application --level max --memory-limit=2G",
@@ -115,6 +119,10 @@
     "fix:modern": "rector process",
     "fix:style": "php-cs-fixer fix --allow-risky=yes",
     "fix:cs": "phpcbf",
+
+    "// --- Frontend Fixes ---": "Frontend",
+    "fix:js": "npx eslint src/assets/js/ --fix",
+    "fix:css": "npx stylelint \"src/assets/scss/**/*.scss\" --fix",
 
     "// --- PHASE 4: CI / AUTOMATION ---": "Spezifische Reports für Pipelines",
     "mkdir:reports": "@php -r \"is_dir('.build/reports') || mkdir('.build/reports', 0777, true);\"",
