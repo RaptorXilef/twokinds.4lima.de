@@ -266,7 +266,12 @@ final readonly class SystemBackupService implements BackupServiceInterface
     private function extractBackupData(string $filepath, string $filename, ?string $customPassword): array
     {
         if (!\str_ends_with($filename, '.zip')) {
-            return $this->jsonHelper->read($filepath);
+            $data = $this->jsonHelper->read($filepath);
+
+            /** @var array<string, mixed> $validData */
+            $validData = $data;
+
+            return $validData;
         }
 
         $zip = new ZipArchive();
@@ -294,7 +299,12 @@ final readonly class SystemBackupService implements BackupServiceInterface
             throw new RuntimeException('Fehler beim Entschlüsseln. Falsches Passwort?');
         }
 
-        return $this->jsonHelper->decode($json);
+        $data = $this->jsonHelper->decode($json);
+
+        /** @var array<string, mixed> $validData */
+        $validData = $data;
+
+        return $validData;
     }
 
     /**

@@ -166,7 +166,10 @@ final class SystemBootstrapper
             $settings = \array_replace_recursive($settings, $loaded);
         }
 
-        return $settings;
+        /** @var array<string, mixed> $validSettings */
+        $validSettings = $settings;
+
+        return $validSettings;
     }
 
     /**
@@ -187,7 +190,10 @@ final class SystemBootstrapper
                     $label = $node['label'] ?? null;
                     $flatPerms[$key] = \is_string($label) ? $label : $key;
                 }
-                if (!isset($node['children']) || !\is_array($node['children'])) {
+                if (!isset($node['children'])) {
+                    continue;
+                }
+                if (!\is_array($node['children'])) {
                     continue;
                 }
 
