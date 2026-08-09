@@ -16,11 +16,7 @@ function setupMagicLinkTest(mixed $test): object
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
     $stub = \Closure::bind(fn (string $c) => $test->createStub($c), $test, $test::class);
 
-    return new class(
-        $stub(ClockInterface::class),
-        $stub(ConfigInterface::class),
-        $mock(MagicLinkRepositoryInterface::class),
-    ) {
+    return new class($stub(ClockInterface::class), $stub(ConfigInterface::class), $mock(MagicLinkRepositoryInterface::class)) {
         public MagicLinkService $service;
 
         public function __construct(
@@ -35,12 +31,9 @@ function setupMagicLinkTest(mixed $test): object
 
 \it('creates a new token and saves it to the repository', function (): void {
     $app = \setupMagicLinkTest($this);
-
     $now = new \DateTimeImmutable('2026-08-07 10:00:00');
     $app->clock->method('now')->willReturn($now);
-
-    // Fix: Ein Stub nutzt kein expects() oder with() mehr in PHPUnit 11
-    $app->config->method('get')->willReturn(30); // 30 Minuten Lebensdauer konfigurieren
+    $app->config->method('get')->willReturn(30);
 
     $app->repo->expects($this->once())
         ->method('loadAll')
@@ -58,12 +51,10 @@ function setupMagicLinkTest(mixed $test): object
                 && $link->email->value === 'test@twokinds.de'
                 && \strlen($link->token) === 64
                 && \strlen($link->code) === 6
-                // Prüfen ob exakt 30 Minuten addiert wurden
                 && $link->expires->format('Y-m-d H:i:s') === '2026-08-07 10:30:00';
         }));
 
     $result = $app->service->createToken('test@twokinds.de');
-
     \expect($result)->toHaveKeys(['token', 'code']);
 })->covers(MagicLinkService::class);
 
@@ -96,10 +87,12 @@ function setupMagicLinkTest(mixed $test): object
         'expired_token',
         new EmailAddress('user@test.de'),
         '123456',
-        $now->modify('-5 minutes'), // Liegt in der Vergangenheit
+        $now->modify('-5 minutes'),
     );
 
-    $app->repo->method('loadAll')->willReturn(['expired_token' => $expiredLink]);
+    $app->repo->expects($this->any())
+        ->method('loadAll')
+        ->willReturn(['expired_token' => $expiredLink]);
 
     \expect($app->service->peekToken('expired_token'))->toBeNull()
         ->and($app->service->peekToken('unknown_token'))->toBeNull();
@@ -117,10 +110,7 @@ function setupMagicLinkTest(mixed $test): object
         $now->modify('+10 minutes'),
     );
 
-    // loadAll gibt den Link zurück
     $app->repo->method('loadAll')->willReturn(['very_long_secret_token_123' => $validLink]);
-
-    // saveAll wird erwartet, aber diesmal MUSS das Array leer sein (Link wurde verbraucht)
     $app->repo->expects($this->once())
         ->method('saveAll')
         ->with([]);
@@ -142,13 +132,10 @@ function setupMagicLinkTest(mixed $test): object
     );
 
     $app->repo->method('loadAll')->willReturn(['very_long_secret_token_123' => $validLink]);
-
-    // saveAll wird erwartet, auch hier muss das Array geleert werden
     $app->repo->expects($this->once())
         ->method('saveAll')
         ->with([]);
 
-    // Wir übergeben den 6-stelligen Short Code (case-insensitive)
     $email = $app->service->verifyAny('abcdef');
     \expect($email)->toBe('user@test.de');
 })->covers(MagicLinkService::class);
