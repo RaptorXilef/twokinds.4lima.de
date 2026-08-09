@@ -32,7 +32,7 @@ final readonly class FileRouteCache implements RouteCacheInterface
         $cacheDir = \dirname($cacheFile);
 
         if (!\is_dir($cacheDir)) {
-            @\mkdir($cacheDir, 0o755, true);
+            \mkdir($cacheDir, 0o755, true);
         }
 
         \file_put_contents($cacheFile, '<?php return ' . \var_export($routes, true) . ';', \LOCK_EX);
@@ -45,6 +45,6 @@ final readonly class FileRouteCache implements RouteCacheInterface
             return;
         }
 
-        @\unlink($oldCache);
+        \unlink($oldCache);
     }
 }

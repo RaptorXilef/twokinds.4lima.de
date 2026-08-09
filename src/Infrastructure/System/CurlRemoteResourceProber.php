@@ -6,6 +6,7 @@ namespace App\Infrastructure\System;
 
 use App\Contracts\System\RemoteResourceProberInterface;
 use CurlHandle;
+use CurlMultiHandle;
 
 final readonly class CurlRemoteResourceProber implements RemoteResourceProberInterface
 {
@@ -17,6 +18,25 @@ final readonly class CurlRemoteResourceProber implements RemoteResourceProberInt
 
         $extensions = ['png', 'jpg', 'gif', 'jpeg', 'webp'];
         $multiHandle = \curl_multi_init();
+        $curlHandles = $this->setupCurlHandles($multiHandle, $url, $extensions);
+
+        $foundExt = $this->executeMultiHandle($multiHandle);
+
+        foreach ($curlHandles as $ch) {
+            \curl_multi_remove_handle($multiHandle, $ch);
+        }
+        \curl_multi_close($multiHandle);
+
+        return $foundExt !== null && $foundExt !== '' ? $foundExt : $fallback;
+    }
+
+    /**
+     * @param array<int, string> $extensions
+     *
+     * @return array<string, CurlHandle>
+     */
+    private function setupCurlHandles(CurlMultiHandle $multiHandle, string $url, array $extensions): array
+    {
         $curlHandles = [];
 
         foreach ($extensions as $ext) {
@@ -37,43 +57,50 @@ final readonly class CurlRemoteResourceProber implements RemoteResourceProberInt
             $curlHandles[$ext] = $ch;
         }
 
+        return $curlHandles;
+    }
+
+    private function executeMultiHandle(CurlMultiHandle $multiHandle): ?string
+    {
         $active = 0;
-        $foundExt = null;
 
         do {
             $status = \curl_multi_exec($multiHandle, $active);
             while (($info = \curl_multi_info_read($multiHandle)) !== false) {
-                $ch = $info['handle'] ?? null;
-                if (!$ch instanceof CurlHandle) {
-                    continue;
-                }
-
-                $codeRaw = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
-                $code = \is_int($codeRaw) ? $codeRaw : 0;
-
-                $contentTypeRaw = \curl_getinfo($ch, \CURLINFO_CONTENT_TYPE);
-                $contentType = \is_string($contentTypeRaw) ? $contentTypeRaw : '';
-
-                if ($code === 200 && \str_starts_with($contentType, 'image/')) {
-                    $effUrlRaw = \curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL);
-                    $effUrl = \is_string($effUrlRaw) ? $effUrlRaw : '';
-                    $foundExt = \strtolower(\pathinfo($effUrl, \PATHINFO_EXTENSION));
-
-                    break 2;
+                $foundExt = $this->processCompletedHandle($info['handle'] ?? null);
+                if ($foundExt !== null) {
+                    return $foundExt;
                 }
             }
-            if (!$active) {
+            if ($active <= 0) {
                 continue;
             }
 
             \curl_multi_select($multiHandle, 0.05);
         } while ($active > 0 && $status === \CURLM_OK);
 
-        foreach ($curlHandles as $ch) {
-            \curl_multi_remove_handle($multiHandle, $ch);
-        }
-        \curl_multi_close($multiHandle);
+        return null;
+    }
 
-        return $foundExt !== null && $foundExt !== '' ? $foundExt : $fallback;
+    private function processCompletedHandle(mixed $ch): ?string
+    {
+        if (!$ch instanceof CurlHandle) {
+            return null;
+        }
+
+        $codeRaw = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
+        $code = \is_int($codeRaw) ? $codeRaw : 0;
+
+        $contentTypeRaw = \curl_getinfo($ch, \CURLINFO_CONTENT_TYPE);
+        $contentType = \is_string($contentTypeRaw) ? $contentTypeRaw : '';
+
+        if ($code === 200 && \str_starts_with($contentType, 'image/')) {
+            $effUrlRaw = \curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL);
+            $effUrl = \is_string($effUrlRaw) ? $effUrlRaw : '';
+
+            return \strtolower(\pathinfo($effUrl, \PATHINFO_EXTENSION));
+        }
+
+        return null;
     }
 }
