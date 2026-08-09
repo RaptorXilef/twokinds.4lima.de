@@ -39,7 +39,7 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
             }
 
             $expiresRaw = $r['expires'] ?? 'now';
-            $expiresStr = \is_scalar($expiresRaw) ? (string) $expiresRaw : 'now';
+            $expiresStr = \is_string($expiresRaw) ? $expiresRaw : (\is_numeric($expiresRaw) ? (string) $expiresRaw : 'now');
 
             $dt = \is_numeric($expiresStr)
                 ? (new DateTimeImmutable())->setTimestamp((int) $expiresStr)

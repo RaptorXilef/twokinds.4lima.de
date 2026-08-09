@@ -81,7 +81,7 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
                 $dataStr = \is_string($validItem['data'] ?? null) ? $validItem['data'] : '{}';
 
                 $rawId = $validItem['id'] ?? '';
-                $idStr = \is_scalar($rawId) ? (string) $rawId : '';
+                $idStr = \is_string($rawId) ? $rawId : (\is_numeric($rawId) ? (string) $rawId : '');
 
                 $rawAttempts = $validItem['attempts'] ?? 0;
                 $attempts = \is_numeric($rawAttempts) ? (int) $rawAttempts : 0;

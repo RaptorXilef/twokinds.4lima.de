@@ -28,7 +28,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         $info = @\getimagesize($sourcePath);
-        if (!\is_array($info)) {
+        if ($info === false) {
             return false;
         }
 
@@ -81,7 +81,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         $info = @\getimagesize($sourcePath);
-        if (!\is_array($info)) {
+        if ($info === false) {
             return false;
         }
 
@@ -206,7 +206,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         $info = @\getimagesize($sourcePath);
-        if (!\is_array($info)) {
+        if ($info === false) {
             return false;
         }
 
@@ -437,7 +437,9 @@ final readonly class GdMediaService implements MediaServiceInterface
         // Profilbild
         if (isset($files['profile_image']) && \is_array($files['profile_image'])) {
             $pImg = $files['profile_image'];
-            $err = $pImg['error'] ?? \UPLOAD_ERR_NO_FILE;
+            $errRaw = $pImg['error'] ?? \UPLOAD_ERR_NO_FILE;
+            $err = \is_numeric($errRaw) ? (int) $errRaw : \UPLOAD_ERR_NO_FILE;
+
             if ($err !== \UPLOAD_ERR_NO_FILE) {
                 if ($err === \UPLOAD_ERR_OK) {
                     $tmpName = \is_string($pImg['tmp_name'] ?? null) ? $pImg['tmp_name'] : '';
@@ -450,7 +452,7 @@ final readonly class GdMediaService implements MediaServiceInterface
                         }
                     }
                 } else {
-                    $result['warnings'][] = 'Profilbild: PHP Upload-Fehler (Code: ' . (int) $err . ')';
+                    $result['warnings'][] = 'Profilbild: PHP Upload-Fehler (Code: ' . $err . ')';
                 }
             }
         }
@@ -540,9 +542,7 @@ final readonly class GdMediaService implements MediaServiceInterface
             @\mkdir($targetDir, 0o755, true);
         }
 
-        $typeRaw = $info[2] ?? 0;
-        $type = \is_scalar($typeRaw) ? $typeRaw : 0;
-
+        $type = $info[2];
         $srcImage = match ($type) {
             \IMAGETYPE_JPEG => @\imagecreatefromjpeg($tmpFile),
             \IMAGETYPE_PNG => @\imagecreatefrompng($tmpFile),
@@ -567,12 +567,7 @@ final readonly class GdMediaService implements MediaServiceInterface
             \imagefilledrectangle($targetImage, 0, 0, $finalSize, $finalSize, $transparent);
         }
 
-        $srcWRaw = $info[0] ?? 0;
-        $srcHRaw = $info[1] ?? 0;
-        $srcW = \is_scalar($srcWRaw) ? $srcWRaw : 0;
-        $srcH = \is_scalar($srcHRaw) ? $srcHRaw : 0;
-
-        \imagecopyresampled($targetImage, $srcImage, 0, 0, 0, 0, $finalSize, $finalSize, $srcW, $srcH);
+        \imagecopyresampled($targetImage, $srcImage, 0, 0, 0, 0, $finalSize, $finalSize, $info[0], $info[1]);
 
         if ($oldAvatarUrl !== null && \file_exists($targetDir . '/' . $oldAvatarUrl)) {
             @\unlink($targetDir . '/' . $oldAvatarUrl);
