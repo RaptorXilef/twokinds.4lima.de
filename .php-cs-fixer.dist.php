@@ -44,6 +44,10 @@ return (new Config())
         'PhpCsFixerCustomFixers/trim_key' => true,    // Säubert Array-Schlüssel
 
         // --- STRUKTUR & LESBARKEIT ---
+        'class_definition' => [
+            'inline_constructor_arguments' => false, // Verhindert das Quetschen in eine Zeile!
+            'space_before_parenthesis' => true,      // PER-CS Standard: "new class ()"
+        ],
         /*
         'binary_operator_spaces' => [
             'default'   => 'single_space', // Standard bleibt ein einfaches Leerzeichen
