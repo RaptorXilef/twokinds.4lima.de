@@ -16,7 +16,7 @@ function setupCharacterTest(mixed $test): object
 {
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
 
-    return new class (
+    return new class(
         $mock(CharacterRepositoryInterface::class),
         $mock(CharacterGroupRepositoryInterface::class),
         $mock(SiteGeneratorInterface::class),

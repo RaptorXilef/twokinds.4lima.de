@@ -20,7 +20,7 @@ function setupComicTest(mixed $test): object
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
     $stub = \Closure::bind(fn (string $c) => $test->createStub($c), $test, $test::class);
 
-    return new class (
+    return new class(
         $mock(ComicRepositoryInterface::class),
         $mock(ComicRevisionRepositoryInterface::class),
         $stub(ClockInterface::class),

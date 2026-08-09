@@ -46,7 +46,7 @@ return (new Config())
         // --- STRUKTUR & LESBARKEIT ---
         'class_definition' => [
             'inline_constructor_arguments' => false, // Verhindert das Quetschen in eine Zeile!
-            'space_before_parenthesis' => true,      // PER-CS Standard: "new class ()"
+            'space_before_parenthesis' => false,      // PER-CS Standard: "new class ()" (geändert zu false!)
         ],
         /*
         'binary_operator_spaces' => [
