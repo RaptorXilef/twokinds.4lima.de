@@ -27,8 +27,9 @@ final readonly class BookmarksAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $allComics = $this->comicRepo->findAll();
+        unset($request); // Interface Vorgabe
 
+        $allComics = $this->comicRepo->findAll();
         $isLoggedIn = $this->auth->isLoggedIn();
         $cloudBookmarks = [];
 

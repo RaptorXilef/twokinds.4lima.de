@@ -24,6 +24,8 @@ final readonly class ArchiveAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request); // Interface Vorgabe
+
         $comics = $this->comicRepository->findAll();
 
         /** @var array<int, Chapter> $chapters */
@@ -38,15 +40,16 @@ final readonly class ArchiveAction implements ActionInterface
             $chapterId = $comic->chapterId;
             if ($chapterId === null || \trim((string) $chapterId) === '') {
                 $unassignedComics[] = $comic;
-            } else {
-                $groupedComics[$chapterId][] = $comic;
+                continue;
             }
+
+            $groupedComics[$chapterId][] = $comic;
         }
 
         // 2. Normale Kapitel sortieren (Aufsteigend: 0, 1, 2...)
-        \uksort($groupedComics, function (string|int $a, string|int $b): int {
-            $numA = \is_numeric($a) ? (float) $a : null;
-            $numB = \is_numeric($b) ? (float) $b : null;
+        \uksort($groupedComics, function (string|int $chapterIdA, string|int $chapterIdB): int {
+            $numA = \is_numeric($chapterIdA) ? (float) $chapterIdA : null;
+            $numB = \is_numeric($chapterIdB) ? (float) $chapterIdB : null;
 
             if ($numA !== null && $numB !== null) {
                 return $numA <=> $numB; // Aufsteigend
@@ -58,7 +61,7 @@ final readonly class ArchiveAction implements ActionInterface
                 return 1;
             }
 
-            return \strnatcasecmp((string) $a, (string) $b); // Texte (falls vorhanden) aufsteigend
+            return \strnatcasecmp((string) $chapterIdA, (string) $chapterIdB); // Texte aufsteigend
         });
 
         // 3. Den Stapel ohne Kapitel GANZ SICHER ans Ende hängen!
@@ -66,7 +69,7 @@ final readonly class ArchiveAction implements ActionInterface
             $groupedComics['Kein Kapitel'] = $unassignedComics;
         }
 
-        // Die Kapitel-Informationen (Titel/Beschreibung) als einfaches Dictionary aufbauen
+        // Die Kapitel-Informationen als einfaches Dictionary aufbauen
         $chapterDetails = [];
         foreach ($chapters as $chapter) {
             $chapterDetails[$chapter->id] = $chapter;

@@ -18,6 +18,8 @@ final readonly class ForgotPasswordAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request);
+
         return $this->renderer->render('pages/frontend/forgot_password', ['pageTitle' => 'Passwort vergessen']);
     }
 }

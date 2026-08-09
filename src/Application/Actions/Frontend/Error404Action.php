@@ -18,6 +18,8 @@ final readonly class Error404Action implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request);
+
         return $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Fehler 404 - Seite nicht gefunden'], 404);
     }
 }

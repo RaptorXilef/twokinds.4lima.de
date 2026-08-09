@@ -18,6 +18,8 @@ final readonly class Error403Action implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request);
+
         return $this->renderer->render('pages/frontend/403', ['pageTitle' => 'Fehler 403 - Zugriff verweigert'], 403);
     }
 }

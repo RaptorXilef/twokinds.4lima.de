@@ -39,6 +39,7 @@ final readonly class VerifyAction implements ActionInterface
         }
 
         $user = $this->userRepository->findByEmail($email);
+
         if ($user instanceof User && $user->roleId === 'pending') {
             $updatedUser = new User(
                 $user->id,
@@ -57,12 +58,14 @@ final readonly class VerifyAction implements ActionInterface
                 'success',
                 'Dein Konto wurde erfolgreich bestätigt! Du kannst dich jetzt einloggen.',
             );
-        } else {
-            $this->sessionManager->addFlash(
-                'info',
-                'Dieses Konto wurde bereits bestätigt.',
-            );
+
+            return new RedirectResponse('/login');
         }
+
+        $this->sessionManager->addFlash(
+            'info',
+            'Dieses Konto wurde bereits bestätigt.',
+        );
 
         return new RedirectResponse('/login');
     }

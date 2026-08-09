@@ -12,6 +12,7 @@ use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\ComicPage;
 use App\Core\Entity\User;
 use DateTimeImmutable;
 
@@ -41,23 +42,9 @@ final readonly class ComicAction implements ActionInterface
             return $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Keine Comics gefunden.'], 404);
         }
 
-        $comic = null;
-        $currentIndex = -1;
-
-        if ($requestedId !== null && $requestedId !== '') {
-            foreach ($allComics as $index => $c) {
-                if ($c->id->value === $requestedId) {
-                    $comic = $c;
-                    $currentIndex = $index;
-
-                    break;
-                }
-            }
-        } else {
-            // Neuesten Comic laden
-            $comic = $allComics[0];
-            $currentIndex = 0;
-        }
+        $match = $this->findRequestedComic($allComics, $requestedId);
+        $comic = $match['comic'];
+        $currentIndex = $match['index'];
 
         if ($comic === null) {
             return $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Comic nicht gefunden.'], 404);
@@ -89,12 +76,12 @@ final readonly class ComicAction implements ActionInterface
         // Helfer-Objekte (User) aus den IDs laden
         $comicUsers = [];
         foreach ($comic->userIds as $uid) {
-            $u = $this->userRepo->findById($uid);
-            if (!$u instanceof User) {
+            $user = $this->userRepo->findById($uid);
+            if (!$user instanceof User) {
                 continue;
             }
 
-            $comicUsers[] = $u;
+            $comicUsers[] = $user;
         }
 
         return $this->renderer->render('pages/frontend/comic', [
@@ -111,5 +98,25 @@ final readonly class ComicAction implements ActionInterface
             'groups' => $groups,
             'comicUsers' => $comicUsers,
         ]);
+    }
+
+    /**
+     * @param array<int, ComicPage> $allComics
+     *
+     * @return array{comic: ?ComicPage, index: int}
+     */
+    private function findRequestedComic(array $allComics, ?string $requestedId): array
+    {
+        if ($requestedId === null || $requestedId === '') {
+            return ['comic' => $allComics[0], 'index' => 0];
+        }
+
+        foreach ($allComics as $index => $c) {
+            if ($c->id->value === $requestedId) {
+                return ['comic' => $c, 'index' => $index];
+            }
+        }
+
+        return ['comic' => null, 'index' => -1];
     }
 }

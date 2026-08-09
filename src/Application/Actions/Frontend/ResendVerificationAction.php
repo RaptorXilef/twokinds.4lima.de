@@ -18,6 +18,8 @@ final readonly class ResendVerificationAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request);
+
         return $this->renderer->render(
             'pages/frontend/resend_verification',
             ['pageTitle' => 'Bestätigungsmail erneut anfordern'],

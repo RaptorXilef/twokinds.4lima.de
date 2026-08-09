@@ -34,39 +34,10 @@ final readonly class CharacterDetailAction implements ActionInterface
             return new RedirectResponse('/charaktere');
         }
 
-        $character = null;
+        $character = $this->resolveCharacter($idOrName);
 
-        // 1. Ist es eine moderne ID (char_XXXX)?
-        if (\preg_match('/^char_\d+$/', $idOrName) === 1) {
-            try {
-                $character = $this->charRepo->findById(new CharacterId($idOrName));
-            } catch (InvalidArgumentException) {
-            }
-        } else {
-            // 2. Es ist ein alter Name (Legacy Slug)!
-            $characterName = \trim(\str_replace('_', ' ', $idOrName));
-            $allCharacters = $this->charRepo->findAll();
-
-            // Prio A: Exakter Treffer (ignoriert Groß-/Kleinschreibung)
-            foreach ($allCharacters as $c) {
-                if (\strcasecmp($c->name, $characterName) === 0) {
-                    return new RedirectResponse('/charaktere/' . \urlencode($c->id->value), 301);
-                }
-            }
-
-            // Prio B: Beginnt mit dem Suchwort (z.B. "/Flora" findet "Flora - Regenwald-Tigerstamm")
-            foreach ($allCharacters as $c) {
-                if (\stripos($c->name, $characterName) === 0) {
-                    return new RedirectResponse('/charaktere/' . \urlencode($c->id->value), 301);
-                }
-            }
-
-            // Prio C: Beinhaltet das Suchwort irgendwo
-            foreach ($allCharacters as $c) {
-                if (\stripos($c->name, $characterName) !== false) {
-                    return new RedirectResponse('/charaktere/' . \urlencode($c->id->value), 301);
-                }
-            }
+        if ($character instanceof RedirectResponse) {
+            return $character;
         }
 
         if (!$character instanceof Character) {
@@ -81,14 +52,13 @@ final readonly class CharacterDetailAction implements ActionInterface
             foreach ($comic->characterIds as $cidObj) {
                 if ($cidObj->value === $character->id->value) {
                     $characterComics[] = $comic;
-
                     break; // Comic wurde hinzugefügt, ab zum nächsten Comic
                 }
             }
         }
 
         // Chronologisch aufsteigend sortieren (Älteste Auftritte zuerst)
-        \usort($characterComics, fn ($a, $b): int => $a->id->value <=> $b->id->value);
+        \usort($characterComics, fn ($comicA, $comicB): int => $comicA->id->value <=> $comicB->id->value);
 
         return $this->renderer->render('pages/frontend/character_detail', [
             'character' => $character,
@@ -96,5 +66,49 @@ final readonly class CharacterDetailAction implements ActionInterface
             'pageTitle' => $character->name,
             'siteDescription' => 'Alle Informationen und Comic-Auftritte von ' . $character->name,
         ]);
+    }
+
+    private function resolveCharacter(string $idOrName): Character|RedirectResponse|null
+    {
+        // 1. Ist es eine moderne ID (char_XXXX)?
+        if (\preg_match('/^char_\d+$/', $idOrName) === 1) {
+            try {
+                return $this->charRepo->findById(new CharacterId($idOrName));
+            } catch (InvalidArgumentException) {
+                // Ignore invalid ID exception and fallback to legacy search
+            }
+        }
+
+        // 2. Es ist ein alter Name (Legacy Slug)!
+        return $this->findCharacterByLegacyName($idOrName);
+    }
+
+    private function findCharacterByLegacyName(string $idOrName): ?RedirectResponse
+    {
+        $characterName = \trim(\str_replace('_', ' ', $idOrName));
+        $allCharacters = $this->charRepo->findAll();
+
+        // Prio A: Exakter Treffer (ignoriert Groß-/Kleinschreibung)
+        foreach ($allCharacters as $c) {
+            if (\strcasecmp($c->name, $characterName) === 0) {
+                return new RedirectResponse('/charaktere/' . \urlencode($c->id->value), 301);
+            }
+        }
+
+        // Prio B: Beginnt mit dem Suchwort (z.B. "/Flora" findet "Flora - Regenwald-Tigerstamm")
+        foreach ($allCharacters as $c) {
+            if (\stripos($c->name, $characterName) === 0) {
+                return new RedirectResponse('/charaktere/' . \urlencode($c->id->value), 301);
+            }
+        }
+
+        // Prio C: Beinhaltet das Suchwort irgendwo
+        foreach ($allCharacters as $c) {
+            if (\stripos($c->name, $characterName) !== false) {
+                return new RedirectResponse('/charaktere/' . \urlencode($c->id->value), 301);
+            }
+        }
+
+        return null;
     }
 }

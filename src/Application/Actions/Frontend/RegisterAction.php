@@ -20,6 +20,7 @@ final readonly class RegisterAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request);
         if ($this->auth->isLoggedIn()) {
             return new RedirectResponse('/lesezeichen');
         }

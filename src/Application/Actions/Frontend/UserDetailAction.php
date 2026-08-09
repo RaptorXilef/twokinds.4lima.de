@@ -35,7 +35,6 @@ final readonly class UserDetailAction implements ActionInterface
             return new RedirectResponse('/');
         }
 
-        // Wir suchen jetzt nach der fixen ID, nicht mehr nach dem Namen!
         $user = $this->userRepo->findById($id);
         if (!$user instanceof User) {
             return $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Benutzer nicht gefunden'], 404);
@@ -67,10 +66,9 @@ final readonly class UserDetailAction implements ActionInterface
             }
         }
 
-        \usort($userComics, fn ($a, $b): int => \strcmp($b->id->value, $a->id->value));
-        \usort($bookmarks, fn ($a, $b): int => \strcmp($b->id->value, $a->id->value));
+        \usort($userComics, fn ($comicA, $comicB): int => \strcmp($comicB->id->value, $comicA->id->value));
+        \usort($bookmarks, fn ($comicA, $comicB): int => \strcmp($comicB->id->value, $comicA->id->value));
 
-        // Wir rufen das neue Template "user_detail" auf
         return $this->renderer->render('pages/frontend/user_detail', [
             'pageTitle' => 'Profil von ' . $user->username->value,
             'publicUser' => $user,

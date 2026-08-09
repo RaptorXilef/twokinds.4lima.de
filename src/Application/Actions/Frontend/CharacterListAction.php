@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
+use App\Core\Entity\Character;
 
 #[Route('GET', '/charaktere')]
 final readonly class CharacterListAction implements ActionInterface
@@ -23,10 +24,29 @@ final readonly class CharacterListAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request); // Interface Vorgabe
+
         $characters = $this->charRepo->findAll();
         $groups = $this->groupRepo->findAll();
 
-        // Dynamische Filter-Optionen generieren
+        $filterData = $this->buildFilterData($characters);
+
+        return $this->renderer->render('pages/frontend/character_list', [
+            'characters' => $characters,
+            'groups' => $groups,
+            'filterData' => $filterData,
+            'pageTitle' => 'Charaktere',
+            'siteDescription' => 'Lerne die Hauptcharaktere von TwoKinds kennen.',
+        ]);
+    }
+
+    /**
+     * @param array<int, Character> $characters
+     *
+     * @return array<string, array<int, string>>
+     */
+    private function buildFilterData(array $characters): array
+    {
         $filterData = [
             'gender' => [],
             'age' => [],
@@ -50,7 +70,6 @@ final readonly class CharacterListAction implements ActionInterface
                 $filterData['subspecies'][$c->subspecies] = true;
             }
 
-            // Komma-separierte Listen (Ränge, Sprachen) aufteilen
             if ($c->rank !== null && $c->rank !== '') {
                 foreach (\array_map(trim(...), \explode(',', $c->rank)) as $r) {
                     if ($r === '') {
@@ -83,12 +102,6 @@ final readonly class CharacterListAction implements ActionInterface
             $filterData[$key] = \array_values($keys);
         }
 
-        return $this->renderer->render('pages/frontend/character_list', [
-            'characters' => $characters,
-            'groups' => $groups,
-            'filterData' => $filterData, // Neue Variable ans Template übergeben
-            'pageTitle' => 'Charaktere',
-            'siteDescription' => 'Lerne die Hauptcharaktere von TwoKinds kennen.',
-        ]);
+        return $filterData;
     }
 }

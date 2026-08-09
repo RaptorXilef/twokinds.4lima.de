@@ -18,6 +18,8 @@ final readonly class ImprintAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        unset($request);
+
         return $this->renderer->render('pages/frontend/imprint', ['pageTitle' => 'Impressum & Lizenz']);
     }
 }
