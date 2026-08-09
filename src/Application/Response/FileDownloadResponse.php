@@ -7,9 +7,8 @@ namespace App\Application\Response;
 use App\Application\Contracts\ResponseInterface;
 
 /**
- * TODO DOCBLOCK
- *
- * SPDX-License-Identifier: LicenseRef-Proprietary
+ * Repräsentiert eine Dateidownload-Antwort.
+ * Setzt entsprechende HTTP-Header, um den Browser zum Speichern der Datei aufzufordern.
  */
 final readonly class FileDownloadResponse implements ResponseInterface
 {
@@ -17,6 +16,9 @@ final readonly class FileDownloadResponse implements ResponseInterface
     {
     }
 
+    /**
+     * @SuppressWarnings("PHPMD.ExitExpression")
+     */
     public function send(): void
     {
         \header('Content-Type: ' . $this->contentType);

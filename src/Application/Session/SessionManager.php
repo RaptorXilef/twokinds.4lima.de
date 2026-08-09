@@ -10,6 +10,8 @@ use App\Contracts\Utils\ClockInterface;
 /**
  * Kapselt alle Zugriffe auf den globalen $_SESSION State.
  * Verhindert direkte Array-Mutationen in den Actions (Leaky Abstractions).
+ *
+ * @SuppressWarnings("PHPMD.TooManyPublicMethods")
  */
 final readonly class SessionManager implements AuthSessionInterface
 {
@@ -184,15 +186,15 @@ final readonly class SessionManager implements AuthSessionInterface
         if (\ini_get('session.use_cookies') === '1') {
             // PHPStan Level 9 versteht exakt die Signatur von session_get_cookie_params.
             // Daher sind Casts und isset() hier komplett überflüssig!
-            $p = \session_get_cookie_params();
+            $params = \session_get_cookie_params();
 
             $cookieParams = [
                 'expires' => $this->clock->now()->getTimestamp() - 42000,
-                'path' => $p['path'],
-                'domain' => $p['domain'],
-                'secure' => $p['secure'],
-                'httponly' => $p['httponly'],
-                'samesite' => $p['samesite'],
+                'path' => $params['path'],
+                'domain' => $params['domain'],
+                'secure' => $params['secure'],
+                'httponly' => $params['httponly'],
+                'samesite' => $params['samesite'],
             ];
 
             // session_name gibt in PHP 8 einen non-falsy-string zurück

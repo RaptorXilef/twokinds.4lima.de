@@ -7,9 +7,8 @@ namespace App\Application\Response;
 use App\Application\Contracts\ResponseInterface;
 
 /**
- * TODO DOCBLOCK
- *
- * SPDX-License-Identifier: LicenseRef-Proprietary
+ * Repräsentiert eine reine Text-Antwort.
+ * Kapselt header() und exit() aus den Actions heraus, um den Webserver-Output sauber zu steuern.
  */
 final readonly class TextResponse implements ResponseInterface
 {
@@ -17,6 +16,9 @@ final readonly class TextResponse implements ResponseInterface
     {
     }
 
+    /**
+     * @SuppressWarnings("PHPMD.ExitExpression")
+     */
     public function send(): void
     {
         \http_response_code($this->status);

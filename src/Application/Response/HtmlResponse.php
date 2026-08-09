@@ -6,6 +6,10 @@ namespace App\Application\Response;
 
 use App\Application\Contracts\ResponseInterface;
 
+/**
+ * Repräsentiert eine generische HTML-Antwort.
+ * Kapselt das Setzen des Content-Types und das korrekte Schließen der Verbindung.
+ */
 final readonly class HtmlResponse implements ResponseInterface
 {
     public function __construct(
@@ -14,6 +18,9 @@ final readonly class HtmlResponse implements ResponseInterface
     ) {
     }
 
+    /**
+     * @SuppressWarnings("PHPMD.ExitExpression")
+     */
     public function send(): void
     {
         \http_response_code($this->statusCode);

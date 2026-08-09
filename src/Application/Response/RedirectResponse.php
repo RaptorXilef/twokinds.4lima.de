@@ -9,8 +9,6 @@ use App\Application\Contracts\ResponseInterface;
 /**
  * Repräsentiert eine HTTP-Weiterleitung.
  * Kapselt header() und exit() aus den Actions heraus, um Testbarkeit zu gewährleisten.
- *
- * SPDX-License-Identifier: LicenseRef-Proprietary
  */
 final readonly class RedirectResponse implements ResponseInterface
 {
@@ -18,6 +16,9 @@ final readonly class RedirectResponse implements ResponseInterface
     {
     }
 
+    /**
+     * @SuppressWarnings("PHPMD.ExitExpression")
+     */
     public function send(): void
     {
         \http_response_code($this->statusCode);

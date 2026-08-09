@@ -23,6 +23,8 @@ final readonly class JsonResponse implements ResponseInterface
 
     /**
      * Sendet eine generische JSON-Antwort und beendet den Request.
+     *
+     * @SuppressWarnings("PHPMD.ExitExpression")
      */
     public function send(): void
     {

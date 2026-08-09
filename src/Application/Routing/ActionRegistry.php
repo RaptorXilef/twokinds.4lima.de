@@ -98,9 +98,11 @@ final class ActionRegistry
             $replaced = \preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<\1>[^/]+)', $path);
             $regex = \is_string($replaced) ? $replaced : '';
             $this->routes['dynamic'][$method]['#^' . $regex . '$#'] = ['class' => $className, 'auth' => $requiresAuth];
-        } else {
-            $this->routes['exact'][$method][$path] = ['class' => $className, 'auth' => $requiresAuth];
+
+            return;
         }
+
+        $this->routes['exact'][$method][$path] = ['class' => $className, 'auth' => $requiresAuth];
     }
 
     /**
@@ -114,10 +116,10 @@ final class ActionRegistry
             && \is_array($this->routes['exact'][$method])
             && isset($this->routes['exact'][$method][$path])
         ) {
-            $r = $this->routes['exact'][$method][$path];
+            $routeData = $this->routes['exact'][$method][$path];
 
-            $class = \is_string($r['class']) ? $r['class'] : '';
-            $auth = ($r['auth'] ?? false) === true;
+            $class = \is_string($routeData['class']) ? $routeData['class'] : '';
+            $auth = ($routeData['auth'] ?? false) === true;
 
             return ['class' => $class, 'params' => [], 'requiresAuth' => $auth];
         }
@@ -125,7 +127,7 @@ final class ActionRegistry
         $dynamics = $this->routes['dynamic'][$method] ?? [];
         if (\is_array($dynamics)) {
             // Dynamic Parameter Match (Regex)
-            foreach ($dynamics as $regex => $r) {
+            foreach ($dynamics as $regex => $routeData) {
                 if (\is_string($regex) && \preg_match($regex, $path, $matches) === 1) {
                     $params = [];
                     foreach ($matches as $k => $v) {
@@ -137,9 +139,9 @@ final class ActionRegistry
                         $params[$k] = $v;
                     }
 
-                    // $r ist durch den DocBlock oben als Array bekannt
-                    $class = isset($r['class']) && \is_string($r['class']) ? $r['class'] : '';
-                    $auth = isset($r['auth']) && $r['auth'];
+                    // $routeData ist durch den DocBlock oben als Array bekannt
+                    $class = isset($routeData['class']) && \is_string($routeData['class']) ? $routeData['class'] : '';
+                    $auth = isset($routeData['auth']) && $routeData['auth'];
 
                     return ['class' => $class, 'params' => $params, 'requiresAuth' => $auth];
                 }
