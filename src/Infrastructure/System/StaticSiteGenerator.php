@@ -18,6 +18,9 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
 
     public function __construct(
         private readonly ComicRepositoryInterface $comicRepo,
+        /**
+         * @phpstan-ignore-next-line
+         */
         private readonly ChapterRepositoryInterface $chapterRepo, // Kann für zukünftige Feeds nützlich sein
         private readonly ConfigInterface $config,
         private readonly CharacterRepositoryInterface $characterRepo,
@@ -48,7 +51,10 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
     private function doGenerateSitemap(): void
     {
         $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
-        $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
+
+        $rootRaw = $this->config->get('root_path', '');
+        $rootStr = \is_string($rootRaw) ? $rootRaw : '';
+        $publicDir = \rtrim($rootStr, '/\\') . '/public';
 
         $xml = new XMLWriter();
         $xml->openMemory();
@@ -85,7 +91,9 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
         foreach ($comics as $comic) {
             // Datum für <lastmod> aus der ID generieren (YYYYMMDD)
             $dateStr = \substr($comic->id->value, 0, 8);
-            $lastMod = DateTimeImmutable::createFromFormat('Ymd', $dateStr) ?: new DateTimeImmutable();
+
+            $parsedDate = DateTimeImmutable::createFromFormat('Ymd', $dateStr);
+            $lastMod = $parsedDate !== false ? $parsedDate : new DateTimeImmutable();
 
             // Wenn ein Bild hochgeladen wurde, nutzen wir dieses Datum als letzes Update
             if ($comic->imageUpdatedAt !== null) {
@@ -110,7 +118,10 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
     private function doGenerateRss(): void
     {
         $baseUrl = $this->config->getBaseUrl();
-        $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
+
+        $rootRaw = $this->config->get('root_path', '');
+        $rootStr = \is_string($rootRaw) ? $rootRaw : '';
+        $publicDir = \rtrim($rootStr, '/\\') . '/public';
 
         $xml = new XMLWriter();
         $xml->openMemory();
@@ -123,9 +134,12 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
 
         $xml->startElement('channel');
 
-        $xml->writeElement('title', $this->config->get('site_title', 'Twokinds auf Deutsch'));
+        $titleRaw = $this->config->get('site_title', 'Twokinds auf Deutsch');
+        $xml->writeElement('title', \is_string($titleRaw) ? $titleRaw : 'Twokinds auf Deutsch');
         $xml->writeElement('link', $baseUrl);
-        $xml->writeElement('description', $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.'));
+
+        $descRaw = $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.');
+        $xml->writeElement('description', \is_string($descRaw) ? $descRaw : 'Die deutsche Übersetzung des Webcomics Twokinds.');
         $xml->writeElement('language', 'de-de');
 
         $xml->writeElement('lastBuildDate', (new DateTimeImmutable())->format(\DATE_RFC2822));
@@ -158,7 +172,9 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
         \usort($feedComics, fn ($a, $b): int => \strcmp($b->id->value, $a->id->value));
 
         // Max Items aus der Config ziehen (Default 25, falls Eintrag fehlt)
-        $maxItems = (int) $this->config->get('rss_max_items', 25);
+        $maxItemsRaw = $this->config->get('rss_max_items', 25);
+        $maxItems = \is_scalar($maxItemsRaw) ? (int) $maxItemsRaw : 25;
+
         $feedComics = \array_slice($feedComics, 0, $maxItems);
 
         foreach ($feedComics as $comic) {
@@ -187,7 +203,10 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
 
             // Datum aus ID (erste 8 Zeichen) extrahieren
             $dateStr = \substr($comic->id->value, 0, 8);
-            $pubDate = DateTimeImmutable::createFromFormat('Ymd', $dateStr) ?: new DateTimeImmutable();
+
+            $parsedDate = DateTimeImmutable::createFromFormat('Ymd', $dateStr);
+            $pubDate = $parsedDate !== false ? $parsedDate : new DateTimeImmutable();
+
             $xml->writeElement('pubDate', $pubDate->format(\DATE_RFC2822));
 
             $xml->endElement(); // item
