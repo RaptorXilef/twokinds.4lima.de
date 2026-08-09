@@ -2,20 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Infrastructure\Storage;
-
 use App\Core\Entity\LoginAttempt;
 use App\Core\ValueObject\IpAddress;
 use App\Infrastructure\Storage\MySqlLoginAttemptRepository;
-use DateTimeImmutable;
-use PDO;
-use PDOStatement;
 
 \uses()->group('infrastructure', 'storage', 'database');
 
 \it('finds login attempt by ip and handles unknown ips safely', function (): void {
-    $pdo = $this->createMock(PDO::class);
-    $stmt = $this->createMock(PDOStatement::class);
+    $pdo = $this->createMock(\PDO::class);
+    $stmt = $this->createMock(\PDOStatement::class);
 
     $pdo->expects($this->once())
         ->method('prepare')
@@ -26,7 +21,7 @@ use PDOStatement;
 
     $stmt->expects($this->once())
         ->method('fetch')
-        ->with(PDO::FETCH_ASSOC)
+        ->with(\PDO::FETCH_ASSOC)
         ->willReturn([
             'ip_address' => 'unknown',
             'attempts' => 3,
@@ -42,19 +37,20 @@ use PDOStatement;
 })->covers(MySqlLoginAttemptRepository::class);
 
 \it('returns null if no login attempt exists for ip', function (): void {
-    $pdo = $this->createMock(PDO::class);
-    $stmt = $this->createMock(PDOStatement::class);
+    $pdo = $this->createMock(\PDO::class);
+    $stmt = $this->createMock(\PDOStatement::class);
 
-    $pdo->method('prepare')->willReturn($stmt);
-    $stmt->method('fetch')->willReturn(false);
+    $pdo->expects($this->once())->method('prepare')->willReturn($stmt);
+    $stmt->expects($this->once())->method('execute');
+    $stmt->expects($this->once())->method('fetch')->willReturn(false);
 
     $repo = new MySqlLoginAttemptRepository($pdo);
     \expect($repo->findByIp('192.168.0.1'))->toBeNull();
 })->covers(MySqlLoginAttemptRepository::class);
 
 \it('saves login attempt using dynamic upsert', function (): void {
-    $pdo = $this->createMock(PDO::class);
-    $stmt = $this->createMock(PDOStatement::class);
+    $pdo = $this->createMock(\PDO::class);
+    $stmt = $this->createMock(\PDOStatement::class);
 
     $pdo->expects($this->once())
         ->method('prepare')
@@ -64,14 +60,14 @@ use PDOStatement;
     $stmt->expects($this->once())->method('execute')->willReturn(true);
 
     $repo = new MySqlLoginAttemptRepository($pdo);
-    $attempt = new LoginAttempt(new IpAddress('10.0.0.1'), 1, new DateTimeImmutable());
+    $attempt = new LoginAttempt(new IpAddress('10.0.0.1'), 1, new \DateTimeImmutable());
 
     $repo->save($attempt);
 })->covers(MySqlLoginAttemptRepository::class);
 
 \it('deletes old login attempts by minutes', function (): void {
-    $pdo = $this->createMock(PDO::class);
-    $stmt = $this->createMock(PDOStatement::class);
+    $pdo = $this->createMock(\PDO::class);
+    $stmt = $this->createMock(\PDOStatement::class);
 
     $pdo->expects($this->once())
         ->method('prepare')

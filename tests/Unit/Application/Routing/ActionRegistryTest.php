@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Application\Routing;
-
 use App\Application\Routing\ActionRegistry;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\RouteCacheInterface;
-use Closure;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
@@ -15,8 +12,8 @@ use PHPUnit\Framework\MockObject\Stub;
 
 function setupRegistryTest(mixed $test): object
 {
-    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
-    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
+    $mock = \Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
+    $stub = \Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
 
     return new class($stub(ConfigInterface::class), $mock(RouteCacheInterface::class)) {
         public function __construct(

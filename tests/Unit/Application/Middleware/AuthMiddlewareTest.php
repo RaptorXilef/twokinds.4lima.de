@@ -2,25 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Application\Middleware;
-
 use App\Application\Http\ServerRequest;
 use App\Application\Middleware\AuthMiddleware;
 use App\Application\Response\JsonResponse;
 use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
-use Closure;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
-use RuntimeException;
 
 \uses()->group('application', 'middleware', 'auth');
 
 function setupAuthMiddlewareTest(mixed $test): object
 {
-    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
-    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
+    $mock = \Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
+    $stub = \Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
 
     return new class($mock(SessionManager::class), $stub(ConfigInterface::class)) {
         public AuthMiddleware $middleware;
@@ -66,7 +62,7 @@ function setupAuthMiddlewareTest(mixed $test): object
     $request = new ServerRequest(server: ['REQUEST_URI' => '/api/save_user']);
 
     $next = function (ServerRequest $req): string {
-        throw new RuntimeException('Next should not be called');
+        throw new \RuntimeException('Next should not be called');
     };
 
     $result = $app->middleware->process($request, $next);
@@ -88,7 +84,7 @@ function setupAuthMiddlewareTest(mixed $test): object
     $request = new ServerRequest(server: ['REQUEST_URI' => '/admin/dashboard']);
 
     $next = function (ServerRequest $req): string {
-        throw new RuntimeException('Next should not be called');
+        throw new \RuntimeException('Next should not be called');
     };
 
     $result = $app->middleware->process($request, $next);
