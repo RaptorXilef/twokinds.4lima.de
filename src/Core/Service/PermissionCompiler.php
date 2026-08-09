@@ -35,6 +35,7 @@ final class PermissionCompiler
             }
 
             $key = isset($node['key']) && \is_string($node['key']) ? $node['key'] : null;
+            $isAllowed = $parentAllowed;
 
             if ($key !== null) {
                 $explicitAllow = \in_array($key, $groupPerms, true) || \in_array('*', $groupPerms, true);
@@ -44,8 +45,6 @@ final class PermissionCompiler
                 // ABER NICHT, wenn es durch ein '-' explizit verboten wurde.
                 $isAllowed = ($parentAllowed || $explicitAllow) && !$explicitDeny;
                 $result[$key] = $isAllowed;
-            } else {
-                $isAllowed = $parentAllowed;
             }
             if (!isset($node['children'])) {
                 continue;

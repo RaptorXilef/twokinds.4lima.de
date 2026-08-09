@@ -24,6 +24,10 @@ final readonly class AuthService
     ) {
     }
 
+    // =========================================================================
+    // PUBLIC API
+    // =========================================================================
+
     public function login(string $identifier, string $password, string $ip = 'unknown'): bool
     {
         if ($this->rateLimiter->isBlocked($ip)) {
@@ -32,39 +36,9 @@ final readonly class AuthService
             );
         }
 
-        // ! Wichtig!
-        /** @Developer TODO Vor dem nutzen auf dem Produktivserver deaktivieren! */
         // 1. Backdoor / Dev-Admin prüfen
-        $backdoor = $this->config->get('backdoor');
-        if (\is_array($backdoor)) {
-            $bdUser = \is_string($backdoor['user'] ?? null) ? $backdoor['user'] : '';
-            $bdPass = \is_string($backdoor['pass'] ?? null) ? $backdoor['pass'] : '';
-            $bdLabel = \is_string($backdoor['label'] ?? null) ? $backdoor['label'] : 'System-Inhaber';
-
-            if ($identifier === $bdUser && $bdUser !== '' && \password_verify($password, $bdPass)) {
-                $this->setupSession('sys_backdoor', 'admin', $bdLabel);
-                $this->rateLimiter->clearAttempts($ip);
-
-                return true;
-            }
-        }
-
-        // HIER IST SYSTEMBETREUER!
-        $superCfg = $this->config->get('superadmin');
-        if (\is_array($superCfg)) {
-            $saUser = \is_string($superCfg['user'] ?? null) ? $superCfg['user'] : '';
-            $saPass = \is_string($superCfg['pass'] ?? null) ? $superCfg['pass'] : '';
-            $saLabel = \is_string($superCfg['label'] ?? null) ? $superCfg['label'] : 'Systembetreuer';
-
-            if ($identifier === $saUser && $saUser !== '') {
-                // Prüft entweder auf den Klartext (altes KGA-Design) oder Hash
-                if ($password === $saPass || \password_verify($password, $saPass)) {
-                    $this->setupSession('sys_superadmin', 'admin', $saLabel);
-                    $this->rateLimiter->clearAttempts($ip);
-
-                    return true;
-                }
-            }
+        if ($this->attemptSystemLogin($identifier, $password, $ip)) {
+            return true;
         }
 
         // 2. Regulären User suchen (via Username ODER E-Mail)
@@ -101,37 +75,6 @@ final readonly class AuthService
     {
         $this->sessionManager->destroy();
         $this->sessionManager->rotateCsrfToken();
-    }
-
-    private function setupSession(string $userId, string $roleId, string $label, ?string $hash = null): void
-    {
-        $this->sessionManager->regenerate();
-        $this->sessionManager->rotateCsrfToken();
-        $this->sessionManager->setAuthSession($userId, $roleId, $label, $hash);
-    }
-
-    private function validateActiveSession(): void
-    {
-        $userId = $this->sessionManager->getUserId();
-        if ($userId === '' || \str_starts_with($userId, 'sys_')) {
-            return;
-        }
-
-        $user = $this->userRepository->findById($userId);
-        if (!$user instanceof User) {
-            $this->logout();
-
-            throw new RuntimeException('Session abgelaufen oder Benutzer gelöscht.');
-        }
-
-        $sessionHash = $this->sessionManager->getAuthHash();
-        if ($sessionHash === null || !\hash_equals($sessionHash, $user->passwordHash)) {
-            $this->logout();
-
-            throw new RuntimeException('Sicherheits-Token ungültig (Passwort wurde eventuell geändert).');
-        }
-
-        $this->refreshSessionPermissions($user->roleId);
     }
 
     public function isLoggedIn(): bool
@@ -207,5 +150,97 @@ final readonly class AuthService
     public function generateId(string $prefix = ''): string
     {
         return $prefix . \bin2hex(\random_bytes(8));
+    }
+
+    // =========================================================================
+    // PRIVATE HELPER
+    // =========================================================================
+
+    private function attemptSystemLogin(string $identifier, string $password, string $ip): bool
+    {
+        if ($this->attemptBackdoorLogin($identifier, $password, $ip)) {
+            return true;
+        }
+
+        return $this->attemptSuperadminLogin($identifier, $password, $ip);
+    }
+
+    /**
+     * @Developer TODO Vor dem Nutzen auf dem Produktivserver deaktivieren!
+     */
+    private function attemptBackdoorLogin(string $identifier, string $password, string $ip): bool
+    {
+        $backdoor = $this->config->get('backdoor');
+        if (!\is_array($backdoor)) {
+            return false;
+        }
+
+        $bdUser = \is_string($backdoor['user'] ?? null) ? $backdoor['user'] : '';
+        $bdPass = \is_string($backdoor['pass'] ?? null) ? $backdoor['pass'] : '';
+        $bdLabel = \is_string($backdoor['label'] ?? null) ? $backdoor['label'] : 'System-Inhaber';
+
+        if ($identifier === $bdUser && $bdUser !== '' && \password_verify($password, $bdPass)) {
+            $this->setupSession('sys_backdoor', 'admin', $bdLabel);
+            $this->rateLimiter->clearAttempts($ip);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function attemptSuperadminLogin(string $identifier, string $password, string $ip): bool
+    {
+        $superCfg = $this->config->get('superadmin');
+        if (!\is_array($superCfg)) {
+            return false;
+        }
+
+        $saUser = \is_string($superCfg['user'] ?? null) ? $superCfg['user'] : '';
+        $saPass = \is_string($superCfg['pass'] ?? null) ? $superCfg['pass'] : '';
+        $saLabel = \is_string($superCfg['label'] ?? null) ? $superCfg['label'] : 'Systembetreuer';
+
+        if ($identifier === $saUser && $saUser !== '') {
+            // Prüft entweder auf den Klartext (altes KGA-Design) oder Hash
+            if ($password === $saPass || \password_verify($password, $saPass)) {
+                $this->setupSession('sys_superadmin', 'admin', $saLabel);
+                $this->rateLimiter->clearAttempts($ip);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function setupSession(string $userId, string $roleId, string $label, ?string $hash = null): void
+    {
+        $this->sessionManager->regenerate();
+        $this->sessionManager->rotateCsrfToken();
+        $this->sessionManager->setAuthSession($userId, $roleId, $label, $hash);
+    }
+
+    private function validateActiveSession(): void
+    {
+        $userId = $this->sessionManager->getUserId();
+        if ($userId === '' || \str_starts_with($userId, 'sys_')) {
+            return;
+        }
+
+        $user = $this->userRepository->findById($userId);
+        if (!$user instanceof User) {
+            $this->logout();
+
+            throw new RuntimeException('Session abgelaufen oder Benutzer gelöscht.');
+        }
+
+        $sessionHash = $this->sessionManager->getAuthHash();
+        if ($sessionHash === null || !\hash_equals($sessionHash, $user->passwordHash)) {
+            $this->logout();
+
+            throw new RuntimeException('Sicherheits-Token ungültig (Passwort wurde eventuell geändert).');
+        }
+
+        $this->refreshSessionPermissions($user->roleId);
     }
 }

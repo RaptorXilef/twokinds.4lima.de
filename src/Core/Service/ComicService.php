@@ -25,6 +25,10 @@ final readonly class ComicService
     ) {
     }
 
+    // =========================================================================
+    // PUBLIC API
+    // =========================================================================
+
     public function saveComic(ComicPage $comic): void
     {
         $existing = $this->comicRepository->findById($comic->id);
@@ -151,49 +155,78 @@ final readonly class ComicService
         return ['id' => $id->value];
     }
 
+    // =========================================================================
+    // PRIVATE HELPER
+    // =========================================================================
+
     /**
      * @param array<string, mixed> $revisionData
      */
     private function hydrateRevisionData(ComicId $id, array $revisionData): ComicPage
     {
-        $charIds = [];
-        $rawCharIds = $revisionData['character_ids'] ?? [];
-        if (\is_array($rawCharIds)) {
-            foreach ($rawCharIds as $cid) {
-                if (!\is_string($cid)) {
-                    continue;
-                }
-
-                try {
-                    $charIds[] = new CharacterId($cid);
-                } catch (InvalidArgumentException) {
-                }
-            }
-        }
-
-        $userIds = [];
-        $rawUserIds = $revisionData['user_ids'] ?? [];
-        if (\is_array($rawUserIds)) {
-            foreach ($rawUserIds as $uid) {
-                if (!\is_string($uid)) {
-                    continue;
-                }
-
-                $userIds[] = $uid;
-            }
-        }
-
         return new ComicPage(
             id: $id,
             type: \is_string($revisionData['type'] ?? null) ? $revisionData['type'] : 'Comicseite',
             name: \is_string($revisionData['name'] ?? null) ? $revisionData['name'] : '',
             transcript: \is_string($revisionData['transcript'] ?? null) ? $revisionData['transcript'] : null,
             chapterId: \is_string($revisionData['chapter_id'] ?? null) ? $revisionData['chapter_id'] : null,
-            characterIds: $charIds,
+            characterIds: $this->extractCharacterIds($revisionData),
             originalUrl: \is_string($revisionData['original_url'] ?? null) ? $revisionData['original_url'] : '',
             sketchUrl: \is_string($revisionData['sketch_url'] ?? null) ? $revisionData['sketch_url'] : '',
-            userIds: $userIds,
+            userIds: $this->extractUserIds($revisionData),
             imageUpdatedAt: \is_int($revisionData['image_updated_at'] ?? null) ? $revisionData['image_updated_at'] : null, // phpcs:ignore Generic.Files.LineLength.TooLong
         );
+    }
+
+    /**
+     * @param array<string, mixed> $revisionData
+     *
+     * @return array<int, CharacterId>
+     */
+    private function extractCharacterIds(array $revisionData): array
+    {
+        $charIds = [];
+        $rawCharIds = $revisionData['character_ids'] ?? [];
+        if (!\is_array($rawCharIds)) {
+            return [];
+        }
+
+        foreach ($rawCharIds as $cid) {
+            if (!\is_string($cid)) {
+                continue;
+            }
+
+            try {
+                $charIds[] = new CharacterId($cid);
+            } catch (InvalidArgumentException) {
+                // Ignorieren: Ungültige Charakter-IDs aus alten Backups überspringen
+            }
+        }
+
+        return $charIds;
+    }
+
+    /**
+     * @param array<string, mixed> $revisionData
+     *
+     * @return array<int, string>
+     */
+    private function extractUserIds(array $revisionData): array
+    {
+        $userIds = [];
+        $rawUserIds = $revisionData['user_ids'] ?? [];
+        if (!\is_array($rawUserIds)) {
+            return [];
+        }
+
+        foreach ($rawUserIds as $uid) {
+            if (!\is_string($uid)) {
+                continue;
+            }
+
+            $userIds[] = $uid;
+        }
+
+        return $userIds;
     }
 }

@@ -10,6 +10,8 @@ final readonly class Character
 {
     /**
      * @param array<int, string> $refSheets
+     *
+     * @SuppressWarnings("PHPMD.ExcessiveParameterList")
      */
     public function __construct(
         public CharacterId $id,

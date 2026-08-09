@@ -355,7 +355,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
     private function insertRestoredRows(string $table, array $validRows, int $mode): void
     {
         $firstRow = $validRows[0] ?? null;
-        if (!\is_array($firstRow)) {
+        if ($firstRow === null) {
             return;
         }
 

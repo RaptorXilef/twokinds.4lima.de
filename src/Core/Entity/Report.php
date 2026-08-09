@@ -11,6 +11,9 @@ use InvalidArgumentException;
 
 final readonly class Report
 {
+    /**
+     * @SuppressWarnings("PHPMD.ExcessiveParameterList")
+     */
     public function __construct(
         public ReportId $id,
         public ?ComicId $comicId, // Jetzt optional (?)
