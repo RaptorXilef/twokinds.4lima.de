@@ -2,16 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Core\Service;
-
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\MagicLinkRepositoryInterface;
 use App\Contracts\Utils\ClockInterface;
 use App\Core\Entity\MagicLink;
 use App\Core\Service\MagicLinkService;
 use App\Core\ValueObject\EmailAddress;
-use Closure;
-use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
@@ -19,8 +15,8 @@ use PHPUnit\Framework\MockObject\Stub;
 
 function setupMagicLinkTest(mixed $test): object
 {
-    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
-    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
+    $mock = \Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
+    $stub = \Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
 
     return new class($stub(ClockInterface::class), $stub(ConfigInterface::class), $mock(MagicLinkRepositoryInterface::class)) {
         public MagicLinkService $service;
@@ -37,7 +33,7 @@ function setupMagicLinkTest(mixed $test): object
 
 \it('creates a new token and saves it to the repository', function (): void {
     $app = \setupMagicLinkTest($this);
-    $now = new DateTimeImmutable('2026-08-07 10:00:00');
+    $now = new \DateTimeImmutable('2026-08-07 10:00:00');
     $app->clock->method('now')->willReturn($now);
     $app->config->method('get')->willReturn(30);
 
@@ -66,7 +62,7 @@ function setupMagicLinkTest(mixed $test): object
 
 \it('peeks token and returns email if not expired', function (): void {
     $app = \setupMagicLinkTest($this);
-    $now = new DateTimeImmutable('2026-08-07 10:00:00');
+    $now = new \DateTimeImmutable('2026-08-07 10:00:00');
     $app->clock->method('now')->willReturn($now);
 
     $validLink = new MagicLink(
@@ -89,7 +85,7 @@ function setupMagicLinkTest(mixed $test): object
 
 \it('peek returns null if token is expired or invalid', function (): void {
     $app = \setupMagicLinkTest($this);
-    $now = new DateTimeImmutable('2026-08-07 10:00:00');
+    $now = new \DateTimeImmutable('2026-08-07 10:00:00');
     $app->clock->method('now')->willReturn($now);
 
     $expiredLink = new MagicLink(
@@ -99,12 +95,10 @@ function setupMagicLinkTest(mixed $test): object
         $now->modify('-5 minutes'),
     );
 
-    // We call peekToken twice in the assertions below, so loadAll is called exactly twice.
     $app->repo->expects($this->exactly(2))
         ->method('loadAll')
         ->willReturn(['expired_token' => $expiredLink]);
 
-    // Peeking should NEVER trigger a database save.
     $app->repo->expects($this->never())
         ->method('saveAll');
 
@@ -114,7 +108,7 @@ function setupMagicLinkTest(mixed $test): object
 
 \it('verifies a token, deletes it, and returns the email', function (): void {
     $app = \setupMagicLinkTest($this);
-    $now = new DateTimeImmutable('2026-08-07 10:00:00');
+    $now = new \DateTimeImmutable('2026-08-07 10:00:00');
     $app->clock->method('now')->willReturn($now);
 
     $validLink = new MagicLink(
@@ -124,9 +118,7 @@ function setupMagicLinkTest(mixed $test): object
         $now->modify('+10 minutes'),
     );
 
-    $app->repo->expects($this->once())
-        ->method('loadAll')
-        ->willReturn(['very_long_secret_token_123' => $validLink]);
+    $app->repo->method('loadAll')->willReturn(['very_long_secret_token_123' => $validLink]);
 
     $app->repo->expects($this->once())
         ->method('saveAll')
@@ -138,7 +130,7 @@ function setupMagicLinkTest(mixed $test): object
 
 \it('verifies a token by short code, deletes it, and returns the email', function (): void {
     $app = \setupMagicLinkTest($this);
-    $now = new DateTimeImmutable('2026-08-07 10:00:00');
+    $now = new \DateTimeImmutable('2026-08-07 10:00:00');
     $app->clock->method('now')->willReturn($now);
 
     $validLink = new MagicLink(
@@ -148,9 +140,7 @@ function setupMagicLinkTest(mixed $test): object
         $now->modify('+10 minutes'),
     );
 
-    $app->repo->expects($this->once())
-        ->method('loadAll')
-        ->willReturn(['very_long_secret_token_123' => $validLink]);
+    $app->repo->method('loadAll')->willReturn(['very_long_secret_token_123' => $validLink]);
 
     $app->repo->expects($this->once())
         ->method('saveAll')
