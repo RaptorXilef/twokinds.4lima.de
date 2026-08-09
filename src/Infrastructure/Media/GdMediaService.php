@@ -12,7 +12,7 @@ use RuntimeException;
 use Throwable;
 
 /**
- * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ * @SuppressWarnings("PHPMD.TooManyPublicMethods")
  */
 final readonly class GdMediaService implements MediaServiceInterface
 {
@@ -29,7 +29,7 @@ final readonly class GdMediaService implements MediaServiceInterface
      * Wenn das Bild bereits WebP ist und nicht skaliert werden muss (oder es das Original-Hires ist),
      * wird es verlustfrei 1:1 kopiert.
      *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
     public function generateScaledImage(string $sourcePath, string $targetPath, int $maxWidth): bool
     {
@@ -56,7 +56,6 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         // Smart-Copy: Wenn es schon WebP ist UND (kleiner als Max-Breite ODER Hires(4000px) ist)
-        // -> Kein Re-Encoding! 1:1 kopieren für 100% Original-Qualität.
         if ($type === \IMAGETYPE_WEBP && ($width <= $maxWidth || $maxWidth >= 4000)) {
             try {
                 return \copy($sourcePath, $targetPath);
@@ -191,8 +190,8 @@ final readonly class GdMediaService implements MediaServiceInterface
     /**
      * Schneidet einen exakten Bereich aus und speichert ihn, primär für Social Media.
      *
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     public function generateManualCrop(
         string $sourcePath,
@@ -442,6 +441,15 @@ final readonly class GdMediaService implements MediaServiceInterface
         return $processedCount;
     }
 
+    /**
+     * @return array{
+     *     profile: string|null,
+     *     main: string|null,
+     *     swatch: string|null,
+     *     refs: array<int, string>,
+     *     warnings: array<int, string>
+     * }
+     */
     public function processCharacterImages(string $safeName, array $files): array
     {
         $rootRaw = $this->config->get('root_path', '');
@@ -457,6 +465,7 @@ final readonly class GdMediaService implements MediaServiceInterface
             \mkdir($dir, 0o755, true);
         }
 
+        /** @var array{profile: string|null, main: string|null, swatch: string|null, refs: array<int, string>, warnings: array<int, string>} $result */
         $result = ['profile' => null, 'main' => null, 'swatch' => null, 'refs' => [], 'warnings' => []];
 
         $this->processProfileImage($safeName, $files['profile_image'] ?? null, $baseTargetDir, $result);
@@ -468,7 +477,7 @@ final readonly class GdMediaService implements MediaServiceInterface
     }
 
     /**
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings("PHPMD.CyclomaticComplexity")
      */
     public function processAvatarUpload(string $userId, ?string $oldAvatarUrl, array $file): string
     {
@@ -572,6 +581,15 @@ final readonly class GdMediaService implements MediaServiceInterface
     // PRIVATE HELPER: CHARACTER IMAGE PROCESSING
     // =========================================================================
 
+    /**
+     * @param array{
+     *     profile: string|null,
+     *     main: string|null,
+     *     swatch: string|null,
+     *     refs: array<int, string>,
+     *     warnings: array<int, string>
+     * } $result
+     */
     private function processProfileImage(string $safeName, mixed $file, string $baseTargetDir, array &$result): void
     {
         if (!\is_array($file)) {
@@ -606,6 +624,15 @@ final readonly class GdMediaService implements MediaServiceInterface
         $result['warnings'][] = 'Profilbild: Konnte vom Server nicht verarbeitet werden.';
     }
 
+    /**
+     * @param array{
+     *     profile: string|null,
+     *     main: string|null,
+     *     swatch: string|null,
+     *     refs: array<int, string>,
+     *     warnings: array<int, string>
+     * } $result
+     */
     private function processPortraitImage(string $safeName, mixed $file, string $baseTargetDir, array &$result): void
     {
         if (!\is_array($file)) {
@@ -638,6 +665,15 @@ final readonly class GdMediaService implements MediaServiceInterface
         $result['warnings'][] = 'Hauptbild: Fehler bei Verarbeitung.';
     }
 
+    /**
+     * @param array{
+     *     profile: string|null,
+     *     main: string|null,
+     *     swatch: string|null,
+     *     refs: array<int, string>,
+     *     warnings: array<int, string>
+     * } $result
+     */
     private function processPaletteImage(string $safeName, mixed $file, string $baseTargetDir, array &$result): void
     {
         if (!\is_array($file)) {
@@ -668,6 +704,15 @@ final readonly class GdMediaService implements MediaServiceInterface
         $result['swatch'] = $fileName;
     }
 
+    /**
+     * @param array{
+     *     profile: string|null,
+     *     main: string|null,
+     *     swatch: string|null,
+     *     refs: array<int, string>,
+     *     warnings: array<int, string>
+     * } $result
+     */
     private function processReferenceSheets(string $safeName, mixed $files, string $baseTargetDir, array &$result): void
     {
         if (!\is_array($files)) {

@@ -214,7 +214,9 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
     {
         $baseUrl = $this->config->getBaseUrl();
         $parsed = \parse_url($baseUrl);
-        $parsedHost = \is_array($parsed) && isset($parsed['host']) && \is_string($parsed['host']) ? $parsed['host'] : null;
+        $parsedHost = \is_array($parsed) && isset($parsed['host']) && \is_string($parsed['host'])
+            ? $parsed['host']
+            : null;
 
         $fallbackHostRaw = $this->config->get('server_host', 'localhost');
         $fallbackHost = \is_string($fallbackHostRaw) ? $fallbackHostRaw : 'localhost';
@@ -284,7 +286,7 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
      * @param resource $socket
      * @param array<string, mixed> $smtpConfig
      */
-    private function transmitEmail($socket, string $recipient, string $subject, string $body, array $smtpConfig): ?string
+    private function transmitEmail($socket, string $recipient, string $subject, string $body, array $smtpConfig): ?string // phpcs:ignore Generic.Files.LineLength.TooLong
     {
         $fromRaw = $smtpConfig['from'] ?? '';
         $from = \str_replace(["\r", "\n"], '', \is_scalar($fromRaw) ? (string) $fromRaw : '');
@@ -344,7 +346,7 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
     /**
      * @param array<string, mixed> $data
      */
-    private function logEmail(string $recipient, string $subject, string $template, bool|string $status, array $data = []): void
+    private function logEmail(string $recipient, string $subject, string $template, bool|string $status, array $data = []): void // phpcs:ignore Generic.Files.LineLength.TooLong
     {
         $statusStr = $status === true ? 'Erfolg' : 'Fehler: ' . $status;
         $id = \uniqid('ml_');
@@ -354,13 +356,13 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
         $json = \is_string($jsonStr) ? $jsonStr : '{}';
 
         $sql = 'INSERT INTO `mail_logs` (id, timestamp, recipient, subject, template, status, data) '
-             . 'VALUES (?, ?, ?, ?, ?, ?, ?)';
+            . 'VALUES (?, ?, ?, ?, ?, ?, ?)';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$id, $now, $recipient, $subject, $template, $statusStr, $json]);
 
         // Max 200 Logs behalten
         $cleanSql = 'DELETE FROM `mail_logs` WHERE id NOT IN '
-                  . '(SELECT id FROM (SELECT id FROM `mail_logs` ORDER BY timestamp DESC LIMIT 200) tmp)';
+            . '(SELECT id FROM (SELECT id FROM `mail_logs` ORDER BY timestamp DESC LIMIT 200) tmp)';
         $this->pdo->exec($cleanSql);
     }
 }

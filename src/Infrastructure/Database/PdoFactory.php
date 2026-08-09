@@ -109,13 +109,19 @@ final class PdoFactory
 
             return $pdo;
         } catch (PDOException $e) {
-            throw new RuntimeException('MySQL Auto-Install Fehler (DB Create): ' . $e->getMessage(), (int) $e->getCode(), $e);
+            throw new RuntimeException(
+                'MySQL Auto-Install Fehler (DB Create): ' . $e->getMessage(),
+                (int) $e->getCode(),
+                $e,
+            );
         }
     }
 
     private static function verifyAndRepairSchema(PDO $pdo, ConfigInterface $config): void
     {
         $schemaRaw = $config->get('db_schema', []);
+
+        /** @var array<string, mixed> $schema */
         $schema = \is_array($schemaRaw) ? $schemaRaw : [];
 
         $missingTables = self::checkMissingTables($pdo, $schema);

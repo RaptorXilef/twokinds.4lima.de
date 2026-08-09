@@ -74,7 +74,10 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
                     continue;
                 }
 
-                if (!$this->processSingleMailJob($item, $processor)) {
+                /** @var array<string, mixed> $validItem */
+                $validItem = $item;
+
+                if (!$this->processSingleMailJob($validItem, $processor)) {
                     continue;
                 }
 

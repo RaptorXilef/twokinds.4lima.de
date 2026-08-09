@@ -124,7 +124,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $stmtClean->execute([$id, $id]);
 
         // 3. Reports anonymisieren (DSGVO & Datenhygiene)
-        $sqlReports = 'UPDATE `' . Table::REPORTS . "` SET `user_id` = NULL, `submitter_name` = 'Gelöschter Nutzer' WHERE `user_id` = ?";
+        $sqlReports = 'UPDATE `' . Table::REPORTS . "` SET `user_id` = NULL, `submitter_name` = 'Gelöschter Nutzer' WHERE `user_id` = ?"; // phpcs:ignore Generic.Files.LineLength.TooLong
         $stmtReports = $this->pdo->prepare($sqlReports);
         $stmtReports->execute([$id]);
 
@@ -135,7 +135,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
 
     public function deleteUnverifiedAccounts(int $olderThanMinutes): int
     {
-        $sql = 'DELETE FROM `' . Table::USERS . "` WHERE role_id = 'pending' AND created_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)";
+        $sql = 'DELETE FROM `' . Table::USERS . "` WHERE role_id = 'pending' AND created_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)"; // phpcs:ignore Generic.Files.LineLength.TooLong
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$olderThanMinutes]);
 

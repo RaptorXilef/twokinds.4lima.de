@@ -15,7 +15,7 @@ trait SafeJsonWriterTrait
      *
      * @param array<array-key, mixed> $data
      */
-    protected function writeJsonSafely(string $path, array $data, int $flags = \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE): void
+    protected function writeJsonSafely(string $path, array $data, int $flags = \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE): void // phpcs:ignore Generic.Files.LineLength.TooLong
     {
         // ! Sicher gehen, dass der Nutzer keine Pfade sieht, aber eine Info. Die Pfade werden protokolliert
         $json = \json_encode($data, $flags);

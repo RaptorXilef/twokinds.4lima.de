@@ -14,7 +14,7 @@ final class SchemaRegistry
     /**
      * @return array<string, string>
      *
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings("PHPMD.ExcessiveMethodLength")
      */
     public static function getSchemas(): array
     {
