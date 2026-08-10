@@ -24,10 +24,6 @@ final readonly class AuthService
     ) {
     }
 
-    // =========================================================================
-    // PUBLIC API
-    // =========================================================================
-
     public function login(string $identifier, string $password, string $ip = 'unknown'): bool
     {
         if ($this->rateLimiter->isBlocked($ip)) {
@@ -36,20 +32,17 @@ final readonly class AuthService
             );
         }
 
-        // 1. Backdoor / Dev-Admin prüfen
         if ($this->attemptSystemLogin($identifier, $password, $ip)) {
             return true;
         }
 
-        // 2. Regulären User suchen (via Username ODER E-Mail)
         $user = $this->userRepository->findByEmail($identifier);
+
         if (!$user instanceof User) {
             $user = $this->userRepository->findByUsername($identifier);
         }
 
-        // 3. Passwort prüfen
         if ($user instanceof User && \password_verify($password, $user->passwordHash)) {
-            // Wenn der User nicht verifiziert ist, abbrechen!
             if ($user->roleId === 'pending') {
                 $this->rateLimiter->recordFailedAttempt($ip);
 
@@ -58,14 +51,13 @@ final readonly class AuthService
 
             $this->setupSession($user->id, $user->roleId, $user->username->value, $user->passwordHash);
             $this->refreshSessionPermissions($user->roleId);
-
             $this->rateLimiter->clearAttempts($ip);
 
             return true;
         }
 
-        // Timing-Attack-Prevention: Immer verify ausführen, auch wenn User nicht gefunden wurde
         \password_verify($password, '$2y$10$abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUV');
+
         $this->rateLimiter->recordFailedAttempt($ip);
 
         return false;
@@ -87,6 +79,7 @@ final readonly class AuthService
 
         $backdoor = $this->config->get('backdoor');
         $backdoorLabel = \is_array($backdoor) && \is_string($backdoor['label'] ?? null) ? $backdoor['label'] : '';
+
         if ($this->sessionManager->getUserId() !== '') {
             return true;
         }
@@ -96,7 +89,6 @@ final readonly class AuthService
 
     public function hasPermission(string $permission): bool
     {
-        // Wenn admin_dev_mode aktiv ist, hat jeder vollen Zugriff
         if ($this->config->get('admin_dev_mode', false) === true) {
             return true;
         }
@@ -110,12 +102,10 @@ final readonly class AuthService
         $roleId = $this->sessionManager->getAdminGroup();
         $roles = $this->roleRepository->loadAll();
 
-        // Prüfe auf Superadmin-Sternchen (*)
         if (isset($roles[$roleId]) && \in_array('*', $roles[$roleId]->permissions, true)) {
             return true;
         }
 
-        // Strikter Boolean-Return, falls das Array mixed zurückgibt
         return ($this->sessionManager->getPermissions()[$permission] ?? false) === true;
     }
 
@@ -125,9 +115,11 @@ final readonly class AuthService
         $rolePerms = isset($roles[$roleId]) ? $roles[$roleId]->permissions : [];
 
         $structure = $this->config->get('structure', []);
+
         if (!\is_array($structure)) {
             $structure = [];
         }
+
         $compiler = new PermissionCompiler();
         $this->sessionManager->setPermissions($compiler->compile($structure, $rolePerms));
     }
@@ -152,10 +144,6 @@ final readonly class AuthService
         return $prefix . \bin2hex(\random_bytes(8));
     }
 
-    // =========================================================================
-    // PRIVATE HELPER
-    // =========================================================================
-
     private function attemptSystemLogin(string $identifier, string $password, string $ip): bool
     {
         if ($this->attemptBackdoorLogin($identifier, $password, $ip)) {
@@ -170,7 +158,12 @@ final readonly class AuthService
      */
     private function attemptBackdoorLogin(string $identifier, string $password, string $ip): bool
     {
+        if ($this->config->get('disable_backdoor', false) === true) {
+            return false;
+        }
+
         $backdoor = $this->config->get('backdoor');
+
         if (!\is_array($backdoor)) {
             return false;
         }
@@ -191,7 +184,12 @@ final readonly class AuthService
 
     private function attemptSuperadminLogin(string $identifier, string $password, string $ip): bool
     {
+        if ($this->config->get('disable_superadmin', false) === true) {
+            return false;
+        }
+
         $superCfg = $this->config->get('superadmin');
+
         if (!\is_array($superCfg)) {
             return false;
         }
@@ -201,7 +199,6 @@ final readonly class AuthService
         $saLabel = \is_string($superCfg['label'] ?? null) ? $superCfg['label'] : 'Systembetreuer';
 
         if ($identifier === $saUser && $saUser !== '') {
-            // Prüft entweder auf den Klartext (altes KGA-Design) oder Hash
             if ($password === $saPass || \password_verify($password, $saPass)) {
                 $this->setupSession('sys_superadmin', 'admin', $saLabel);
                 $this->rateLimiter->clearAttempts($ip);
@@ -223,11 +220,13 @@ final readonly class AuthService
     private function validateActiveSession(): void
     {
         $userId = $this->sessionManager->getUserId();
+
         if ($userId === '' || \str_starts_with($userId, 'sys_')) {
             return;
         }
 
         $user = $this->userRepository->findById($userId);
+
         if (!$user instanceof User) {
             $this->logout();
 
@@ -235,6 +234,7 @@ final readonly class AuthService
         }
 
         $sessionHash = $this->sessionManager->getAuthHash();
+
         if ($sessionHash === null || !\hash_equals($sessionHash, $user->passwordHash)) {
             $this->logout();
 
