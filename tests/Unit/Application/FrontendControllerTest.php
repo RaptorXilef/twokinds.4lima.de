@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 namespace Tests\Unit\Application;
 
@@ -16,7 +17,7 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\DependencyInjection\ContainerInterface;
 use App\Contracts\System\RouteCacheInterface;
 use App\Infrastructure\Utils\SystemClock;
-use PHPUnit\Framework\MockObject\MockObject;
+use Closure;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('application', 'controller');
@@ -28,9 +29,9 @@ use PHPUnit\Framework\MockObject\Stub;
     $_SESSION = [];
 });
 
-function setupFrontendControllerTest(mixed $test, array $configMap = []): object {
-    $stub = \Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
-    $mock = \Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
+function setupFrontendControllerTest(mixed $test, array $configMap = []): object
+{
+    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
 
     $config = $stub(ConfigInterface::class);
     $config->method('getBaseUrl')->willReturn('https://tk.local');
@@ -38,6 +39,7 @@ function setupFrontendControllerTest(mixed $test, array $configMap = []): object
         if (isset($configMap[$key])) {
             return $configMap[$key];
         }
+
         return match ($key) {
             'root_path' => \dirname(__DIR__, 3),
             'maintenance_mode' => false,
@@ -51,7 +53,8 @@ function setupFrontendControllerTest(mixed $test, array $configMap = []): object
     $cache->method('load')->willReturn(['exact' => [], 'dynamic' => []]);
     $registry = new ActionRegistry($config, $cache);
 
-    $container = $mock(ContainerInterface::class);
+    // STUB statt Mock, das löst die 4 verbliebenen PHPUnit Notices!
+    $container = $stub(ContainerInterface::class);
     $factory = new UniversalActionFactory($registry, $container);
 
     $session = new SessionManager(new SystemClock());
@@ -64,21 +67,22 @@ function setupFrontendControllerTest(mixed $test, array $configMap = []): object
             public SecurityHeadersMiddleware $security,
             public SessionManager $session,
             public ActionRegistry $registry,
-            public MockObject $container
-        ) {}
+            public Stub $container,
+        ) {
+        }
     };
 }
 
 \it('returns 503 JSON response when API is accessed during maintenance mode', function (): void {
     $app = setupFrontendControllerTest($this, [
-        'maintenance_mode_admin' => true
+        'maintenance_mode_admin' => true,
     ]);
 
-    $stub = \Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
+    $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
     $cache = $stub(RouteCacheInterface::class);
     $cache->method('load')->willReturn([
         'exact' => ['GET' => ['/api/delete_user' => ['class' => 'App\\Application\\Actions\\Api\\Admin\\DeleteUserAction', 'auth' => true]]],
-        'dynamic' => []
+        'dynamic' => [],
     ]);
 
     $registry = new ActionRegistry($app->config, $cache);
@@ -94,18 +98,21 @@ function setupFrontendControllerTest(mixed $test, array $configMap = []): object
 
 \it('bypasses maintenance mode for allowed routes like login', function (): void {
     $app = setupFrontendControllerTest($this, [
-        'maintenance_mode' => true
+        'maintenance_mode' => true,
     ]);
 
     $app->container->method('get')->willReturn(new class implements ActionInterface {
-        public function execute(ServerRequest $request): mixed { return new HtmlResponse('Login Page', 200); }
+        public function execute(ServerRequest $request): mixed
+        {
+            return new HtmlResponse('Login Page', 200);
+        }
     });
 
-    $stub = \Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
+    $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
     $cache = $stub(RouteCacheInterface::class);
     $cache->method('load')->willReturn([
         'exact' => ['POST' => ['/api/admin_login' => ['class' => 'MockedLoginAction', 'auth' => false]]],
-        'dynamic' => []
+        'dynamic' => [],
     ]);
 
     $registry = new ActionRegistry($app->config, $cache);

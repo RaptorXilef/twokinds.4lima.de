@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 namespace Tests\Unit\Application\Actions\Frontend;
 
@@ -29,7 +30,7 @@ use App\Infrastructure\Utils\SystemClock;
         ['site_description', null, 'Test Desc'],
         ['base_url', null, 'http://localhost'],
         ['email_user', null, 'admin'],
-        ['email_domain', null, 'test.com']
+        ['email_domain', null, 'test.com'],
     ]);
     $config->method('getBaseUrl')->willReturn('http://localhost');
 
@@ -45,7 +46,7 @@ use App\Infrastructure\Utils\SystemClock;
         $this->createStub(JsonHelperInterface::class),
         $sessionManager,
         $this->createStub(SystemInfoInterface::class),
-        $this->createStub(AssetHelperInterface::class)
+        $this->createStub(AssetHelperInterface::class),
     );
 
     $action = new $class($renderer);
