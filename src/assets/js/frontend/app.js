@@ -4,7 +4,7 @@ import { FrontendApi } from './core/FrontendApi.js';
 import { ArchiveManager } from './modules/ArchiveManager.js';
 import { AuthForms } from './modules/AuthForms.js';
 import { AuthManager } from './modules/AuthManager.js';
-import { BookmarkMigrator } from './modules/BookmarkMigrator.js'; // (Kann in zukünftigen Versionen entfernt werden)
+import { runBookmarkMigration } from './modules/BookmarkMigrator.js'; // (Kann in zukünftigen Versionen entfernt werden)
 import { BookmarksManager } from './modules/BookmarksManager.js';
 import { CharacterFilter } from './modules/CharacterFilter.js';
 import { ComicReader } from './modules/ComicReader.js';
@@ -19,7 +19,7 @@ import { ImageFallback } from './ui/ImageFallback.js';
 document.addEventListener('DOMContentLoaded', () => {
     // --- TEMPORÄRE MIGRATION: v5 -> v6 Lesezeichen ---
     // (Kann in zukünftigen Versionen entfernt werden)
-    BookmarkMigrator.run();
+    runBookmarkMigration();
     // -------------------------------------------------
 
     let api;
