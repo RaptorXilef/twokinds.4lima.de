@@ -14,7 +14,6 @@ use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\BookmarkRepositoryInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
-use App\Core\Entity\User;
 use App\Core\Service\AuthService;
 use App\Infrastructure\Utils\SystemClock;
 use Closure;

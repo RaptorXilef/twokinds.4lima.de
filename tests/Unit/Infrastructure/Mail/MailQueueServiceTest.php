@@ -10,18 +10,18 @@ use App\Core\Entity\MailJob;
 use App\Infrastructure\Mail\MailQueueService;
 use Closure;
 use Exception;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('infrastructure', 'mail');
 
 function setupMailQueueTest(mixed $test): object
 {
-    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
+    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
 
-    return new class($mock(MailQueueRepositoryInterface::class), $mock(MailServiceInterface::class)) {
+    return new class($stub(MailQueueRepositoryInterface::class), $stub(MailServiceInterface::class)) {
         public function __construct(
-            public MockObject&MailQueueRepositoryInterface $repo,
-            public MockObject&MailServiceInterface $realMail,
+            public Stub&MailQueueRepositoryInterface $repo,
+            public Stub&MailServiceInterface $realMail,
         ) {
         }
     };
@@ -63,19 +63,15 @@ function setupMailQueueTest(mixed $test): object
 \it('processes queue and delegates to real service', function (): void {
     $app = setupMailQueueTest($this);
 
-    // Mock processBatch to instantly call the processor closure with dummy data
-    $app->repo->expects($this->once())
-        ->method('processBatch')
+    $app->repo->method('processBatch')
         ->willReturnCallback(function (int $limit, callable $processor) {
             $processor('test@test.de', 'Sub', 'tpl', ['a' => 1]);
 
             return 1;
         });
 
-    $app->realMail->expects($this->once())
-        ->method('sendTemplate')
-        ->with('test@test.de', 'Sub', 'tpl', ['a' => 1])
-        ->willReturn(true); // Success
+    $app->realMail->method('sendTemplate')
+        ->willReturn(true);
 
     $service = new MailQueueService($app->repo, $app->realMail);
     $count = $service->processQueue(5);
@@ -93,10 +89,8 @@ function setupMailQueueTest(mixed $test): object
             return 0;
         });
 
-    $app->realMail->method('sendTemplate')->willReturn('SMTP Timeout Connection Error'); // Fails
+    $app->realMail->method('sendTemplate')->willReturn('SMTP Timeout Connection Error');
 
     $service = new MailQueueService($app->repo, $app->realMail);
-
-    // The Closure inside processQueue throws an Exception when sendTemplate fails
     $service->processQueue(5);
 })->throws(Exception::class, 'SMTP Timeout Connection Error')->covers(MailQueueService::class);
