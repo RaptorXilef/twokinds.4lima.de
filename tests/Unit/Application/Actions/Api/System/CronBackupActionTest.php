@@ -12,7 +12,7 @@ use App\Contracts\System\BackupServiceInterface;
 \uses()->group('application', 'actions', 'api');
 
 \it('CronBackupAction blocks if token is missing or invalid', function (): void {
-    $config = $this->createStub(ConfigInterface::class);
+    $config = $this->createMock(ConfigInterface::class); // Changed from createStub to createMock
     $config->method('get')->with('cron_secret')->willReturn('secret123');
 
     $backup = $this->createMock(BackupServiceInterface::class);
@@ -28,7 +28,7 @@ use App\Contracts\System\BackupServiceInterface;
 })->covers(CronBackupAction::class);
 
 \it('CronBackupAction executes backup if token is valid', function (): void {
-    $config = $this->createStub(ConfigInterface::class);
+    $config = $this->createMock(ConfigInterface::class); // Changed from createStub to createMock
     $config->method('get')->with('cron_secret')->willReturn('secret123');
 
     $backup = $this->createMock(BackupServiceInterface::class);

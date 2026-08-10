@@ -14,7 +14,7 @@ use App\Contracts\Storage\UserRepositoryInterface;
 \uses()->group('application', 'actions', 'api');
 
 \it('ProcessMailQueueAction triggers all cleanup tasks on valid token', function (): void {
-    $config = $this->createStub(ConfigInterface::class);
+    $config = $this->createMock(ConfigInterface::class); // Changed from createStub to createMock
     $config->method('get')->with('cron_secret')->willReturn('secret123');
 
     $mail = $this->createMock(MailServiceInterface::class);

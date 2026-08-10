@@ -9,7 +9,6 @@ use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
 use App\Infrastructure\Utils\SystemClock;
-use RuntimeException;
 
 \uses()->group('application', 'middleware', 'auth');
 
@@ -23,7 +22,8 @@ use RuntimeException;
 \it('calls next if user is logged in', function (): void {
     $_SESSION['user_id'] = 'usr_123';
     $sessionManager = new SessionManager(new SystemClock());
-    $config = $this->createStub(ConfigInterface::class);
+
+    $config = $this->createMock(ConfigInterface::class);
     $middleware = new AuthMiddleware($sessionManager, $config);
 
     $request = new ServerRequest();
@@ -44,13 +44,14 @@ use RuntimeException;
 \it('returns 401 JsonResponse for API routes if not logged in', function (): void {
     $_SESSION['user_id'] = '';
     $sessionManager = new SessionManager(new SystemClock());
-    $config = $this->createStub(ConfigInterface::class);
+
+    $config = $this->createMock(ConfigInterface::class);
     $middleware = new AuthMiddleware($sessionManager, $config);
 
     $request = new ServerRequest(server: ['REQUEST_URI' => '/api/save_user']);
 
     $next = function (ServerRequest $req): string {
-        throw new RuntimeException('Next should not be called');
+        throw new \RuntimeException('Next should not be called');
     };
 
     $result = $middleware->process($request, $next);
@@ -64,7 +65,7 @@ use RuntimeException;
     $_SESSION['user_id'] = '';
     $sessionManager = new SessionManager(new SystemClock());
 
-    $config = $this->createStub(ConfigInterface::class);
+    $config = $this->createMock(ConfigInterface::class);
     $config->method('getBaseUrl')->willReturn('https://test.local');
 
     $middleware = new AuthMiddleware($sessionManager, $config);
@@ -72,7 +73,7 @@ use RuntimeException;
     $request = new ServerRequest(server: ['REQUEST_URI' => '/admin/dashboard']);
 
     $next = function (ServerRequest $req): string {
-        throw new RuntimeException('Next should not be called');
+        throw new \RuntimeException('Next should not be called');
     };
 
     $result = $middleware->process($request, $next);

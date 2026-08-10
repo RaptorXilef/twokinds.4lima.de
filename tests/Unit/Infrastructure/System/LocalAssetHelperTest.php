@@ -10,7 +10,7 @@ use App\Infrastructure\System\LocalAssetHelper;
 \uses()->group('infrastructure', 'system', 'assets');
 
 \it('generates asset url with mtime cache fallback', function (): void {
-    $config = $this->createStub(ConfigInterface::class);
+    $config = $this->createMock(ConfigInterface::class); // Changed from createStub to createMock
     $config->method('getBaseUrl')->willReturn('https://twokinds.local');
     $config->method('get')->with('root_path')->willReturn(__DIR__);
 
