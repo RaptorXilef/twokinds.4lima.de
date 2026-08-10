@@ -4,18 +4,25 @@ declare(strict_types=1);
 
 /**
  * @var string $baseUrl
- * @var array  $groups
- * @var array  $characters
- * @var array  $settings
- * @var array  $perms
+ * @var array $groups
+ * @var array $characters
+ * @var array $settings
+ * @var array $perms
  */
-
-// --- Datalists vorbereiten ---
-$allSpecies    = [];
+$allGenders = [];
+$allAges = [];
+$allSpecies = [];
 $allSubspecies = [];
-$allLanguages  = [];
-$allRanks      = [];
+$allLanguages = [];
+$allRanks = [];
+
 foreach ($characters as $c) {
+    if ($c->gender) {
+        $allGenders[$c->gender] = true;
+    }
+    if ($c->age) {
+        $allAges[$c->age] = true;
+    }
     if ($c->species) {
         $allSpecies[$c->species] = true;
     }
@@ -24,29 +31,40 @@ foreach ($characters as $c) {
     }
     if ($c->languages) {
         foreach (\explode(',', $c->languages) as $l) {
-            $allLanguages[\trim($l)] = true;
+            if (\trim($l) !== '') {
+                $allLanguages[\trim($l)] = true;
+            }
         }
     }
     if ($c->rank) {
         foreach (\explode(',', $c->rank) as $r) {
-            $allRanks[\trim($r)] = true;
+            if (\trim($r) !== '') {
+                $allRanks[\trim($r)] = true;
+            }
         }
     }
 }
+
+\ksort($allGenders);
+\ksort($allAges);
+\ksort($allSpecies);
+\ksort($allSubspecies);
+\ksort($allLanguages);
+\ksort($allRanks);
+
 ?>
 
-<!-- Die Datalists für das Modal -->
 <datalist id="dl-species"><?php foreach (\array_keys($allSpecies) as $v) {
-    echo '<option value="' . \htmlspecialchars($v) . '">';
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
 } ?></datalist>
 <datalist id="dl-subspecies"><?php foreach (\array_keys($allSubspecies) as $v) {
-    echo '<option value="' . \htmlspecialchars($v) . '">';
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
 } ?></datalist>
 <datalist id="dl-languages"><?php foreach (\array_keys($allLanguages) as $v) {
-    echo '<option value="' . \htmlspecialchars($v) . '">';
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
 } ?></datalist>
 <datalist id="dl-ranks"><?php foreach (\array_keys($allRanks) as $v) {
-    echo '<option value="' . \htmlspecialchars($v) . '">';
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
 } ?></datalist>
 
 <!-- ... ab hier dein normales HTML ... -->
@@ -60,13 +78,96 @@ foreach ($characters as $c) {
             <button type="button"
                     class="button add"
                     id="btn-add-char">
-                <i class="fa-solid fa-plus"></i> Neuen Charakter erstellen </button>
+                <i class="fa-solid fa-plus"></i> Neuen Charakter erstellen
+            </button>
         <?php } ?>
     </div>
 </div>
 
+<div class="filter-form mb-20">
+    <legend><i class="fa-solid fa-filter text-link"></i> Charaktere filtern</legend>
+    <div class="filter-controls grid-auto-180">
+        <div style="grid-column: 1 / -1;">
+            <label class="d-block font-small font-bold mb-5 text-faded">Freitext-Suche</label>
+            <input type="text"
+                   id="char-filter-search"
+                   placeholder="Name, ID, Alias oder Biografie durchsuchen...">
+        </div>
+        <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Geschlecht</label>
+            <select id="char-filter-gender">
+                <option value="">Alle</option>
+                <?php foreach (\array_keys($allGenders) as $v) {
+                    echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                } ?>
+            </select>
+        </div>
+        <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Alter</label>
+            <select id="char-filter-age">
+                <option value="">Alle</option>
+                <?php foreach (\array_keys($allAges) as $v) {
+                    echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                } ?>
+            </select>
+        </div>
+        <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Spezies</label>
+            <select id="char-filter-species">
+                <option value="">Alle</option>
+                <?php foreach (\array_keys($allSpecies) as $v) {
+                    echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                } ?>
+            </select>
+        </div>
+        <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Subspezies</label>
+            <select id="char-filter-subspecies">
+                <option value="">Alle</option>
+                <?php foreach (\array_keys($allSubspecies) as $v) {
+                    echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                } ?>
+            </select>
+        </div>
+        <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Klasse/Rang</label>
+            <select id="char-filter-rank">
+                <option value="">Alle</option>
+                <?php foreach (\array_keys($allRanks) as $v) {
+                    echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                } ?>
+            </select>
+        </div>
+        <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Sprachen</label>
+            <select id="char-filter-languages">
+                <option value="">Alle</option>
+                <?php foreach (\array_keys($allLanguages) as $v) {
+                    echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                } ?>
+            </select>
+        </div>
+        <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Pro Seite</label>
+            <select id="char-per-page">
+                <option value="15"
+                        selected>15 Einträge</option>
+                <option value="50">50 Einträge</option>
+                <option value="100">100 Einträge</option>
+                <option value="all">Alle anzeigen</option>
+            </select>
+        </div>
+    </div>
+    <div class="text-right mt-15">
+        <button type="button"
+                id="char-filter-reset"
+                class="button edit p-10 font-small"><i class="fa-solid fa-rotate-left"></i> Filter zurücksetzen</button>
+    </div>
+</div>
+
 <div class="sitemap-table-container">
-    <table class="admin-table">
+    <table class="admin-table"
+           id="characters-table">
         <thead>
             <tr>
                 <th class="col-id">ID</th>
@@ -75,7 +176,7 @@ foreach ($characters as $c) {
                 <th class="col-actions">Aktionen</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="characters-table-body">
             <?php if (empty($characters)) { ?>
                 <tr>
                     <td colspan="4"
@@ -87,24 +188,33 @@ foreach ($characters as $c) {
                     $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/100x100?text=N/A';
 
                     $charData = \json_encode([
-                        'id'          => $cId,
-                        'name'        => $char->name,
-                        'fullName'    => $char->fullName ?? '',
-                        'picUrl'      => $char->picUrl ?? '',
+                        'id' => $cId,
+                        'name' => $char->name,
+                        'fullName' => $char->fullName ?? '',
+                        'picUrl' => $char->picUrl ?? '',
                         'description' => $char->description ?? '',
-                        'altNames'    => $char->altNames ?? '',
-                        'gender'      => $char->gender ?? '',
-                        'age'         => $char->age ?? '',
-                        'rank'        => $char->rank ?? '',
-                        'species'     => $char->species ?? '',
-                        'subspecies'  => $char->subspecies ?? '',
-                        'languages'   => $char->languages ?? '',
-                        'mainPic'     => $char->mainPic ?? '',
-                        'swatchPic'   => $char->swatchPic ?? '',
-                        'refSheets'   => $char->refSheets ?? [],
+                        'altNames' => $char->altNames ?? '',
+                        'gender' => $char->gender ?? '',
+                        'age' => $char->age ?? '',
+                        'rank' => $char->rank ?? '',
+                        'species' => $char->species ?? '',
+                        'subspecies' => $char->subspecies ?? '',
+                        'languages' => $char->languages ?? '',
+                        'mainPic' => $char->mainPic ?? '',
+                        'swatchPic' => $char->swatchPic ?? '',
+                        'refSheets' => $char->refSheets ?? [],
                     ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
-                    ?>
-                    <tr>
+
+                    $searchStr = \strtolower($cId . ' ' . $char->name . ' ' . ($char->fullName ?? '') . ' ' . ($char->altNames ?? '') . ' ' . \strip_tags($char->description ?? ''));
+                ?>
+                    <tr data-search="<?php echo \htmlspecialchars($searchStr); ?>"
+                        data-gender="<?php echo \htmlspecialchars($char->gender ?? ''); ?>"
+                        data-age="<?php echo \htmlspecialchars($char->age ?? ''); ?>"
+                        data-rank="<?php echo \htmlspecialchars($char->rank ?? ''); ?>"
+                        data-species="<?php echo \htmlspecialchars($char->species ?? ''); ?>"
+                        data-subspecies="<?php echo \htmlspecialchars($char->subspecies ?? ''); ?>"
+                        data-languages="<?php echo \htmlspecialchars($char->languages ?? ''); ?>">
+
                         <td class="mono"><?php echo \htmlspecialchars($cId); ?></td>
                         <td>
                             <img src="<?php echo \htmlspecialchars($pic); ?>"
@@ -144,3 +254,6 @@ foreach ($characters as $c) {
         </tbody>
     </table>
 </div>
+
+<div id="character-pagination"
+     class="pagination-wrapper"></div>

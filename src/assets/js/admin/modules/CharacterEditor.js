@@ -1,5 +1,6 @@
 import { createReactiveState } from '../core/ReactiveState.js';
 import { DragDropService } from '../ui/DragDropService.js';
+import { renderPagination } from '../ui/Pagination.js';
 
 /**
  * @typedef {import('../core/Api.js').Api} Api
@@ -52,11 +53,167 @@ export class CharacterEditor {
         );
 
         if (this.section || this.form) {
+            this.initTableLogic();
             this.bindEvents();
             this.bindImageSelection();
             this.bindDropZones();
             this.bindLiveStateInputs();
         }
+    }
+
+    initTableLogic() {
+        this.tableBody = document.querySelector('#characters-table tbody');
+        this.paginationContainer = document.getElementById('character-pagination');
+
+        if (!this.tableBody || !this.paginationContainer) return;
+
+        this.allRows = Array.from(this.tableBody.querySelectorAll('tr')).filter(
+            (row) => !row.classList.contains('empty-table-message')
+        );
+
+        this.filters = {
+            search: document.getElementById('char-filter-search'),
+            gender: document.getElementById('char-filter-gender'),
+            age: document.getElementById('char-filter-age'),
+            species: document.getElementById('char-filter-species'),
+            subspecies: document.getElementById('char-filter-subspecies'),
+            rank: document.getElementById('char-filter-rank'),
+            languages: document.getElementById('char-filter-languages'),
+            perPage: document.getElementById('char-per-page'),
+        };
+        this.btnReset = document.getElementById('char-filter-reset');
+
+        this.stateKey = 'admin_dt_state_characters';
+        this.charPage = 1;
+        this.charLimit = '15';
+
+        this.restoreTableState();
+
+        const applyFilters = () => {
+            if (this.filters.perPage) this.charLimit = this.filters.perPage.value;
+            this.charPage = 1;
+            this.renderTable();
+        };
+
+        Object.values(this.filters).forEach((el) => {
+            if (el) {
+                el.addEventListener('input', applyFilters);
+                el.addEventListener('change', applyFilters);
+            }
+        });
+
+        if (this.btnReset) {
+            this.btnReset.addEventListener('click', () => {
+                Object.values(this.filters).forEach((el) => {
+                    if (el && el.id !== 'char-per-page') el.value = '';
+                });
+                if (this.filters.perPage) this.filters.perPage.value = '15';
+                applyFilters();
+            });
+        }
+
+        this.renderTable();
+    }
+
+    saveTableState() {
+        try {
+            const state = {
+                page: this.charPage,
+                limit: this.charLimit,
+                search: this.filters.search?.value || '',
+                gender: this.filters.gender?.value || '',
+                age: this.filters.age?.value || '',
+                species: this.filters.species?.value || '',
+                subspecies: this.filters.subspecies?.value || '',
+                rank: this.filters.rank?.value || '',
+                languages: this.filters.languages?.value || '',
+            };
+            sessionStorage.setItem(this.stateKey, JSON.stringify(state));
+        } catch (err) {
+            console.warn('[CharacterEditor] Konnte Filter-Status nicht speichern:', err);
+        }
+    }
+
+    restoreTableState() {
+        try {
+            const s = JSON.parse(sessionStorage.getItem(this.stateKey));
+            if (s) {
+                this.charPage = s.page || 1;
+                this.charLimit = s.limit || '15';
+
+                if (this.filters.perPage) this.filters.perPage.value = this.charLimit;
+                if (this.filters.search) this.filters.search.value = s.search || '';
+                if (this.filters.gender) this.filters.gender.value = s.gender || '';
+                if (this.filters.age) this.filters.age.value = s.age || '';
+                if (this.filters.species) this.filters.species.value = s.species || '';
+                if (this.filters.subspecies) this.filters.subspecies.value = s.subspecies || '';
+                if (this.filters.rank) this.filters.rank.value = s.rank || '';
+                if (this.filters.languages) this.filters.languages.value = s.languages || '';
+            }
+        } catch (err) {
+            console.warn('[CharacterEditor] Konnte Filter-Status nicht wiederherstellen:', err);
+        }
+    }
+
+    renderTable() {
+        if (!this.tableBody) return;
+
+        const sVal = this.filters.search?.value.toLowerCase().trim() || '';
+        const gVal = this.filters.gender?.value || '';
+        const aVal = this.filters.age?.value || '';
+        const spVal = this.filters.species?.value || '';
+        const subVal = this.filters.subspecies?.value || '';
+        const rVal = this.filters.rank?.value || '';
+        const lVal = this.filters.languages?.value || '';
+
+        const filteredRows = this.allRows.filter((row) => {
+            let isMatch = true;
+            if (sVal && !row.dataset.search.includes(sVal)) isMatch = false;
+            if (gVal && row.dataset.gender !== gVal) isMatch = false;
+            if (aVal && row.dataset.age !== aVal) isMatch = false;
+            if (spVal && row.dataset.species !== spVal) isMatch = false;
+            if (subVal && row.dataset.subspecies !== subVal) isMatch = false;
+            if (rVal && !row.dataset.rank.includes(rVal)) isMatch = false;
+            if (lVal && !row.dataset.languages.includes(lVal)) isMatch = false;
+            return isMatch;
+        });
+
+        const totalItems = filteredRows.length;
+        const limit = this.charLimit === 'all' ? totalItems : parseInt(this.charLimit, 10);
+        const totalPages = limit > 0 ? Math.ceil(totalItems / limit) : 1;
+
+        if (this.charPage > totalPages) this.charPage = totalPages || 1;
+
+        const startIndex = limit === totalItems ? 0 : (this.charPage - 1) * limit;
+        const endIndex = startIndex + limit;
+
+        this.allRows.forEach((row) => {
+            row.style.display = 'none';
+        });
+        filteredRows.slice(startIndex, endIndex).forEach((row) => {
+            row.style.display = '';
+        });
+
+        let emptyMsg = this.tableBody.querySelector('.dyn-empty-msg');
+        if (filteredRows.length === 0) {
+            if (!emptyMsg) {
+                emptyMsg = document.createElement('tr');
+                emptyMsg.className = 'dyn-empty-msg empty-table-message';
+                emptyMsg.innerHTML =
+                    '<td colspan="4">Keine Charaktere für diese Filter gefunden.</td>';
+                this.tableBody.appendChild(emptyMsg);
+            }
+            emptyMsg.style.display = '';
+        } else if (emptyMsg) {
+            emptyMsg.style.display = 'none';
+        }
+
+        renderPagination(this.paginationContainer, this.charPage, totalPages, (newPage) => {
+            this.charPage = newPage;
+            this.renderTable();
+        });
+
+        this.saveTableState();
     }
 
     // Verbindet die HTML-Eingabefelder mit dem State
@@ -138,6 +295,7 @@ export class CharacterEditor {
                     e.preventDefault();
                     this.openAddModal();
                 }
+
                 if (btnEdit) {
                     e.preventDefault();
                     try {
@@ -268,6 +426,7 @@ export class CharacterEditor {
                     }
                     if (!exists) this.accumulatedRefFiles.items.add(newFile);
                 });
+
                 document.getElementById('ref_sheets').files = this.accumulatedRefFiles.files;
                 this.updateRefDropPreview();
             },
@@ -281,6 +440,7 @@ export class CharacterEditor {
         Array.from(containerRefs.querySelectorAll('img.is-new')).forEach((img) => {
             img.remove();
         });
+
         Array.from(this.accumulatedRefFiles.files).forEach((file) => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -431,6 +591,7 @@ export class CharacterEditor {
         }
 
         setValAndState('swatch_pic_url', 'swatchPicUrl', payload.swatchPic);
+
         setValAndState(
             'ref_sheets_urls',
             'refSheets',
@@ -490,7 +651,13 @@ export class CharacterEditor {
             this.notifications.show(result.message, 'success');
             // Sofort DOM Element entfernen
             const row = btnElement.closest('tr');
-            if (row) row.remove();
+            if (row) {
+                row.remove();
+                if (this.allRows) {
+                    this.allRows = this.allRows.filter((r) => r !== row);
+                    this.renderTable();
+                }
+            }
         } else {
             this.notifications.show(result.error, 'error');
         }
