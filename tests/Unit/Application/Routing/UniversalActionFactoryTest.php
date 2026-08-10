@@ -17,27 +17,19 @@ use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('application', 'routing');
 
-function setupUniversalActionFactoryTest(mixed $test): UniversalActionFactory
-{
-    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
-    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
+\it('creates action using DI container', function (): void {
+    $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
+    $mock = Closure::bind(fn (string $c): MockObject => $this->createMock($c), $this, self::class);
 
     $config = $stub(ConfigInterface::class);
     $cache = $stub(RouteCacheInterface::class);
     $cache->method('load')->willReturn(['exact' => [], 'dynamic' => []]);
 
-    // Use the real ActionRegistry because it is final
+    // WICHTIG: Echte Instanz, da final!
     $registry = new ActionRegistry($config, $cache);
+
+    // MOCK, weil wir expects() nutzen
     $container = $mock(ContainerInterface::class);
-
-    // Store container reference on test object to configure expectations later
-    $test->containerMock = $container;
-
-    return new UniversalActionFactory($registry, $container);
-}
-
-\it('creates action using DI container', function (): void {
-    $factory = setupUniversalActionFactoryTest($this);
 
     $dummyAction = new class implements ActionInterface {
         public function execute(ServerRequest $request): mixed
@@ -46,18 +38,30 @@ function setupUniversalActionFactoryTest(mixed $test): UniversalActionFactory
         }
     };
 
-    $this->containerMock->expects($this->once())
+    $container->expects($this->once())
         ->method('get')
         ->with('DummyActionClass')
         ->willReturn($dummyAction);
 
+    $factory = new UniversalActionFactory($registry, $container);
     $created = $factory->create('DummyActionClass');
 
     \expect($created)->toBe($dummyAction);
 })->covers(UniversalActionFactory::class);
 
 \it('returns null if class does not exist', function (): void {
-    $factory = setupUniversalActionFactoryTest($this);
+    $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
+
+    $config = $stub(ConfigInterface::class);
+    $cache = $stub(RouteCacheInterface::class);
+    $cache->method('load')->willReturn(['exact' => [], 'dynamic' => []]);
+
+    $registry = new ActionRegistry($config, $cache);
+
+    // STUB, weil wir hier keine Expectations haben
+    $container = $stub(ContainerInterface::class);
+
+    $factory = new UniversalActionFactory($registry, $container);
     $created = $factory->create('NonExistentClass12345');
 
     \expect($created)->toBeNull();

@@ -30,69 +30,36 @@ use PHPUnit\Framework\MockObject\Stub;
     $_SESSION = [];
 });
 
-function setupFrontendControllerTest(mixed $test, array $configMap = []): object
-{
-    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
-    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
+\it('returns 503 JSON response when API is accessed during maintenance mode', function (): void {
+    $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
 
     $config = $stub(ConfigInterface::class);
     $config->method('getBaseUrl')->willReturn('https://tk.local');
-
-    $config->method('get')->willReturnCallback(function (string $key, mixed $default = null) use ($configMap) {
-        if (isset($configMap[$key])) {
-            return $configMap[$key];
-        }
-
+    $config->method('get')->willReturnCallback(function (string $key, mixed $default = null) {
         return match ($key) {
-            'root_path' => \dirname(__DIR__, 3),
-            'maintenance_mode' => false,
-            'maintenance_mode_admin' => false,
-            'admin_dev_mode' => false, // Erzwungen, damit RouteCacheInterface->load() gerufen wird
+            'maintenance_mode_admin' => true,
+            'admin_dev_mode' => false,
             default => $default,
         };
     });
 
-    $cache = $stub(RouteCacheInterface::class);
-    $cache->method('load')->willReturn(['exact' => [], 'dynamic' => []]);
-    $registry = new ActionRegistry($config, $cache);
-
-    $container = $mock(ContainerInterface::class);
-    $factory = new UniversalActionFactory($registry, $container);
-
-    $session = new SessionManager(new SystemClock());
-    $security = new SecurityHeadersMiddleware($session);
-
-    return new class($config, $factory, $security, $session, $registry, $container) {
-        public function __construct(
-            public Stub&ConfigInterface $config,
-            public UniversalActionFactory $factory,
-            public SecurityHeadersMiddleware $security,
-            public SessionManager $session,
-            public ActionRegistry $registry,
-            public MockObject $container,
-        ) {
-        }
-    };
-}
-
-\it('returns 503 JSON response when API is accessed during maintenance mode', function (): void {
-    $app = setupFrontendControllerTest($this, [
-        'maintenance_mode_admin' => true,
-    ]);
-
-    // Wir erzeugen einen neuen Stub und eine neue Registry, damit die Route auch wirklich als API-Klasse auflöst.
-    // Sonst fällt der Router auf Error404Action zurück, was eine HTMLResponse erzeugen würde!
-    $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
     $cache = $stub(RouteCacheInterface::class);
     $cache->method('load')->willReturn([
         'exact' => ['GET' => ['/api/delete_user' => ['class' => 'App\\Application\\Actions\\Api\\Admin\\DeleteUserAction', 'auth' => true]]],
         'dynamic' => [],
     ]);
 
-    $registry = new ActionRegistry($app->config, $cache);
-    $factory = new UniversalActionFactory($registry, $app->container);
+    $registry = new ActionRegistry($config, $cache);
 
-    $controller = new FrontendController($app->config, $factory, $app->security, $app->session);
+    // STUB: Hier rufen wir ->get() nicht auf, da die Pipeline durch Wartung abgebrochen wird.
+    $container = $stub(ContainerInterface::class);
+    $factory = new UniversalActionFactory($registry, $container);
+
+    $session = new SessionManager(new SystemClock());
+    $security = new SecurityHeadersMiddleware($session);
+
+    $controller = new FrontendController($config, $factory, $security, $session);
+
     $response = $controller->handleRequest(new ServerRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/api/delete_user']));
 
     \expect($response)->toBeInstanceOf(JsonResponse::class)
@@ -101,28 +68,42 @@ function setupFrontendControllerTest(mixed $test, array $configMap = []): object
 })->covers(FrontendController::class);
 
 \it('bypasses maintenance mode for allowed routes like login', function (): void {
-    $app = setupFrontendControllerTest($this, [
-        'maintenance_mode' => true,
-    ]);
+    $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
+    $mock = Closure::bind(fn (string $c): MockObject => $this->createMock($c), $this, self::class);
 
-    $app->container->method('get')->willReturn(new class implements ActionInterface {
-        public function execute(ServerRequest $request): mixed
-        {
-            return new HtmlResponse('Login Page', 200);
-        }
+    $config = $stub(ConfigInterface::class);
+    $config->method('getBaseUrl')->willReturn('https://tk.local');
+    $config->method('get')->willReturnCallback(function (string $key, mixed $default = null) {
+        return match ($key) {
+            'maintenance_mode' => true,
+            'admin_dev_mode' => false,
+            default => $default,
+        };
     });
 
-    $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
     $cache = $stub(RouteCacheInterface::class);
     $cache->method('load')->willReturn([
         'exact' => ['POST' => ['/api/admin_login' => ['class' => 'MockedLoginAction', 'auth' => false]]],
         'dynamic' => [],
     ]);
 
-    $registry = new ActionRegistry($app->config, $cache);
-    $factory = new UniversalActionFactory($registry, $app->container);
+    $registry = new ActionRegistry($config, $cache);
 
-    $controller = new FrontendController($app->config, $factory, $app->security, $app->session);
+    // MOCK: Wir erwarten explizit, dass die Factory aufgerufen wird, da Wartung umgangen wird.
+    $container = $mock(ContainerInterface::class);
+    $container->expects($this->once())->method('get')->willReturn(new class implements ActionInterface {
+        public function execute(ServerRequest $request): mixed
+        {
+            return new HtmlResponse('Login Page', 200);
+        }
+    });
+
+    $factory = new UniversalActionFactory($registry, $container);
+
+    $session = new SessionManager(new SystemClock());
+    $security = new SecurityHeadersMiddleware($session);
+
+    $controller = new FrontendController($config, $factory, $security, $session);
     $response = $controller->handleRequest(new ServerRequest(server: ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/api/admin_login']));
 
     \expect($response)->toBeInstanceOf(HtmlResponse::class)
@@ -130,9 +111,32 @@ function setupFrontendControllerTest(mixed $test, array $configMap = []): object
 })->covers(FrontendController::class);
 
 \it('executes pipeline and returns 404 if action not found', function (): void {
-    $app = setupFrontendControllerTest($this);
+    $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
 
-    $controller = new FrontendController($app->config, $app->factory, $app->security, $app->session);
+    $config = $stub(ConfigInterface::class);
+    $config->method('getBaseUrl')->willReturn('https://tk.local');
+    $config->method('get')->willReturnCallback(function (string $key, mixed $default = null) {
+        return match ($key) {
+            'maintenance_mode' => false,
+            'maintenance_mode_admin' => false,
+            'admin_dev_mode' => false,
+            default => $default,
+        };
+    });
+
+    $cache = $stub(RouteCacheInterface::class);
+    $cache->method('load')->willReturn(['exact' => [], 'dynamic' => []]);
+
+    $registry = new ActionRegistry($config, $cache);
+
+    // STUB: Bei 404 wird der Container nach Error404Action gefragt, aber kein Mock Requirement gesetzt
+    $container = $stub(ContainerInterface::class);
+    $factory = new UniversalActionFactory($registry, $container);
+
+    $session = new SessionManager(new SystemClock());
+    $security = new SecurityHeadersMiddleware($session);
+
+    $controller = new FrontendController($config, $factory, $security, $session);
     $response = $controller->handleRequest(new ServerRequest(server: ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/unknown-page']));
 
     \expect($response)->toBeInstanceOf(HtmlResponse::class)
