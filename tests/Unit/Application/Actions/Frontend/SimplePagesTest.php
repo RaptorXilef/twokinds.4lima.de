@@ -23,8 +23,8 @@ use App\Infrastructure\Utils\SystemClock;
 \uses()->group('application', 'actions', 'frontend');
 
 \it('renders simple static pages correctly with real templates', function (string $class, string $title, int $code): void {
-    // We create a REAL TemplateRenderer but mock its dependencies to prevent final class issues.
-    $config = $this->createMock(ConfigInterface::class);
+    // We create a REAL TemplateRenderer but stub its dependencies to prevent final class issues.
+    $config = $this->createStub(ConfigInterface::class);
     $config->method('get')->willReturnMap([
         ['root_path', null, \realpath(__DIR__ . '/../../../../../')],
         ['site_title', null, 'Test Title'],
@@ -35,10 +35,10 @@ use App\Infrastructure\Utils\SystemClock;
     ]);
     $config->method('getBaseUrl')->willReturn('http://localhost');
 
-    $imageStorage = $this->createMock(ImageStorageInterface::class);
-    $jsonHelper = $this->createMock(JsonHelperInterface::class);
-    $sysInfo = $this->createMock(SystemInfoInterface::class);
-    $assetHelper = $this->createMock(AssetHelperInterface::class);
+    $imageStorage = $this->createStub(ImageStorageInterface::class);
+    $jsonHelper = $this->createStub(JsonHelperInterface::class);
+    $sysInfo = $this->createStub(SystemInfoInterface::class);
+    $assetHelper = $this->createStub(AssetHelperInterface::class);
 
     // Prevent missing session warnings
     if (\session_status() === \PHP_SESSION_NONE) {
@@ -61,7 +61,8 @@ use App\Infrastructure\Utils\SystemClock;
 
     \expect($response)->toBeInstanceOf(HtmlResponse::class)
         ->and($response->statusCode)->toBe($code)
-        ->and($response->html)->toContain($title);
+        // Ensure special chars like '&' match their HTML entity '&amp;' in the output
+        ->and($response->html)->toContain(\htmlspecialchars($title));
 })->with([
     [ImprintAction::class, 'Impressum & Lizenz', 200],
     [PrivacyAction::class, 'Datenschutzerklärung', 200],

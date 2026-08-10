@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Tests\Unit\Application\Middleware;
+
 use App\Application\Http\ServerRequest;
 use App\Application\Middleware\AuthMiddleware;
 use App\Application\Response\JsonResponse;
@@ -9,6 +11,7 @@ use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
 use App\Infrastructure\Utils\SystemClock;
+use RuntimeException;
 
 \uses()->group('application', 'middleware', 'auth');
 
@@ -23,7 +26,7 @@ use App\Infrastructure\Utils\SystemClock;
     $_SESSION['user_id'] = 'usr_123';
     $sessionManager = new SessionManager(new SystemClock());
 
-    $config = $this->createMock(ConfigInterface::class);
+    $config = $this->createStub(ConfigInterface::class);
     $middleware = new AuthMiddleware($sessionManager, $config);
 
     $request = new ServerRequest();
@@ -45,13 +48,13 @@ use App\Infrastructure\Utils\SystemClock;
     $_SESSION['user_id'] = '';
     $sessionManager = new SessionManager(new SystemClock());
 
-    $config = $this->createMock(ConfigInterface::class);
+    $config = $this->createStub(ConfigInterface::class);
     $middleware = new AuthMiddleware($sessionManager, $config);
 
     $request = new ServerRequest(server: ['REQUEST_URI' => '/api/save_user']);
 
     $next = function (ServerRequest $req): string {
-        throw new \RuntimeException('Next should not be called');
+        throw new RuntimeException('Next should not be called');
     };
 
     $result = $middleware->process($request, $next);
@@ -65,7 +68,7 @@ use App\Infrastructure\Utils\SystemClock;
     $_SESSION['user_id'] = '';
     $sessionManager = new SessionManager(new SystemClock());
 
-    $config = $this->createMock(ConfigInterface::class);
+    $config = $this->createStub(ConfigInterface::class);
     $config->method('getBaseUrl')->willReturn('https://test.local');
 
     $middleware = new AuthMiddleware($sessionManager, $config);
@@ -73,7 +76,7 @@ use App\Infrastructure\Utils\SystemClock;
     $request = new ServerRequest(server: ['REQUEST_URI' => '/admin/dashboard']);
 
     $next = function (ServerRequest $req): string {
-        throw new \RuntimeException('Next should not be called');
+        throw new RuntimeException('Next should not be called');
     };
 
     $result = $middleware->process($request, $next);
