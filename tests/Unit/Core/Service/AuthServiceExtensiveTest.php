@@ -9,9 +9,13 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\User;
 use App\Core\Service\AuthService;
+use App\Core\ValueObject\EmailAddress;
+use App\Core\ValueObject\Username;
 use App\Infrastructure\Utils\SystemClock;
 use Closure;
+use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('core', 'service', 'auth');
@@ -34,23 +38,34 @@ function setupExtensiveAuthTest(mixed $test, array $sessionData = []): AuthServi
         };
     });
 
+    $userRepo = $stub(UserRepositoryInterface::class);
+
+    // Inject a fake user if the session thinks we are logged in as a normal user.
+    // Otherwise, validateActiveSession() logs us out instantly during instantiation!
+    if (isset($sessionData['user_id']) && !\str_starts_with($sessionData['user_id'], 'sys_')) {
+        $user = new User(
+            $sessionData['user_id'],
+            new Username('Tester'),
+            new EmailAddress('t@t.de'),
+            $sessionData['auth_hash'] ?? 'hash',
+            'user',
+            new DateTimeImmutable(),
+        );
+        $userRepo->method('findById')->willReturn($user);
+    }
+
     return new AuthService(
         $config,
         $stub(RoleRepositoryInterface::class),
         $stub(RateLimiterInterface::class),
         new SessionManager(new SystemClock()),
-        $stub(UserRepositoryInterface::class),
+        $userRepo,
     );
 }
 
 \it('returns true for isLoggedIn if normal user id exists', function (): void {
     $auth = setupExtensiveAuthTest($this, ['user_id' => 'usr_1', 'auth_hash' => 'hash']);
-    // Auth validation checks repository if user_id is set and not sys_, let's mock findById via closure or just test basic session presence
-    // Since AuthService validates active session against UserRepository, let's stub findById:
-    // Oh wait, setupExtensiveAuthTest stubs UserRepository to return null by default, which triggers logout().
-    // Let's adjust session for sys_ user or stub userRepo properly.
-    $authSys = setupExtensiveAuthTest($this, ['user_id' => 'sys_admin']);
-    \expect($authSys->isLoggedIn())->toBeTrue();
+    \expect($auth->isLoggedIn())->toBeTrue();
 })->covers(AuthService::class);
 
 \it('returns false for isLoggedIn if completely empty', function (): void {
@@ -66,6 +81,7 @@ function setupExtensiveAuthTest(mixed $test, array $sessionData = []): AuthServi
 \it('hasPermission returns true if permission is in compiled session array', function (): void {
     $auth = setupExtensiveAuthTest($this, [
         'user_id' => 'usr_1',
+        'auth_hash' => 'hash',
         'compiled_permissions' => ['comics.edit' => true, 'comics.delete' => false],
     ]);
 

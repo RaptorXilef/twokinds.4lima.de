@@ -80,7 +80,8 @@ function setupComicActionTest(mixed $test, array $comics): object
     $action = new ComicAction($app->comicRepo, $app->charRepo, $app->groupRepo, $app->userRepo, $app->renderer);
     $response = $action->execute(new ServerRequest());
 
-    \expect($response->statusCode)->toBe(404);
+    \expect($response->statusCode)->toBe(404)
+        ->and($response->html)->toContain('Seite nicht gefunden'); // Changed to match template
 })->covers(ComicAction::class);
 
 \it('renders the requested comic page and resolves prev/next links', function (): void {
@@ -93,7 +94,8 @@ function setupComicActionTest(mixed $test, array $comics): object
     $action = new ComicAction($app->comicRepo, $app->charRepo, $app->groupRepo, $app->userRepo, $app->renderer);
     $response = $action->execute(new ServerRequest(input: ['id' => '20260810']));
 
-    \expect($response->statusCode)->toBe(200);
+    \expect($response->statusCode)->toBe(200)
+        ->and($response->html)->toContain('Middle');
 })->covers(ComicAction::class);
 
 \it('defaults to the latest comic if no id is provided', function (): void {
@@ -103,5 +105,6 @@ function setupComicActionTest(mixed $test, array $comics): object
     $action = new ComicAction($app->comicRepo, $app->charRepo, $app->groupRepo, $app->userRepo, $app->renderer);
     $response = $action->execute(new ServerRequest());
 
-    \expect($response->statusCode)->toBe(200);
+    \expect($response->statusCode)->toBe(200)
+        ->and($response->html)->toContain('Latest');
 })->covers(ComicAction::class);

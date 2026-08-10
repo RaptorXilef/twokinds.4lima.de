@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 namespace Tests\Unit\Application\Actions\Api\Admin;
 
@@ -19,14 +20,14 @@ use App\Contracts\System\SiteGeneratorInterface;
 use App\Core\Service\AuthService;
 use App\Core\Service\CharacterService;
 use App\Infrastructure\Utils\SystemClock;
-use PHPUnit\Framework\MockObject\MockObject;
+use Closure;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('application', 'actions', 'api', 'admin', 'characters');
 
-function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object {
-    $stub = \Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
-    $mock = \Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
+function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object
+{
+    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
 
     if (\session_status() === \PHP_SESSION_NONE) {
         \session_start();
@@ -45,14 +46,13 @@ function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object {
         $stub(RoleRepositoryInterface::class),
         $stub(RateLimiterInterface::class),
         $session,
-        $stub(UserRepositoryInterface::class)
+        $stub(UserRepositoryInterface::class),
     );
 
     $charRepo = $stub(CharacterRepositoryInterface::class);
     $groupRepo = $stub(CharacterGroupRepositoryInterface::class);
 
-    // Mock the SiteGenerator using the bound closure
-    $siteGen = $mock(SiteGeneratorInterface::class);
+    $siteGen = $stub(SiteGeneratorInterface::class); // STUB, we dont assert on it here
 
     $charService = new CharacterService($charRepo, $groupRepo, $siteGen);
 
@@ -62,8 +62,9 @@ function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object {
             public CharacterService $charService,
             public Stub&CharacterRepositoryInterface $charRepo,
             public Stub&CharacterGroupRepositoryInterface $groupRepo,
-            public Stub&MediaServiceInterface $media
-        ) {}
+            public Stub&MediaServiceInterface $media,
+        ) {
+        }
     };
 }
 
@@ -108,7 +109,7 @@ function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object {
 \it('SaveSingleCharacterAction 200 on valid inputs', function (): void {
     $app = setupCharacterApiTest($this, true);
     $app->media->method('processCharacterImages')->willReturn([
-        'profile' => null, 'main' => null, 'swatch' => null, 'refs' => [], 'warnings' => []
+        'profile' => null, 'main' => null, 'swatch' => null, 'refs' => [], 'warnings' => [],
     ]);
 
     $action = new SaveSingleCharacterAction($app->charService, $app->charRepo, $app->media, $app->auth);

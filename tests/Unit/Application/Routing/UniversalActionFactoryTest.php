@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 namespace Tests\Unit\Application\Routing;
 
@@ -10,14 +11,16 @@ use App\Application\Routing\UniversalActionFactory;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\DependencyInjection\ContainerInterface;
 use App\Contracts\System\RouteCacheInterface;
+use Closure;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('application', 'routing');
 
-function setupUniversalActionFactoryTest(mixed $test): UniversalActionFactory {
-    $stub = \Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
-    $mock = \Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
+function setupUniversalActionFactoryTest(mixed $test): UniversalActionFactory
+{
+    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
+    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
 
     $config = $stub(ConfigInterface::class);
     $cache = $stub(RouteCacheInterface::class);
@@ -37,7 +40,10 @@ function setupUniversalActionFactoryTest(mixed $test): UniversalActionFactory {
     $factory = setupUniversalActionFactoryTest($this);
 
     $dummyAction = new class implements ActionInterface {
-        public function execute(ServerRequest $request): mixed { return true; }
+        public function execute(ServerRequest $request): mixed
+        {
+            return true;
+        }
     };
 
     $this->containerMock->expects($this->once())

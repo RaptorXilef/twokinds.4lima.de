@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 namespace Tests\Unit\Infrastructure\Config;
 
@@ -32,12 +33,11 @@ use RuntimeException;
 \it('determines test mode correctly', function (): void {
     $config1 = new Config(['test_mode' => true]);
     $config2 = new Config(['test_mode' => false]);
-    $config3 = new Config([]); // Test mode defaults to true if fallback logic handles it or if it relies on exact array values.
-    // In your Config class: return $this->get('test_mode', true) === true;
-    // So if missing, it returns true!
+    $config3 = new Config([]);
 
     \expect($config1->isTestMode())->toBeTrue()
         ->and($config2->isTestMode())->toBeFalse()
+        // App's default for test_mode is TRUE if the array key is completely missing
         ->and($config3->isTestMode())->toBeTrue();
 })->covers(Config::class);
 
@@ -51,7 +51,7 @@ use RuntimeException;
         'is_local_env' => true,
         'server_protocol' => 'http://',
         'server_host' => 'localhost',
-        'server_script' => '/my_folder/public/index.php'
+        'server_script' => '/my_folder/public/index.php',
     ]);
     \expect($config->getBaseUrl())->toBe('http://localhost/my_folder/public/');
 })->covers(Config::class);
@@ -64,7 +64,7 @@ use RuntimeException;
 \it('generates correct storage path', function (): void {
     $config = new Config([
         'root_path' => '/var/www/',
-        'storage_path_prefix' => 'app_data/'
+        'storage_path_prefix' => 'app_data/',
     ]);
     \expect($config->getStoragePath('cache.php'))->toBe('/var/www/app_data/cache.php');
 })->covers(Config::class);
