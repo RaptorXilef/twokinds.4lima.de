@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 /**
- * @var array  $characters
- * @var array  $groups
+ * @var array $characters
+ * @var array $groups
  * @var string $pageTitle
- * @var array  $settings
- * @var array  $filterData
+ * @var array $settings
+ * @var array $filterData
  */
 $baseUrl = \rtrim($settings['base_url'], '/');
 include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
@@ -33,7 +33,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                     <select id="char-filter-gender">
                         <option value="">Alle</option>
                         <?php foreach ($filterData['gender'] as $v) {
-                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                            echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
                         } ?>
                     </select>
                 </div>
@@ -42,7 +42,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                     <select id="char-filter-age">
                         <option value="">Alle</option>
                         <?php foreach ($filterData['age'] as $v) {
-                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                            echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
                         } ?>
                     </select>
                 </div>
@@ -51,7 +51,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                     <select id="char-filter-species">
                         <option value="">Alle</option>
                         <?php foreach ($filterData['species'] as $v) {
-                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                            echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
                         } ?>
                     </select>
                 </div>
@@ -60,7 +60,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                     <select id="char-filter-subspecies">
                         <option value="">Alle</option>
                         <?php foreach ($filterData['subspecies'] as $v) {
-                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                            echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
                         } ?>
                     </select>
                 </div>
@@ -69,7 +69,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                     <select id="char-filter-rank">
                         <option value="">Alle</option>
                         <?php foreach ($filterData['rank'] as $v) {
-                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                            echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
                         } ?>
                     </select>
                 </div>
@@ -78,7 +78,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                     <select id="char-filter-languages">
                         <option value="">Alle</option>
                         <?php foreach ($filterData['languages'] as $v) {
-                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                            echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
                         } ?>
                     </select>
                 </div>

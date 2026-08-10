@@ -28,7 +28,7 @@ return static function (RectorConfig $rectorConfig): void {
     // 1. Pfade definieren
     $rectorConfig->paths([
         __DIR__ . '/src',
-        __DIR__ . '/tests',
+        // __DIR__ . '/tests',
         __DIR__ . '/public',
         __DIR__ . '/config',
     ]);

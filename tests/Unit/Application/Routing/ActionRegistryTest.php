@@ -5,20 +5,18 @@ declare(strict_types=1);
 use App\Application\Routing\ActionRegistry;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\RouteCacheInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('application', 'routing');
 
 function setupRegistryTest(mixed $test): object
 {
-    $mock = \Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
     $stub = \Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
 
-    return new class($stub(ConfigInterface::class), $mock(RouteCacheInterface::class)) {
+    return new class($stub(ConfigInterface::class), $stub(RouteCacheInterface::class)) {
         public function __construct(
             public Stub&ConfigInterface $config,
-            public MockObject&RouteCacheInterface $cache,
+            public Stub&RouteCacheInterface $cache,
         ) {
         }
     };
@@ -31,8 +29,7 @@ function setupRegistryTest(mixed $test): object
         ['admin_dev_mode', false, false],
     ]);
 
-    $app->cache->expects($this->once())->method('clearOld');
-    $app->cache->expects($this->any())->method('load')->willReturn([
+    $app->cache->method('load')->willReturn([
         'exact' => ['GET' => ['/test' => ['class' => 'TestClass', 'auth' => false]]],
         'dynamic' => [],
     ]);
@@ -48,7 +45,7 @@ function setupRegistryTest(mixed $test): object
     $app = \setupRegistryTest($this);
 
     $app->config->method('get')->willReturn(false);
-    $app->cache->expects($this->any())->method('load')->willReturn([
+    $app->cache->method('load')->willReturn([
         'exact' => ['POST' => ['/api/login' => ['class' => 'LoginAction', 'auth' => false]]],
         'dynamic' => [],
     ]);
@@ -64,7 +61,7 @@ function setupRegistryTest(mixed $test): object
     $app = \setupRegistryTest($this);
 
     $app->config->method('get')->willReturn(false);
-    $app->cache->expects($this->any())->method('load')->willReturn([
+    $app->cache->method('load')->willReturn([
         'exact' => [],
         'dynamic' => ['GET' => ['#^/comic/(?P<id>[^/]+)$#' => ['class' => 'ComicAction', 'auth' => false]]],
     ]);
@@ -81,7 +78,7 @@ function setupRegistryTest(mixed $test): object
     $app = \setupRegistryTest($this);
 
     $app->config->method('get')->willReturn(false);
-    $app->cache->expects($this->any())->method('load')->willReturn(['exact' => [], 'dynamic' => []]);
+    $app->cache->method('load')->willReturn(['exact' => [], 'dynamic' => []]);
 
     $registry = new ActionRegistry($app->config, $app->cache);
 

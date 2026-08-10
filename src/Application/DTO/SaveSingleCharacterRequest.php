@@ -33,14 +33,15 @@ final readonly class SaveSingleCharacterRequest
     {
         $data = $request->post;
 
-        if (!isset($data['name']) || $data['name'] === '') {
+        $name = Sanitizer::string($data['name'] ?? '');
+        if ($name === '') {
             throw new ValidationException('Der Name des Charakters darf nicht leer sein.');
         }
 
         // phpcs:disable Generic.Files.LineLength.TooLong
         return new self(
             id: Sanitizer::string($data['id'] ?? 'new'),
-            name: Sanitizer::string($data['name']),
+            name: $name,
             picUrl: isset($data['pic_url']) && $data['pic_url'] !== '' ? Sanitizer::string($data['pic_url']) : null,
             description: isset($data['description']) && $data['description'] !== '' ? Sanitizer::html($data['description']) : null, // HTML erlaubt
             fullName: isset($data['full_name']) && $data['full_name'] !== '' ? Sanitizer::string($data['full_name']) : null,
