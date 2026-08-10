@@ -10,6 +10,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Contracts\ResponseInterface;
 use App\Application\FrontendController;
 use App\Application\Http\ServerRequest;
 use App\Bootstrap\Container;
@@ -36,4 +37,9 @@ $req = new ServerRequest($get, $post, $files, $server, [], $cookie);
 $controller = $container->get(FrontendController::class);
 \assert($controller instanceof FrontendController);
 
-$controller->handleRequest($req);
+// Empfange das Response-Objekt sauber und führe erst GANZ am Ende send() (und damit exit;) aus.
+$response = $controller->handleRequest($req);
+
+if ($response instanceof ResponseInterface) {
+    $response->send();
+}

@@ -11,18 +11,21 @@ use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\ValueObject\ComicId;
 use App\Infrastructure\System\StaticSiteGenerator;
-use Closure;
-use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('infrastructure', 'system', 'xml');
 
 \it('generates sitemap and rss xml files automatically on destruction', function (): void {
-    $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
-
     $comicRepo = $this->createMock(ComicRepositoryInterface::class);
     $comicRepo->method('findAll')->willReturn([
         new ComicPage(new ComicId('20260810'), 'Comicseite', 'Test', '', null, [], '', '', [], 1234567890),
     ]);
+
+    // WICHTIG: findAll MUSS ein Array zurückgeben, ansonsten kracht die foreach-Schleife!
+    $charRepo = $this->createStub(CharacterRepositoryInterface::class);
+    $charRepo->method('findAll')->willReturn([]);
+
+    $chapRepo = $this->createStub(ChapterRepositoryInterface::class);
+    $chapRepo->method('findAll')->willReturn([]);
 
     $config = $this->createMock(ConfigInterface::class);
     $tempDir = \sys_get_temp_dir() . '/tk_test_' . \uniqid();
@@ -38,9 +41,9 @@ use PHPUnit\Framework\MockObject\Stub;
 
     $generator = new StaticSiteGenerator(
         $comicRepo,
-        $stub(ChapterRepositoryInterface::class),
+        $chapRepo,
         $config,
-        $stub(CharacterRepositoryInterface::class),
+        $charRepo,
     );
 
     $generator->generateAll();

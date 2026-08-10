@@ -24,8 +24,8 @@ use RuntimeException;
 
 \it('calls next if user is logged in', function (): void {
     $_SESSION['user_id'] = 'usr_123';
-    $sessionManager = new SessionManager(new SystemClock());
 
+    $sessionManager = new SessionManager(new SystemClock());
     $config = $this->createStub(ConfigInterface::class);
     $middleware = new AuthMiddleware($sessionManager, $config);
 
@@ -45,9 +45,7 @@ use RuntimeException;
 })->covers(AuthMiddleware::class);
 
 \it('returns 401 JsonResponse for API routes if not logged in', function (): void {
-    $_SESSION['user_id'] = '';
     $sessionManager = new SessionManager(new SystemClock());
-
     $config = $this->createStub(ConfigInterface::class);
     $middleware = new AuthMiddleware($sessionManager, $config);
 
@@ -65,7 +63,6 @@ use RuntimeException;
 })->covers(AuthMiddleware::class);
 
 \it('returns 302 RedirectResponse for Admin routes if not logged in', function (): void {
-    $_SESSION['user_id'] = '';
     $sessionManager = new SessionManager(new SystemClock());
 
     $config = $this->createStub(ConfigInterface::class);

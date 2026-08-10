@@ -37,7 +37,7 @@ final readonly class FrontendController
     // PUBLIC API
     // =========================================================================
 
-    public function handleRequest(ServerRequest $request): void
+    public function handleRequest(ServerRequest $request): ?ResponseInterface
     {
         $relativePath = $this->resolveRelativePath($request);
         $routeMatch = $this->resolveRoute($request, $relativePath);
@@ -47,12 +47,10 @@ final readonly class FrontendController
         $requiresAuth = $routeMatch['requiresAuth'];
 
         if ($this->isMaintenanceLockActive($className)) {
-            $this->sendMaintenanceResponse($className);
-
-            return;
+            return $this->sendMaintenanceResponse($className);
         }
 
-        $this->executePipeline($request, $className, $requiresAuth);
+        return $this->executePipeline($request, $className, $requiresAuth);
     }
 
     // =========================================================================
@@ -143,12 +141,10 @@ final readonly class FrontendController
         return $isFrontendAction && $maintenanceMode && $this->sessionManager->getAdminGroup() !== 'admin';
     }
 
-    private function sendMaintenanceResponse(string $className): void
+    private function sendMaintenanceResponse(string $className): ResponseInterface
     {
         if (\str_starts_with($className, 'App\\Application\\Actions\\Api\\')) {
-            JsonResponse::error('System wird gewartet.', 503)->send();
-
-            return;
+            return JsonResponse::error('System wird gewartet.', 503);
         }
 
         \ob_start();
@@ -159,10 +155,10 @@ final readonly class FrontendController
 
         $html = \ob_get_clean();
 
-        (new HtmlResponse((string) $html, 503))->send();
+        return new HtmlResponse((string) $html, 503);
     }
 
-    private function executePipeline(ServerRequest $request, string $className, bool $requiresAuth): void
+    private function executePipeline(ServerRequest $request, string $className, bool $requiresAuth): ?ResponseInterface
     {
         $pipeline = new MiddlewarePipeline();
         $pipeline->add($this->securityHeaders);
@@ -171,7 +167,7 @@ final readonly class FrontendController
             $pipeline->add(new AuthMiddleware($this->sessionManager, $this->config));
         }
 
-        $response = $pipeline->process($request, function (ServerRequest $req) use ($className): mixed {
+        return $pipeline->process($request, function (ServerRequest $req) use ($className): mixed {
             $action = $this->actionFactory->create($className);
             if ($action instanceof ActionInterface) {
                 return $action->execute($req);
@@ -184,11 +180,5 @@ final readonly class FrontendController
 
             return new HtmlResponse('404 Not Found', 404);
         });
-
-        if (!$response instanceof ResponseInterface) {
-            return;
-        }
-
-        $response->send();
     }
 }

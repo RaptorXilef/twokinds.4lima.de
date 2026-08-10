@@ -9,7 +9,11 @@ use App\Application\Http\ServerRequest;
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Mail\MailServiceInterface;
+use App\Contracts\Security\RateLimiterInterface;
+use App\Contracts\Storage\MagicLinkRepositoryInterface;
+use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Contracts\Utils\ClockInterface;
 use App\Core\Entity\User;
 use App\Core\Service\AuthService;
 use App\Core\Service\MagicLinkService;
@@ -32,24 +36,41 @@ function setupProfileApiTest(mixed $test, bool $isLoggedIn = true, string $userI
     $_SESSION = [];
     if ($isLoggedIn) {
         $_SESSION['user_id'] = $userId;
+        $_SESSION['auth_hash'] = 'hash123';
+        $_SESSION['admin_group'] = 'user';
     }
 
     $session = new SessionManager(new SystemClock());
-    $auth = $test->createMock(AuthService::class);
-    $auth->method('isLoggedIn')->willReturn($isLoggedIn);
 
     $userRepo = $test->createMock(UserRepositoryInterface::class);
-    $user = new User($userId, new Username('Tester'), new EmailAddress('t@t.de'), 'hash', 'user', new DateTimeImmutable());
-    $userRepo->method('findById')->willReturn($user);
 
-    return new class($auth, $session, $userRepo, $stub(ConfigInterface::class), $stub(MailServiceInterface::class), $stub(MagicLinkService::class)) {
+    if ($isLoggedIn && !\str_starts_with($userId, 'sys_')) {
+        $user = new User($userId, new Username('Tester'), new EmailAddress('t@t.de'), 'hash123', 'user', new DateTimeImmutable());
+        $userRepo->method('findById')->willReturn($user);
+    }
+
+    $auth = new AuthService(
+        $stub(ConfigInterface::class),
+        $stub(RoleRepositoryInterface::class),
+        $stub(RateLimiterInterface::class),
+        $session,
+        $userRepo,
+    );
+
+    $magicLink = new MagicLinkService(
+        $stub(ClockInterface::class),
+        $stub(ConfigInterface::class),
+        $stub(MagicLinkRepositoryInterface::class),
+    );
+
+    return new class($auth, $session, $userRepo, $stub(ConfigInterface::class), $stub(MailServiceInterface::class), $magicLink) {
         public function __construct(
-            public mixed $auth,
+            public AuthService $auth,
             public SessionManager $session,
             public mixed $userRepo,
             public Stub $config,
             public Stub $mailService,
-            public Stub $magicLink,
+            public MagicLinkService $magicLink,
         ) {
         }
     };
