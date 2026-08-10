@@ -51,7 +51,12 @@ function setupDashboardTest(mixed $test, bool $hasPerm = true): object
     $session = new SessionManager(new SystemClock());
     $config = $stub(ConfigInterface::class);
     $config->method('getBaseUrl')->willReturn('http://localhost');
-    $config->method('get')->willReturnMap([['root_path', null, \realpath(__DIR__ . '/../../../../../../')]]);
+    $config->method('get')->willReturnCallback(function (string $key, mixed $default = null) {
+        return match ($key) {
+            'root_path' => \dirname(__DIR__, 5),
+            default => $default,
+        };
+    });
 
     $auth = new AuthService(
         $config,

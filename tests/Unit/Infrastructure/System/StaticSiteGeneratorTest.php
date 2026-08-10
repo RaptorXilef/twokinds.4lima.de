@@ -19,7 +19,7 @@ use PHPUnit\Framework\MockObject\Stub;
 \it('generates sitemap and rss xml files automatically on destruction', function (): void {
     $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
 
-    $comicRepo = $stub(ComicRepositoryInterface::class);
+    $comicRepo = $this->createMock(ComicRepositoryInterface::class);
     $comicRepo->method('findAll')->willReturn([
         new ComicPage(new ComicId('20260810'), 'Comicseite', 'Test', '', null, [], '', '', [], 1234567890),
     ]);
@@ -30,16 +30,19 @@ use PHPUnit\Framework\MockObject\Stub;
     $chapRepo = $stub(ChapterRepositoryInterface::class);
     $chapRepo->method('findAll')->willReturn([]);
 
-    $config = $stub(ConfigInterface::class);
+    $config = $this->createMock(ConfigInterface::class);
     $tempDir = \sys_get_temp_dir() . '/tk_test_' . \uniqid();
     \mkdir($tempDir . '/public', 0o777, true);
 
-    $config->method('get')->willReturnMap([
-        ['root_path', null, $tempDir],
-        ['site_title', null, 'Test Title'],
-        ['site_description', null, 'Test Desc'],
-        ['rss_max_items', 25, 25],
-    ]);
+    $config->method('get')->willReturnCallback(function (string $key, mixed $default = null) use ($tempDir) {
+        return match ($key) {
+            'root_path' => $tempDir,
+            'site_title' => 'Test Title',
+            'site_description' => 'Test Desc',
+            'rss_max_items' => 25,
+            default => $default,
+        };
+    });
     $config->method('getBaseUrl')->willReturn('https://tk.local');
 
     $generator = new StaticSiteGenerator(

@@ -6,16 +6,21 @@ namespace Tests\Unit\Application\Actions\Frontend;
 
 use App\Application\Actions\Frontend\ComicAction;
 use App\Application\Http\ServerRequest;
-use App\Application\Response\HtmlResponse;
+use App\Application\Session\SessionManager;
 use App\Application\View\TemplateRenderer;
+use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Contracts\System\AssetHelperInterface;
+use App\Contracts\System\ImageStorageInterface;
+use App\Contracts\System\JsonHelperInterface;
+use App\Contracts\System\SystemInfoInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\ValueObject\ComicId;
+use App\Infrastructure\Utils\SystemClock;
 use Closure;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('application', 'actions', 'frontend', 'comic');
@@ -23,20 +28,39 @@ use PHPUnit\Framework\MockObject\Stub;
 function setupComicActionTest(mixed $test, array $comics): object
 {
     $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
-    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
 
-    $comicRepo = $stub(ComicRepositoryInterface::class);
+    if (\session_status() === \PHP_SESSION_NONE) {
+        \session_start();
+    }
+
+    $comicRepo = $test->createMock(ComicRepositoryInterface::class);
     $comicRepo->method('findAll')->willReturn($comics);
 
-    $renderer = $mock(TemplateRenderer::class);
+    $config = $stub(ConfigInterface::class);
+    $config->method('getBaseUrl')->willReturn('http://localhost');
+    $config->method('get')->willReturnCallback(function (string $key, mixed $default = null) {
+        return match ($key) {
+            'root_path' => \dirname(__DIR__, 5),
+            default => $default,
+        };
+    });
+
+    $renderer = new TemplateRenderer(
+        $config,
+        $stub(ImageStorageInterface::class),
+        $stub(JsonHelperInterface::class),
+        new SessionManager(new SystemClock()),
+        $stub(SystemInfoInterface::class),
+        $stub(AssetHelperInterface::class),
+    );
 
     return new class($comicRepo, $stub(CharacterRepositoryInterface::class), $stub(CharacterGroupRepositoryInterface::class), $stub(UserRepositoryInterface::class), $renderer) {
         public function __construct(
-            public Stub $comicRepo,
+            public mixed $comicRepo,
             public Stub $charRepo,
             public Stub $groupRepo,
             public Stub $userRepo,
-            public mixed $renderer,
+            public TemplateRenderer $renderer,
         ) {
         }
     };
@@ -45,13 +69,11 @@ function setupComicActionTest(mixed $test, array $comics): object
 \it('renders 404 if no comics exist', function (): void {
     $app = setupComicActionTest($this, []);
 
-    $app->renderer->expects($this->once())
-        ->method('render')
-        ->with('pages/frontend/404', ['pageTitle' => 'Keine Comics gefunden.'], 404)
-        ->willReturn(new HtmlResponse('404', 404));
-
     $action = new ComicAction($app->comicRepo, $app->charRepo, $app->groupRepo, $app->userRepo, $app->renderer);
-    $action->execute(new ServerRequest());
+    $response = $action->execute(new ServerRequest());
+
+    \expect($response->statusCode)->toBe(404)
+        ->and($response->html)->toContain('Fehler 404');
 })->covers(ComicAction::class);
 
 \it('renders the requested comic page and resolves prev/next links', function (): void {
@@ -61,22 +83,20 @@ function setupComicActionTest(mixed $test, array $comics): object
 
     $app = setupComicActionTest($this, [$c1, $c2, $c3]);
 
-    $app->renderer->expects($this->once())
-        ->method('render')
-        ->willReturn(new HtmlResponse('HTML', 200));
-
     $action = new ComicAction($app->comicRepo, $app->charRepo, $app->groupRepo, $app->userRepo, $app->renderer);
-    $action->execute(new ServerRequest(input: ['id' => '20260810']));
+    $response = $action->execute(new ServerRequest(input: ['id' => '20260810']));
+
+    \expect($response->statusCode)->toBe(200)
+        ->and($response->html)->toContain('Middle');
 })->covers(ComicAction::class);
 
 \it('defaults to the latest comic if no id is provided', function (): void {
     $c1 = new ComicPage(new ComicId('20260811'), 'Comicseite', 'Latest', '', null, [], '', '');
     $app = setupComicActionTest($this, [$c1]);
 
-    $app->renderer->expects($this->once())
-        ->method('render')
-        ->willReturn(new HtmlResponse('HTML', 200));
-
     $action = new ComicAction($app->comicRepo, $app->charRepo, $app->groupRepo, $app->userRepo, $app->renderer);
-    $action->execute(new ServerRequest());
+    $response = $action->execute(new ServerRequest());
+
+    \expect($response->statusCode)->toBe(200)
+        ->and($response->html)->toContain('Latest');
 })->covers(ComicAction::class);

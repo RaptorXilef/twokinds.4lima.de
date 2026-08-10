@@ -16,6 +16,7 @@ use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Contracts\System\ImageStorageInterface;
+use App\Contracts\System\MediaServiceInterface;
 use App\Core\Service\AuthService;
 use App\Infrastructure\Utils\SystemClock;
 use Closure;
@@ -47,10 +48,11 @@ function setupMediaApiTest(mixed $test, bool $hasPerm = true): object
         $stub(UserRepositoryInterface::class),
     );
 
-    return new class($auth, $stub(ImageStorageInterface::class)) {
+    return new class($auth, $stub(ImageStorageInterface::class), $stub(MediaServiceInterface::class)) {
         public function __construct(
             public AuthService $auth,
             public Stub&ImageStorageInterface $storage,
+            public Stub&MediaServiceInterface $mediaService,
         ) {
         }
     };
@@ -71,12 +73,12 @@ function setupMediaApiTest(mixed $test, bool $hasPerm = true): object
 \it('DeleteMediaAction 400 if filename is missing', function (): void {
     $app = setupMediaApiTest($this, true);
     $action = new DeleteMediaAction($app->storage, $app->auth);
-    \expect($action->execute(new ServerRequest())->statusCode)->toBe(404); // Fails internally returning 404
+    \expect($action->execute(new ServerRequest())->statusCode)->toBe(404);
 })->covers(DeleteMediaAction::class);
 
 \it('UploadMediaAction 400 if no files uploaded', function (): void {
     $app = setupMediaApiTest($this, true);
-    $action = new UploadMediaAction($app->storage, $app->auth);
+    $action = new UploadMediaAction($app->mediaService, $app->auth);
     \expect($action->execute(new ServerRequest())->statusCode)->toBe(400);
 })->covers(UploadMediaAction::class);
 
