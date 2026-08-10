@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Tests\Unit\Core\Service;
+
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Security\AuthSessionInterface;
 use App\Contracts\Security\RateLimiterInterface;
@@ -9,26 +11,33 @@ use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Service\AuthService;
 
+\uses()->group('core', 'service', 'auth');
+
 \test('backdoor login fails completely when disabled in config', function (): void {
     // Arrange
-    $configMock = \Mockery::mock(ConfigInterface::class);
-    $configMock->shouldReceive('get')->with('disable_backdoor', false)->andReturn(true);
-    $configMock->shouldReceive('get')->with('disable_superadmin', false)->andReturn(false);
-    $configMock->shouldReceive('get')->with('superadmin')->andReturn(null);
+    $configMock = $this->createMock(ConfigInterface::class);
+    $configMock->method('get')->willReturnCallback(function (string $key, mixed $default = null) {
+        return match ($key) {
+            'disable_backdoor' => true,
+            'disable_superadmin' => false,
+            'superadmin' => null,
+            default => $default,
+        };
+    });
 
-    $rateLimiterMock = \Mockery::mock(RateLimiterInterface::class);
-    $rateLimiterMock->shouldReceive('isBlocked')->andReturn(false);
-    $rateLimiterMock->shouldReceive('recordFailedAttempt')->once();
+    $rateLimiterMock = $this->createMock(RateLimiterInterface::class);
+    $rateLimiterMock->expects($this->once())->method('isBlocked')->willReturn(false);
+    $rateLimiterMock->expects($this->once())->method('recordFailedAttempt');
 
-    $userRepoMock = \Mockery::mock(UserRepositoryInterface::class);
-    $userRepoMock->shouldReceive('findByEmail')->andReturn(null);
-    $userRepoMock->shouldReceive('findByUsername')->andReturn(null);
+    $userRepoMock = $this->createStub(UserRepositoryInterface::class);
+    $userRepoMock->method('findByEmail')->willReturn(null);
+    $userRepoMock->method('findByUsername')->willReturn(null);
 
     $authService = new AuthService(
         $configMock,
-        \Mockery::mock(RoleRepositoryInterface::class),
+        $this->createStub(RoleRepositoryInterface::class),
         $rateLimiterMock,
-        \Mockery::mock(AuthSessionInterface::class),
+        $this->createStub(AuthSessionInterface::class),
         $userRepoMock,
     );
 
@@ -37,28 +46,33 @@ use App\Core\Service\AuthService;
 
     // Assert
     \expect($result)->toBeFalse();
-});
+})->covers(AuthService::class);
 
 \test('superadmin dev account login fails completely when disabled in config', function (): void {
     // Arrange
-    $configMock = \Mockery::mock(ConfigInterface::class);
-    $configMock->shouldReceive('get')->with('disable_backdoor', false)->andReturn(false);
-    $configMock->shouldReceive('get')->with('backdoor')->andReturn(null);
-    $configMock->shouldReceive('get')->with('disable_superadmin', false)->andReturn(true);
+    $configMock = $this->createMock(ConfigInterface::class);
+    $configMock->method('get')->willReturnCallback(function (string $key, mixed $default = null) {
+        return match ($key) {
+            'disable_backdoor' => false,
+            'backdoor' => null,
+            'disable_superadmin' => true,
+            default => $default,
+        };
+    });
 
-    $rateLimiterMock = \Mockery::mock(RateLimiterInterface::class);
-    $rateLimiterMock->shouldReceive('isBlocked')->andReturn(false);
-    $rateLimiterMock->shouldReceive('recordFailedAttempt')->once();
+    $rateLimiterMock = $this->createMock(RateLimiterInterface::class);
+    $rateLimiterMock->expects($this->once())->method('isBlocked')->willReturn(false);
+    $rateLimiterMock->expects($this->once())->method('recordFailedAttempt');
 
-    $userRepoMock = \Mockery::mock(UserRepositoryInterface::class);
-    $userRepoMock->shouldReceive('findByEmail')->andReturn(null);
-    $userRepoMock->shouldReceive('findByUsername')->andReturn(null);
+    $userRepoMock = $this->createStub(UserRepositoryInterface::class);
+    $userRepoMock->method('findByEmail')->willReturn(null);
+    $userRepoMock->method('findByUsername')->willReturn(null);
 
     $authService = new AuthService(
         $configMock,
-        \Mockery::mock(RoleRepositoryInterface::class),
+        $this->createStub(RoleRepositoryInterface::class),
         $rateLimiterMock,
-        \Mockery::mock(AuthSessionInterface::class),
+        $this->createStub(AuthSessionInterface::class),
         $userRepoMock,
     );
 
@@ -67,4 +81,4 @@ use App\Core\Service\AuthService;
 
     // Assert
     \expect($result)->toBeFalse();
-});
+})->covers(AuthService::class);
