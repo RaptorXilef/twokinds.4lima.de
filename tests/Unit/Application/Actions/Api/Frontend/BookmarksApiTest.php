@@ -8,9 +8,17 @@ use App\Application\Actions\Api\Frontend\SyncBookmarksAction;
 use App\Application\Actions\Api\Frontend\ToggleBookmarkAction;
 use App\Application\Http\ServerRequest;
 use App\Application\Session\SessionManager;
+use App\Contracts\Config\ConfigInterface;
+use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\BookmarkRepositoryInterface;
+use App\Contracts\Storage\RoleRepositoryInterface;
+use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\Bookmark;
+use App\Core\Entity\User;
 use App\Core\Service\AuthService;
+use App\Core\ValueObject\EmailAddress;
+use App\Core\ValueObject\Username;
+use App\Infrastructure\Utils\SystemClock;
 use Closure;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\Stub;
@@ -21,18 +29,39 @@ function setupBookmarkApiTest(mixed $test, bool $isLoggedIn = true, string $user
 {
     $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
 
-    $auth = $stub(AuthService::class);
-    $auth->method('isLoggedIn')->willReturn($isLoggedIn);
+    if (\session_status() === \PHP_SESSION_NONE) {
+        \session_start();
+    }
+    $_SESSION = [];
+    if ($isLoggedIn) {
+        $_SESSION['user_id'] = $userId;
+        $_SESSION['auth_hash'] = 'hash123';
+        $_SESSION['admin_group'] = 'user';
+    }
 
-    $session = $stub(SessionManager::class);
-    $session->method('getUserId')->willReturn($userId);
+    $session = new SessionManager(new SystemClock());
+    $userRepo = $stub(UserRepositoryInterface::class);
+
+    // User muss gefunden werden, damit AuthService::isLoggedIn() keinen Fehler wirft
+    if ($isLoggedIn && !\str_starts_with($userId, 'sys_')) {
+        $user = new User($userId, new Username('Test'), new EmailAddress('t@t.de'), 'hash123', 'user', new DateTimeImmutable());
+        $userRepo->method('findById')->willReturn($user);
+    }
+
+    $auth = new AuthService(
+        $stub(ConfigInterface::class),
+        $stub(RoleRepositoryInterface::class),
+        $stub(RateLimiterInterface::class),
+        $session,
+        $userRepo,
+    );
 
     $repo = $stub(BookmarkRepositoryInterface::class);
 
     return new class($auth, $session, $repo) {
         public function __construct(
-            public Stub&AuthService $auth,
-            public Stub&SessionManager $session,
+            public AuthService $auth,
+            public SessionManager $session,
             public Stub&BookmarkRepositoryInterface $repo,
         ) {
         }
@@ -83,7 +112,6 @@ function setupBookmarkApiTest(mixed $test, bool $isLoggedIn = true, string $user
     ]);
 
     $action = new SyncBookmarksAction($app->auth, $app->session, $app->repo);
-    // local_ids has '20260811', db has '20260810'
     $res = $action->execute(new ServerRequest(post: ['local_ids' => '["20260811"]', 'resolution' => 'merge']));
 
     \expect($res->statusCode)->toBe(200)

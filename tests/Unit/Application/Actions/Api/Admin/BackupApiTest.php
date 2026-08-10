@@ -9,8 +9,14 @@ use App\Application\Actions\Api\Admin\DeleteBackupAction;
 use App\Application\Actions\Api\Admin\ListBackupsAction;
 use App\Application\Actions\Api\Admin\RestoreBackupAction;
 use App\Application\Http\ServerRequest;
+use App\Application\Session\SessionManager;
+use App\Contracts\Config\ConfigInterface;
+use App\Contracts\Security\RateLimiterInterface;
+use App\Contracts\Storage\RoleRepositoryInterface;
+use App\Contracts\Storage\UserRepositoryInterface;
 use App\Contracts\System\BackupServiceInterface;
 use App\Core\Service\AuthService;
+use App\Infrastructure\Utils\SystemClock;
 use Closure;
 use PHPUnit\Framework\MockObject\Stub;
 
@@ -19,12 +25,32 @@ use PHPUnit\Framework\MockObject\Stub;
 function setupBackupApiTest(mixed $test, bool $hasPerm = true): object
 {
     $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
-    $auth = $stub(AuthService::class);
-    $auth->method('hasPermission')->willReturn($hasPerm);
+
+    if (\session_status() === \PHP_SESSION_NONE) {
+        \session_start();
+    }
+    $_SESSION = [];
+
+    if ($hasPerm) {
+        $_SESSION['user_id'] = 'sys_admin';
+    } else {
+        $_SESSION['user_id'] = 'usr_1';
+        $_SESSION['auth_hash'] = 'hash';
+        $_SESSION['compiled_permissions'] = [];
+    }
+
+    $session = new SessionManager(new SystemClock());
+    $auth = new AuthService(
+        $stub(ConfigInterface::class),
+        $stub(RoleRepositoryInterface::class),
+        $stub(RateLimiterInterface::class),
+        $session,
+        $stub(UserRepositoryInterface::class),
+    );
 
     return new class($auth, $stub(BackupServiceInterface::class)) {
         public function __construct(
-            public Stub&AuthService $auth,
+            public AuthService $auth,
             public Stub&BackupServiceInterface $service,
         ) {
         }
