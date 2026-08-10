@@ -2,14 +2,18 @@
 
 declare(strict_types=1);
 
+namespace Tests\Unit\Infrastructure\Storage;
+
 use App\Core\Entity\Bookmark;
 use App\Infrastructure\Storage\MySqlBookmarkRepository;
+use PDO;
+use PDOStatement;
 
 \uses()->group('infrastructure', 'storage', 'database');
 
 \it('finds bookmarks by user', function (): void {
-    $pdo = $this->createMock(\PDO::class);
-    $stmt = $this->createMock(\PDOStatement::class);
+    $pdo = $this->createMock(PDO::class);
+    $stmt = $this->createMock(PDOStatement::class);
 
     $pdo->expects($this->once())
         ->method('prepare')
@@ -19,7 +23,7 @@ use App\Infrastructure\Storage\MySqlBookmarkRepository;
     $stmt->expects($this->once())->method('execute')->with(['usr_1']);
     $stmt->expects($this->once())
         ->method('fetchAll')
-        ->with(\PDO::FETCH_ASSOC)
+        ->with(PDO::FETCH_ASSOC)
         ->willReturn([
             ['user_id' => 'usr_1', 'comic_id' => '20260810', 'added_at' => '2026-08-10 12:00:00'],
         ]);
@@ -33,8 +37,8 @@ use App\Infrastructure\Storage\MySqlBookmarkRepository;
 })->covers(MySqlBookmarkRepository::class);
 
 \it('adds a new bookmark via upsert', function (): void {
-    $pdo = $this->createMock(\PDO::class);
-    $stmt = $this->createMock(\PDOStatement::class);
+    $pdo = $this->createMock(PDO::class);
+    $stmt = $this->createMock(PDOStatement::class);
 
     $pdo->expects($this->once())
         ->method('prepare')
@@ -48,8 +52,8 @@ use App\Infrastructure\Storage\MySqlBookmarkRepository;
 })->covers(MySqlBookmarkRepository::class);
 
 \it('removes a bookmark', function (): void {
-    $pdo = $this->createMock(\PDO::class);
-    $stmt = $this->createMock(\PDOStatement::class);
+    $pdo = $this->createMock(PDO::class);
+    $stmt = $this->createMock(PDOStatement::class);
 
     $pdo->expects($this->once())
         ->method('prepare')
@@ -63,9 +67,9 @@ use App\Infrastructure\Storage\MySqlBookmarkRepository;
 })->covers(MySqlBookmarkRepository::class);
 
 \it('replaces all bookmarks using transactions', function (): void {
-    $pdo = $this->createMock(\PDO::class);
-    $stmtDel = $this->createMock(\PDOStatement::class);
-    $stmtIns = $this->createMock(\PDOStatement::class);
+    $pdo = $this->createMock(PDO::class);
+    $stmtDel = $this->createMock(PDOStatement::class);
+    $stmtIns = $this->createMock(PDOStatement::class);
 
     $pdo->expects($this->once())->method('beginTransaction');
     $pdo->expects($this->once())->method('commit');
@@ -73,14 +77,13 @@ use App\Infrastructure\Storage\MySqlBookmarkRepository;
     $pdo->expects($this->exactly(2))
         ->method('prepare')
         ->willReturnMap([
-            ['DELETE FROM `user_bookmarks` WHERE user_id = ?', [], $stmtDel],
-            ['INSERT INTO `user_bookmarks` (user_id, comic_id, added_at) VALUES (?, ?, ?)', [], $stmtIns],
+            ['DELETE FROM `user_bookmarks` WHERE user_id = ?', $stmtDel],
+            ['INSERT INTO `user_bookmarks` (user_id, comic_id, added_at) VALUES (?, ?, ?)', $stmtIns],
         ]);
 
     $stmtDel->expects($this->once())->method('execute')->with(['usr_1']);
-    // Should execute twice because we pass 2 unique IDs
     $stmtIns->expects($this->exactly(2))->method('execute');
 
     $repo = new MySqlBookmarkRepository($pdo);
-    $repo->replaceUserBookmarks('usr_1', ['20260810', '20260811', '20260810']); // 1 is duplicate
+    $repo->replaceUserBookmarks('usr_1', ['20260810', '20260811', '20260810']);
 })->covers(MySqlBookmarkRepository::class);

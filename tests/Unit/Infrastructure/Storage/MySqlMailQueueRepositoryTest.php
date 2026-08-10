@@ -55,17 +55,17 @@ use PDOStatement;
     $pdo->expects($this->exactly(2))
         ->method('query')
         ->willReturnMap([
-            ["SELECT GET_LOCK('tk_mail_queue', 2)", PDO::FETCH_DEFAULT, $stmtLock],
-            ["SELECT RELEASE_LOCK('tk_mail_queue')", PDO::FETCH_DEFAULT, $this->createStub(PDOStatement::class)],
+            ["SELECT GET_LOCK('tk_mail_queue', 2)", $stmtLock],
+            ["SELECT RELEASE_LOCK('tk_mail_queue')", $this->createStub(PDOStatement::class)],
         ]);
     $stmtLock->expects($this->once())->method('fetchColumn')->willReturn(1);
 
     $pdo->expects($this->exactly(3))
         ->method('prepare')
         ->willReturnMap([
-            ['UPDATE `mail_queue` SET attempts = attempts + 100 WHERE attempts < 3  ORDER BY priority DESC, created_at ASC LIMIT 5', [], $stmtUpdate],
-            ['SELECT * FROM `mail_queue` WHERE attempts >= 100  ORDER BY priority DESC, created_at ASC', [], $stmtSelect],
-            ['DELETE FROM `mail_queue` WHERE id = ?', [], $stmtDel],
+            ['UPDATE `mail_queue` SET attempts = attempts + 100 WHERE attempts < 3  ORDER BY priority DESC, created_at ASC LIMIT 5', $stmtUpdate],
+            ['SELECT * FROM `mail_queue` WHERE attempts >= 100  ORDER BY priority DESC, created_at ASC', $stmtSelect],
+            ['DELETE FROM `mail_queue` WHERE id = ?', $stmtDel],
         ]);
 
     $stmtUpdate->expects($this->once())->method('execute');
