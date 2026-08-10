@@ -17,12 +17,14 @@ use PHPUnit\Framework\MockObject\Stub;
     $config = $stub(ConfigInterface::class);
 
     $tempDir = \sys_get_temp_dir() . '/tk_logger_test_' . \uniqid();
-    $config->method('get')->with('root_path')->willReturn($tempDir);
+
+    $config->method('get')->willReturnCallback(function (string $key) use ($tempDir) {
+        return $key === 'root_path' ? $tempDir : null;
+    });
 
     $logger = new ErrorLogger($config);
     $logger->logThrowable(new Exception('Test Crash'));
 
-    // It should have created the directory
     \expect(\is_dir($tempDir . '/logs'))->toBeTrue();
 
     // Cleanup

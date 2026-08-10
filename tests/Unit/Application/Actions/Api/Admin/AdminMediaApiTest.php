@@ -48,7 +48,10 @@ function setupMediaApiTest(mixed $test, bool $hasPerm = true): object
         $stub(UserRepositoryInterface::class),
     );
 
-    return new class($auth, $stub(ImageStorageInterface::class), $stub(MediaServiceInterface::class)) {
+    $storage = $stub(ImageStorageInterface::class);
+    $mediaService = $stub(MediaServiceInterface::class);
+
+    return new class($auth, $storage, $mediaService) {
         public function __construct(
             public AuthService $auth,
             public Stub&ImageStorageInterface $storage,
@@ -90,7 +93,7 @@ function setupMediaApiTest(mixed $test, bool $hasPerm = true): object
 
 \it('DeleteComicMediaAction 404 if files do not exist', function (): void {
     $app = setupMediaApiTest($this, true);
-    $app->storage->method('deleteComicMedia')->willReturn(0); // 0 deleted
+    $app->storage->method('deleteComicMedia')->willReturn(0);
     $action = new DeleteComicMediaAction($app->storage, $app->auth);
 
     $res = $action->execute(new ServerRequest(post: ['comic_id' => '20260810']));

@@ -19,7 +19,6 @@ use PHPUnit\Framework\MockObject\Stub;
 \it('generates sitemap and rss xml files automatically on destruction', function (): void {
     $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
 
-    // FIX: Using Stub instead of Mock to avoid "No expectations" notices!
     $comicRepo = $stub(ComicRepositoryInterface::class);
     $comicRepo->method('findAll')->willReturn([
         new ComicPage(new ComicId('20260810'), 'Comicseite', 'Test', '', null, [], '', '', [], 1234567890),
@@ -55,8 +54,8 @@ use PHPUnit\Framework\MockObject\Stub;
 
     $generator->generateAll();
 
-    // Trigger destructor explicitly to write files
-    $generator->__destruct();
+    // Trigger the destructor naturally by unreferencing it, preventing a double-call during shutdown
+    $generator = null;
 
     \expect(\file_exists($tempDir . '/public/sitemap.xml'))->toBeTrue()
         ->and(\file_exists($tempDir . '/public/rss.xml'))->toBeTrue();

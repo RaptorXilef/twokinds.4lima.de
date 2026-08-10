@@ -21,7 +21,6 @@ use App\Core\Entity\ComicPage;
 use App\Core\ValueObject\ComicId;
 use App\Infrastructure\Utils\SystemClock;
 use Closure;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('application', 'actions', 'frontend', 'comic');
@@ -29,13 +28,12 @@ use PHPUnit\Framework\MockObject\Stub;
 function setupComicActionTest(mixed $test, array $comics): object
 {
     $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
-    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
 
     if (\session_status() === \PHP_SESSION_NONE) {
         \session_start();
     }
 
-    $comicRepo = $mock(ComicRepositoryInterface::class);
+    $comicRepo = $stub(ComicRepositoryInterface::class);
     $comicRepo->method('findAll')->willReturn($comics);
 
     $charRepo = $stub(CharacterRepositoryInterface::class);
@@ -66,7 +64,7 @@ function setupComicActionTest(mixed $test, array $comics): object
 
     return new class($comicRepo, $charRepo, $groupRepo, $userRepo, $renderer) {
         public function __construct(
-            public MockObject $comicRepo,
+            public Stub $comicRepo,
             public Stub $charRepo,
             public Stub $groupRepo,
             public Stub $userRepo,

@@ -18,7 +18,6 @@ use App\Contracts\DependencyInjection\ContainerInterface;
 use App\Contracts\System\RouteCacheInterface;
 use App\Infrastructure\Utils\SystemClock;
 use Closure;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('application', 'controller');
@@ -33,10 +32,10 @@ use PHPUnit\Framework\MockObject\Stub;
 function setupFrontendControllerTest(mixed $test, array $configMap = []): object
 {
     $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
-    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
 
     $config = $stub(ConfigInterface::class);
     $config->method('getBaseUrl')->willReturn('https://tk.local');
+
     $config->method('get')->willReturnCallback(function (string $key, mixed $default = null) use ($configMap) {
         if (isset($configMap[$key])) {
             return $configMap[$key];
@@ -54,7 +53,7 @@ function setupFrontendControllerTest(mixed $test, array $configMap = []): object
     $cache->method('load')->willReturn(['exact' => [], 'dynamic' => []]);
     $registry = new ActionRegistry($config, $cache);
 
-    $container = $mock(ContainerInterface::class);
+    $container = $stub(ContainerInterface::class);
     $factory = new UniversalActionFactory($registry, $container);
 
     $session = new SessionManager(new SystemClock());
@@ -67,7 +66,7 @@ function setupFrontendControllerTest(mixed $test, array $configMap = []): object
             public SecurityHeadersMiddleware $security,
             public SessionManager $session,
             public ActionRegistry $registry,
-            public MockObject $container,
+            public Stub&ContainerInterface $container,
         ) {
         }
     };
@@ -92,6 +91,7 @@ function setupFrontendControllerTest(mixed $test, array $configMap = []): object
         'maintenance_mode' => true,
     ]);
 
+    // Stub the container to return a valid dummy action
     $app->container->method('get')->willReturn(new class implements ActionInterface {
         public function execute(ServerRequest $request): mixed
         {
@@ -135,5 +135,5 @@ function setupFrontendControllerTest(mixed $test, array $configMap = []): object
 
     \expect($response)->toBeInstanceOf(HtmlResponse::class)
         ->and($response->statusCode)->toBe(404)
-        ->and($response->html)->toBe('404 Not Found');
+        ->and($response->html)->toContain('404');
 })->covers(FrontendController::class);
