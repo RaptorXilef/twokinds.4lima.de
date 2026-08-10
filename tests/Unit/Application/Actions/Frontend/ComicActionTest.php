@@ -21,6 +21,7 @@ use App\Core\Entity\ComicPage;
 use App\Core\ValueObject\ComicId;
 use App\Infrastructure\Utils\SystemClock;
 use Closure;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('application', 'actions', 'frontend', 'comic');
@@ -28,13 +29,22 @@ use PHPUnit\Framework\MockObject\Stub;
 function setupComicActionTest(mixed $test, array $comics): object
 {
     $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
+    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
 
     if (\session_status() === \PHP_SESSION_NONE) {
         \session_start();
     }
 
-    $comicRepo = $test->createMock(ComicRepositoryInterface::class);
+    $comicRepo = $mock(ComicRepositoryInterface::class);
     $comicRepo->method('findAll')->willReturn($comics);
+
+    $charRepo = $stub(CharacterRepositoryInterface::class);
+    $charRepo->method('findAll')->willReturn([]);
+
+    $groupRepo = $stub(CharacterGroupRepositoryInterface::class);
+    $groupRepo->method('findAll')->willReturn([]);
+
+    $userRepo = $stub(UserRepositoryInterface::class);
 
     $config = $stub(ConfigInterface::class);
     $config->method('getBaseUrl')->willReturn('http://localhost');
@@ -54,9 +64,9 @@ function setupComicActionTest(mixed $test, array $comics): object
         $stub(AssetHelperInterface::class),
     );
 
-    return new class($comicRepo, $stub(CharacterRepositoryInterface::class), $stub(CharacterGroupRepositoryInterface::class), $stub(UserRepositoryInterface::class), $renderer) {
+    return new class($comicRepo, $charRepo, $groupRepo, $userRepo, $renderer) {
         public function __construct(
-            public mixed $comicRepo,
+            public MockObject $comicRepo,
             public Stub $charRepo,
             public Stub $groupRepo,
             public Stub $userRepo,

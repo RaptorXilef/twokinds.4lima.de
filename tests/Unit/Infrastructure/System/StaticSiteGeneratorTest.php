@@ -19,7 +19,8 @@ use PHPUnit\Framework\MockObject\Stub;
 \it('generates sitemap and rss xml files automatically on destruction', function (): void {
     $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
 
-    $comicRepo = $this->createMock(ComicRepositoryInterface::class);
+    // FIX: Using Stub instead of Mock to avoid "No expectations" notices!
+    $comicRepo = $stub(ComicRepositoryInterface::class);
     $comicRepo->method('findAll')->willReturn([
         new ComicPage(new ComicId('20260810'), 'Comicseite', 'Test', '', null, [], '', '', [], 1234567890),
     ]);
@@ -30,7 +31,7 @@ use PHPUnit\Framework\MockObject\Stub;
     $chapRepo = $stub(ChapterRepositoryInterface::class);
     $chapRepo->method('findAll')->willReturn([]);
 
-    $config = $this->createMock(ConfigInterface::class);
+    $config = $stub(ConfigInterface::class);
     $tempDir = \sys_get_temp_dir() . '/tk_test_' . \uniqid();
     \mkdir($tempDir . '/public', 0o777, true);
 
