@@ -1,5 +1,44 @@
 # Changelog
 
+## [6.16.5](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.4...v6.16.5) (2026-08-10)
+
+### 🐛 Bug Fixes
+
+* **core:** Refactor FrontendController to return ResponseInterface and resolve WorkerCrashedException ([25ff8b7](https://github.com/RaptorXilef/twokinds.4lima.de/commit/25ff8b763cb0b50b78a0c245c14c170dd4a50c4e)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **core:** Resolve WorkerCrashedException and finalize test suite architecture ([2dc8342](https://github.com/RaptorXilef/twokinds.4lima.de/commit/2dc8342fbac4b95f503c23403e2827b72de96d69)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **docs:** Correct composer package name for Pest Mutation Testing Plugin ([da1adcf](https://github.com/RaptorXilef/twokinds.4lima.de/commit/da1adcfddbd5fa2549bc124295e09c7f0d38c20c)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **parser:** prevent accidental deletion of PHP closing tags during operator padding ([6c1be19](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6c1be190004f886c6cd341ad08769407c0eba19b))
+* **tests:** Clean up generated log files in ErrorLoggerTest to prevent rmdir warnings ([b07ef78](https://github.com/RaptorXilef/twokinds.4lima.de/commit/b07ef78f6834c8c355a048aee9b955d543684107)), closes [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve ClassIsFinalException in AuthPagesTest and massively expand test coverage ([50633e2](https://github.com/RaptorXilef/twokinds.4lima.de/commit/50633e22ddd6b1c206e63ca32a844f59848212fe)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve ClassIsFinalException in SessionManager and fix MockObject notices ([d35b373](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d35b373ac9d5b22c27c9df9a8948716ab4e687c1)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve dataset assertion mismatch in SimplePagesTest and expand frontend action coverage ([b11f312](https://github.com/RaptorXilef/twokinds.4lima.de/commit/b11f3123fd9895493901c2d576b298deca2af5f5)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve Factory class_exists validation and PHPUnit stub notices ([6060665](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6060665e0d693fc574164d33cbe317c746573a36)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve Final Class exception for AuthService in Action tests ([4c4d5a8](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4c4d5a84a1e682578ec92e77fb957e4f46517e7e)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve final class exceptions in Factory and clear all PHPUnit strict mock notices ([94853cf](https://github.com/RaptorXilef/twokinds.4lima.de/commit/94853cf0271f12c8b5eeece998fb685bc55e9cd0))
+* **tests:** Resolve Final Class exceptions, file stream warnings, and type errors ([a6cdda6](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a6cdda6104ef58ba1ad07c1e589e8c99b9e54826)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve final class exceptions, scope errors and destructor racing conditions ([3318ca9](https://github.com/RaptorXilef/twokinds.4lima.de/commit/3318ca9ea456cb0a88d90d16d09957fae7952b68)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve final factory assertions and configure Infection for Pest ([52e3388](https://github.com/RaptorXilef/twokinds.4lima.de/commit/52e3388444ced64a014445a6cdfbaa0058bfbd8e)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve HTML encoding assertion failure and PHPUnit Mock notices ([4725f31](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4725f3133d7d6cb8ebefffdb3987f7ce7eaa2492)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve Intelephense P1075 return type errors and add JsonHelper test ([938adda](https://github.com/RaptorXilef/twokinds.4lima.de/commit/938addae12e03eed98555bfe5bce4ca2613fc304)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve namespace scope issues in tests and strict mock expectations ([fd02c40](https://github.com/RaptorXilef/twokinds.4lima.de/commit/fd02c40d6c58381369d1f53a359d1377fb5c50c3)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve PDO Mocking TypeErrors in Repositories and expand Action test coverage ([9bdfa9b](https://github.com/RaptorXilef/twokinds.4lima.de/commit/9bdfa9bbce0965e9a33339a359611d23855acf85)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve PHPUnit strict mock verification notice in MagicLinkServiceTest ([3b20969](https://github.com/RaptorXilef/twokinds.4lima.de/commit/3b20969928f11b8a40ad57e5f6935cd8664fc013)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve protected method scope errors in remaining tests and massive coverage expansion ([79d7781](https://github.com/RaptorXilef/twokinds.4lima.de/commit/79d7781c69999265b104ce7950da5adabb106c9b)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve protected method scope errors, final class exceptions, and destruct lifecycle issues ([e1cf237](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e1cf237f14f2aca9373dbfe4e072f7254fa8b941)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve remaining edge-case testing errors and strict mode constraints ([2f86af9](https://github.com/RaptorXilef/twokinds.4lima.de/commit/2f86af92edca27a02faca024a58f54c4645857a5)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve remaining edge-case testing errors and strict mode constraints ([c477e48](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c477e480d470fd03f9507905640a9bd320712753)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve RouteCache notices, DTO validation, and TypeError in view ([5538ba0](https://github.com/RaptorXilef/twokinds.4lima.de/commit/5538ba0761bcb6247431b117c245f48232125edb)), closes [#112](https://github.com/RaptorXilef/twokinds.4lima.de/issues/112), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve SessionManager Final Class Exception and RouteCache Notices ([fc21665](https://github.com/RaptorXilef/twokinds.4lima.de/commit/fc216651d9e66be84d7b40850f61e3cc96bba5bb)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve SessionManager Final Class Exception and Stub deprecations ([6daa5c5](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6daa5c5163b0ec92a1f09d6fce84b6fcb98dcfc5)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve strict mock expectations, 404 header assertions, and stub types ([90a5f7d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/90a5f7dfe20a988821d5a142a31afc2666bdfa56)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **tests:** Resolve undefined function error in MagicLinkServiceTest and expand coverage ([671d068](https://github.com/RaptorXilef/twokinds.4lima.de/commit/671d068494a40ec9a2bc03d51b92ee4ec1053792)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+
+### 🧪 Tests
+
+* **application:** Add robust PEST coverage for Application Middlewares ([cec4183](https://github.com/RaptorXilef/twokinds.4lima.de/commit/cec4183b491ddf4fbc15cbd5c04090959e4439ee)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **coverage:** Expand frontend and system test coverage ([f027771](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f027771c08b6fd004f600b60b97b70580ef76838)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+* **coverage:** Expand unit test suite with 16 new tests across Application and Infrastructure ([1f09f21](https://github.com/RaptorXilef/twokinds.4lima.de/commit/1f09f210a5fc28371645986fede2ef92acd0324f)), references [#111](https://github.com/RaptorXilef/twokinds.4lima.de/issues/111)
+
 ## [6.16.4](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.3...v6.16.4) (2026-08-09)
 
 ### 🐛 Bug Fixes
