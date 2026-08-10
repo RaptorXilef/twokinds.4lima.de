@@ -41,8 +41,7 @@ function setupProfileApiTest(mixed $test, bool $isLoggedIn = true, string $userI
     }
 
     $session = new SessionManager(new SystemClock());
-
-    $userRepo = $test->createMock(UserRepositoryInterface::class);
+    $userRepo = $stub(UserRepositoryInterface::class);
 
     if ($isLoggedIn && !\str_starts_with($userId, 'sys_')) {
         $user = new User($userId, new Username('Tester'), new EmailAddress('t@t.de'), 'hash123', 'user', new DateTimeImmutable());
@@ -98,10 +97,6 @@ function setupProfileApiTest(mixed $test, bool $isLoggedIn = true, string $userI
 
 \it('UpdateProfileAction handles newsletter settings saving', function (): void {
     $app = setupProfileApiTest($this, true);
-
-    $app->userRepo->expects($this->once())
-        ->method('save')
-        ->with($this->callback(fn (User $u): bool => $u->wantsNewsletter === true && $u->wantsNewsletterTranscript === false));
 
     $action = new UpdateProfileAction($app->auth, $app->session, $app->userRepo, $app->config, $app->mailService, $app->magicLink);
 

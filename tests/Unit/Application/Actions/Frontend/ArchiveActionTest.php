@@ -27,7 +27,7 @@ use PHPUnit\Framework\MockObject\Stub;
 \it('groups comics by chapter id and renders the archive', function (): void {
     $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
 
-    $comicRepo = $this->createMock(ComicRepositoryInterface::class);
+    $comicRepo = $stub(ComicRepositoryInterface::class);
     $comicRepo->method('findAll')->willReturn([
         new ComicPage(new ComicId('20260810'), 'Comicseite', 'A', '', '1', [], '', ''),
         new ComicPage(new ComicId('20260811'), 'Comicseite', 'B', '', '1', [], '', ''),
@@ -35,7 +35,7 @@ use PHPUnit\Framework\MockObject\Stub;
         new ComicPage(new ComicId('20260813'), 'Comicseite', 'D', '', null, [], '', ''), // Unassigned
     ]);
 
-    $chapterRepo = $this->createMock(ChapterRepositoryInterface::class);
+    $chapterRepo = $stub(ChapterRepositoryInterface::class);
     $chapterRepo->method('findAll')->willReturn([
         new Chapter('1', 'Prolog'),
         new Chapter('2', 'Kapitel 1'),

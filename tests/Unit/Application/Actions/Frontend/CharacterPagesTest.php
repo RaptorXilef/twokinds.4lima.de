@@ -16,6 +16,7 @@ use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Core\Entity\Character;
 use App\Core\ValueObject\CharacterId;
 use Closure;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('application', 'actions', 'frontend', 'characters');
@@ -23,11 +24,12 @@ use PHPUnit\Framework\MockObject\Stub;
 function setupCharPagesTest(mixed $test): object
 {
     $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
+    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
 
     $charRepo = $stub(CharacterRepositoryInterface::class);
     $comicRepo = $stub(ComicRepositoryInterface::class);
     $groupRepo = $stub(CharacterGroupRepositoryInterface::class);
-    $renderer = $test->createMock(TemplateRenderer::class);
+    $renderer = $mock(TemplateRenderer::class);
 
     return new class($charRepo, $comicRepo, $groupRepo, $renderer) {
         public function __construct(
@@ -40,7 +42,6 @@ function setupCharPagesTest(mixed $test): object
     };
 }
 
-// LIST ACTION
 \it('CharacterListAction renders character list with filters', function (): void {
     $app = setupCharPagesTest($this);
 
@@ -62,7 +63,6 @@ function setupCharPagesTest(mixed $test): object
     \expect($res->statusCode)->toBe(200);
 })->covers(CharacterListAction::class);
 
-// DETAIL ACTION
 \it('CharacterDetailAction redirects if no id provided', function (): void {
     $app = setupCharPagesTest($this);
     $action = new CharacterDetailAction($app->charRepo, $app->comicRepo, $app->renderer);
@@ -89,7 +89,6 @@ function setupCharPagesTest(mixed $test): object
 \it('CharacterDetailAction redirects if searching by legacy name', function (): void {
     $app = setupCharPagesTest($this);
 
-    // Simulate legacy search where id doesn't match char_xxx pattern
     $app->charRepo->method('findAll')->willReturn([
         new Character(new CharacterId('char_0001'), 'Trace', null, null),
     ]);

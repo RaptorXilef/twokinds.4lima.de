@@ -11,23 +11,26 @@ use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\ValueObject\ComicId;
 use App\Infrastructure\System\StaticSiteGenerator;
+use Closure;
+use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('infrastructure', 'system', 'xml');
 
 \it('generates sitemap and rss xml files automatically on destruction', function (): void {
-    $comicRepo = $this->createMock(ComicRepositoryInterface::class);
+    $stub = Closure::bind(fn (string $c): Stub => $this->createStub($c), $this, self::class);
+
+    $comicRepo = $stub(ComicRepositoryInterface::class);
     $comicRepo->method('findAll')->willReturn([
         new ComicPage(new ComicId('20260810'), 'Comicseite', 'Test', '', null, [], '', '', [], 1234567890),
     ]);
 
-    // WICHTIG: findAll MUSS ein Array zurückgeben, ansonsten kracht die foreach-Schleife!
-    $charRepo = $this->createStub(CharacterRepositoryInterface::class);
+    $charRepo = $stub(CharacterRepositoryInterface::class);
     $charRepo->method('findAll')->willReturn([]);
 
-    $chapRepo = $this->createStub(ChapterRepositoryInterface::class);
+    $chapRepo = $stub(ChapterRepositoryInterface::class);
     $chapRepo->method('findAll')->willReturn([]);
 
-    $config = $this->createMock(ConfigInterface::class);
+    $config = $stub(ConfigInterface::class);
     $tempDir = \sys_get_temp_dir() . '/tk_test_' . \uniqid();
     \mkdir($tempDir . '/public', 0o777, true);
 
@@ -49,7 +52,7 @@ use App\Infrastructure\System\StaticSiteGenerator;
     $generator->generateAll();
 
     // Trigger destructor explicitly to write files
-    unset($generator);
+    $generator->__destruct();
 
     \expect(\file_exists($tempDir . '/public/sitemap.xml'))->toBeTrue()
         ->and(\file_exists($tempDir . '/public/rss.xml'))->toBeTrue();
