@@ -1,10 +1,10 @@
-// NEU: Der korrekte Import für den Timer aus dem Shared-Ordner
 import { SessionTimer } from '../shared/modules/SessionTimer.js';
 import { ThemeManager } from '../shared/ui/ThemeManager.js';
 import { FrontendApi } from './core/FrontendApi.js';
 import { ArchiveManager } from './modules/ArchiveManager.js';
 import { AuthForms } from './modules/AuthForms.js';
 import { AuthManager } from './modules/AuthManager.js';
+import { BookmarkMigrator } from './modules/BookmarkMigrator.js'; // (Kann in zukünftigen Versionen entfernt werden)
 import { BookmarksManager } from './modules/BookmarksManager.js';
 import { CharacterFilter } from './modules/CharacterFilter.js';
 import { ComicReader } from './modules/ComicReader.js';
@@ -17,6 +17,11 @@ import { AccordionManager } from './ui/AccordionManager.js';
 import { ImageFallback } from './ui/ImageFallback.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // --- TEMPORÄRE MIGRATION: v5 -> v6 Lesezeichen ---
+    // (Kann in zukünftigen Versionen entfernt werden)
+    BookmarkMigrator.run();
+    // -------------------------------------------------
+
     let api;
     try {
         api = new FrontendApi();
