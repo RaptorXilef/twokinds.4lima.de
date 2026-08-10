@@ -1,5 +1,20 @@
 # Changelog
 
+## [6.17.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.5...v6.17.0) (2026-08-10)
+
+### 🚀 Features
+
+* **admin:** Add search and filter logic with pagination to Characters tab ([b3dc9e7](https://github.com/RaptorXilef/twokinds.4lima.de/commit/b3dc9e7918374fb30dc6b6f81a70ac4b77307799))
+* **core:** Add disable toggles for backdoor and superadmin accounts ([6d0290d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6d0290da203057e2b41d17b1ace979b06215ccf5))
+* **frontend:** Add silent migration for v5 to v6 local storage bookmarks ([1d04eaa](https://github.com/RaptorXilef/twokinds.4lima.de/commit/1d04eaacb29727e7c35988ec322c52cf8544b2ca))
+
+### 🐛 Bug Fixes
+
+* **admin:** Initialize Character table logic after AJAX tab is loaded ([c4e9c23](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c4e9c23bb767e2957c18c4b64883b1a95e4a7707))
+* **frontend:** Resolve Biome linter errors in BookmarkMigrator ([08facbe](https://github.com/RaptorXilef/twokinds.4lima.de/commit/08facbe9ef5fbd272dbf8c34f9cd475810ad5ba7))
+* **tests:** Replace Mockery with native PHPUnit mocks in AuthServiceConfigTest ([f5e681f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f5e681f831f150b45d38e196e764484ffca2e129))
+* **tests:** Resolve PHPUnit strict notices in AuthServiceConfigTest ([83d4d40](https://github.com/RaptorXilef/twokinds.4lima.de/commit/83d4d40111973d2c47ae878ed7b906d74bc25604))
+
 ## [6.16.5](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.4...v6.16.5) (2026-08-10)
 
 ### 🐛 Bug Fixes
