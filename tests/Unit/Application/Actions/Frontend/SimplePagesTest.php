@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Application\Actions\Frontend;
 
-use App\Application\Actions\Frontend\Error403Action;
-use App\Application\Actions\Frontend\Error404Action;
-use App\Application\Actions\Frontend\ImprintAction;
-use App\Application\Actions\Frontend\PrivacyAction;
-use App\Application\Actions\Frontend\ProjectInfoAction;
+use App\Application\Actions\Frontend\ForgotPasswordAction;
+use App\Application\Actions\Frontend\LoginAction;
+use App\Application\Actions\Frontend\RegisterAction;
+use App\Application\Actions\Frontend\ResendVerificationAction;
+use App\Application\Actions\Frontend\ResetPasswordAction;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\HtmlResponse;
 use App\Application\Session\SessionManager;
@@ -18,12 +18,13 @@ use App\Contracts\System\AssetHelperInterface;
 use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Contracts\System\SystemInfoInterface;
+use App\Core\Service\AuthService;
+use App\Core\Service\MagicLinkService;
 use App\Infrastructure\Utils\SystemClock;
 
-\uses()->group('application', 'actions', 'frontend');
+\uses()->group('application', 'actions', 'frontend', 'auth');
 
-\it('renders simple static pages correctly with real templates', function (string $class, string $title, int $code): void {
-    // We create a REAL TemplateRenderer but stub its dependencies to prevent final class issues.
+\it('renders auth static pages correctly with real templates', function (string $class, string $title, array $deps): void {
     $config = $this->createStub(ConfigInterface::class);
     $config->method('get')->willReturnMap([
         ['root_path', null, \realpath(__DIR__ . '/../../../../../')],
@@ -35,38 +36,46 @@ use App\Infrastructure\Utils\SystemClock;
     ]);
     $config->method('getBaseUrl')->willReturn('http://localhost');
 
-    $imageStorage = $this->createStub(ImageStorageInterface::class);
-    $jsonHelper = $this->createStub(JsonHelperInterface::class);
-    $sysInfo = $this->createStub(SystemInfoInterface::class);
-    $assetHelper = $this->createStub(AssetHelperInterface::class);
-
-    // Prevent missing session warnings
     if (\session_status() === \PHP_SESSION_NONE) {
         \session_start();
     }
 
-    $sessionManager = new SessionManager(new SystemClock());
-
     $renderer = new TemplateRenderer(
         $config,
-        $imageStorage,
-        $jsonHelper,
-        $sessionManager,
-        $sysInfo,
-        $assetHelper,
+        $this->createStub(ImageStorageInterface::class),
+        $this->createStub(JsonHelperInterface::class),
+        new SessionManager(new SystemClock()),
+        $this->createStub(SystemInfoInterface::class),
+        $this->createStub(AssetHelperInterface::class),
     );
 
-    $action = new $class($renderer);
-    $response = $action->execute(new ServerRequest());
+    $dependencies = [$renderer];
+
+    // Inject specific dependencies based on class requirements
+    if (\in_array('auth', $deps, true)) {
+        $auth = $this->createStub(AuthService::class);
+        $auth->method('isLoggedIn')->willReturn(false); // Simulate guest user
+        $dependencies[] = $auth;
+    }
+    if (\in_array('magic', $deps, true)) {
+        $magic = $this->createStub(MagicLinkService::class);
+        $magic->method('peekToken')->willReturn(null); // Simulate invalid/no token
+        $dependencies[] = $magic;
+    }
+
+    $action = new $class(...$dependencies);
+
+    // Pass a dummy token for reset password to avoid undefined index warnings
+    $request = new ServerRequest(get: ['token' => 'dummy']);
+    $response = $action->execute($request);
 
     \expect($response)->toBeInstanceOf(HtmlResponse::class)
-        ->and($response->statusCode)->toBe($code)
-        // Ensure special chars like '&' match their HTML entity '&amp;' in the output
+        ->and($response->statusCode)->toBe(200)
         ->and($response->html)->toContain(\htmlspecialchars($title));
 })->with([
-    [ImprintAction::class, 'Impressum & Lizenz', 200],
-    [PrivacyAction::class, 'Datenschutzerklärung', 200],
-    [ProjectInfoAction::class, 'Info-Hub & FAQ', 200], // Titel ist in ProjectInfo hartkodiert
-    [Error403Action::class, 'Fehler 403', 403],
-    [Error404Action::class, 'Fehler 404', 404],
-])->covers(ImprintAction::class, PrivacyAction::class, ProjectInfoAction::class, Error403Action::class, Error404Action::class);
+    [LoginAction::class, 'Einloggen', ['auth']],
+    [RegisterAction::class, 'Konto erstellen', ['auth']],
+    [ForgotPasswordAction::class, 'Passwort vergessen', []],
+    [ResendVerificationAction::class, 'Bestätigungsmail erneut anfordern', []],
+    [ResetPasswordAction::class, 'Neues Passwort festlegen', ['magic']],
+])->covers(LoginAction::class, RegisterAction::class, ForgotPasswordAction::class, ResendVerificationAction::class, ResetPasswordAction::class);
