@@ -1,0 +1,48 @@
+name: Deploy to LimaCity
+
+on:
+  push:
+    branches:
+      - main # Ändere dies in 'master', falls dein Hauptbranch so heißt
+
+jobs:
+  deploy:
+    name: 🚀 Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Code vom Repository holen
+        uses: actions/checkout@v4
+
+      - name: 🐘 PHP einrichten
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: 📦 Composer Abhängigkeiten installieren
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: 🌐 Dateien per FTP hochladen
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: / # Anpassen, falls LimaCity die Dateien in z.B. /htdocs/ erwartet
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .github/**
+            tests/**
+            config/config.local.php
+            config/dev_admin.php
+            public/assets/images/comics/**
+            public/assets/images/characters/**
+            public/assets/images/avatars/**
+            public/assets/images/reports/**
+            var/backups/**
+            logs/**
+            src/assets/**
+
+      - name: 🔄 System-Update anstoßen (Cache & DB)
+        run: curl -sS "${{ secrets.WEBHOOK_URL }}?token=${{ secrets.WEBHOOK_TOKEN }}"
