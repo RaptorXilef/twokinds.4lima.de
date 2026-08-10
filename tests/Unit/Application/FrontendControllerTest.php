@@ -20,7 +20,7 @@ use App\Infrastructure\Utils\SystemClock;
 use Closure;
 use PHPUnit\Framework\MockObject\Stub;
 
-\uses()->group('application', 'controller');
+// \uses() ENTFERNT - Verhindert den Absturz von INFECTION!
 
 \beforeEach(function (): void {
     if (\session_status() === \PHP_SESSION_NONE) {
@@ -53,7 +53,7 @@ function setupFrontendControllerTest(mixed $test, array $configMap = []): object
     $cache->method('load')->willReturn(['exact' => [], 'dynamic' => []]);
     $registry = new ActionRegistry($config, $cache);
 
-    // STUB statt Mock, das löst die 4 verbliebenen PHPUnit Notices!
+    // WICHTIG: STUB statt Mock, das löst die 3 verbliebenen PHPUnit Notices!
     $container = $stub(ContainerInterface::class);
     $factory = new UniversalActionFactory($registry, $container);
 

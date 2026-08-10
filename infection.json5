@@ -6,4 +6,5 @@
     mutators: {
         '@default': true,
     },
+    testFramework: 'pest',
 }
