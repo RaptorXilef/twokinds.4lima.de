@@ -1,6 +1,7 @@
 import { createReactiveState } from '../core/ReactiveState.js';
 import { DragDropService } from '../ui/DragDropService.js';
 import { renderPagination } from '../ui/Pagination.js';
+import { debounce } from '../utils/Utils.js';
 
 /**
  * @typedef {import('../core/Api.js').Api} Api
@@ -52,13 +53,21 @@ export class CharacterEditor {
             this.tracker
         );
 
+        // Basis-Events direkt binden
         if (this.section || this.form) {
-            this.initTableLogic();
             this.bindEvents();
             this.bindImageSelection();
             this.bindDropZones();
             this.bindLiveStateInputs();
         }
+
+        // WICHTIG: Warte bis der Tab per AJAX geladen wurde,
+        // erst dann existieren Tabelle und Suchfelder im DOM!
+        document.addEventListener('tabLoaded', (e) => {
+            if (e.detail.tab === 'section-characters') {
+                this.initTableLogic();
+            }
+        });
     }
 
     initTableLogic() {
@@ -95,10 +104,15 @@ export class CharacterEditor {
             this.renderTable();
         };
 
+        const debouncedApply = debounce(applyFilters, 250);
+
         Object.values(this.filters).forEach((el) => {
             if (el) {
-                el.addEventListener('input', applyFilters);
-                el.addEventListener('change', applyFilters);
+                if (el.tagName === 'INPUT' && el.type === 'text') {
+                    el.addEventListener('input', debouncedApply);
+                } else {
+                    el.addEventListener('change', applyFilters);
+                }
             }
         });
 
