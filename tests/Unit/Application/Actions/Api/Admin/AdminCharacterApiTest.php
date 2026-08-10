@@ -52,7 +52,8 @@ function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object
     $charRepo = $stub(CharacterRepositoryInterface::class);
     $groupRepo = $stub(CharacterGroupRepositoryInterface::class);
 
-    $siteGen = $stub(SiteGeneratorInterface::class); // STUB, we dont assert on it here
+    // Binding the Stub creator to test context ensures no protected method violations
+    $siteGen = $stub(SiteGeneratorInterface::class);
 
     $charService = new CharacterService($charRepo, $groupRepo, $siteGen);
 
@@ -102,7 +103,7 @@ function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object
     $app = setupCharacterApiTest($this, true);
     $action = new SaveSingleCharacterAction($app->charService, $app->charRepo, $app->media, $app->auth);
 
-    $res = $action->execute(new ServerRequest(post: ['id' => 'char_123'])); // Name missing
+    $res = $action->execute(new ServerRequest(post: ['id' => 'char_123']));
     \expect($res->statusCode)->toBe(400);
 })->covers(SaveSingleCharacterAction::class);
 

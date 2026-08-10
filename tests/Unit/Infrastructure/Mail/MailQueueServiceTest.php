@@ -1,6 +1,5 @@
 <?php
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Tests\Unit\Infrastructure\Mail;
 
@@ -8,24 +7,21 @@ use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Storage\MailQueueRepositoryInterface;
 use App\Core\Entity\MailJob;
 use App\Infrastructure\Mail\MailQueueService;
-use Closure;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('infrastructure', 'mail');
 
-function setupMailQueueTest(mixed $test): object
-{
-    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
-    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
+function setupMailQueueTest(mixed $test): object {
+    $mock = \Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
+    $stub = \Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
 
     return new class($mock, $stub) {
         public function __construct(
             public mixed $mockMaker,
-            public mixed $stubMaker,
-        ) {
-        }
+            public mixed $stubMaker
+        ) {}
     };
 }
 
@@ -80,7 +76,6 @@ function setupMailQueueTest(mixed $test): object
     $repo->method('processBatch')
         ->willReturnCallback(function (int $limit, callable $processor) {
             $processor('test@test.de', 'Sub', 'tpl', ['a' => 1]);
-
             return 1;
         });
 
@@ -103,7 +98,6 @@ function setupMailQueueTest(mixed $test): object
     $repo->method('processBatch')
         ->willReturnCallback(function (int $limit, callable $processor) {
             $processor('test@test.de', 'Sub', 'tpl', []);
-
             return 0;
         });
 
