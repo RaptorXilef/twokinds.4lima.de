@@ -1,6 +1,5 @@
 <?php
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Tests\Unit\Application\Actions\Api\Admin;
 
@@ -16,17 +15,18 @@ use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Contracts\System\MediaServiceInterface;
+use App\Contracts\System\SiteGeneratorInterface;
 use App\Core\Service\AuthService;
 use App\Core\Service\CharacterService;
 use App\Infrastructure\Utils\SystemClock;
-use Closure;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 
 \uses()->group('application', 'actions', 'api', 'admin', 'characters');
 
-function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object
-{
-    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
+function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object {
+    $stub = \Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
+    $mock = \Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
 
     if (\session_status() === \PHP_SESSION_NONE) {
         \session_start();
@@ -45,18 +45,16 @@ function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object
         $stub(RoleRepositoryInterface::class),
         $stub(RateLimiterInterface::class),
         $session,
-        $stub(UserRepositoryInterface::class),
+        $stub(UserRepositoryInterface::class)
     );
 
     $charRepo = $stub(CharacterRepositoryInterface::class);
     $groupRepo = $stub(CharacterGroupRepositoryInterface::class);
 
-    // Echter Service, da wir DTO Parsing und Service-Call in Kombination testen wollen
-    $charService = new CharacterService(
-        $charRepo,
-        $groupRepo,
-        $test->createMock(\App\Contracts\System\SiteGeneratorInterface::class),
-    );
+    // Mock the SiteGenerator using the bound closure
+    $siteGen = $mock(SiteGeneratorInterface::class);
+
+    $charService = new CharacterService($charRepo, $groupRepo, $siteGen);
 
     return new class($auth, $charService, $charRepo, $groupRepo, $stub(MediaServiceInterface::class)) {
         public function __construct(
@@ -64,9 +62,8 @@ function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object
             public CharacterService $charService,
             public Stub&CharacterRepositoryInterface $charRepo,
             public Stub&CharacterGroupRepositoryInterface $groupRepo,
-            public Stub&MediaServiceInterface $media,
-        ) {
-        }
+            public Stub&MediaServiceInterface $media
+        ) {}
     };
 }
 
@@ -96,7 +93,6 @@ function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object
     $app = setupCharacterApiTest($this, true);
     $action = new SaveCharacterGroupsAction($app->groupRepo, $app->auth);
 
-    // Fails due to unparseable JSON (JSON_THROW_ON_ERROR triggers 500 fallback)
     $res = $action->execute(new ServerRequest(post: ['groups_data' => '{invalid]']));
     \expect($res->statusCode)->toBe(500);
 })->covers(SaveCharacterGroupsAction::class);
@@ -112,7 +108,7 @@ function setupCharacterApiTest(mixed $test, bool $hasPerm = true): object
 \it('SaveSingleCharacterAction 200 on valid inputs', function (): void {
     $app = setupCharacterApiTest($this, true);
     $app->media->method('processCharacterImages')->willReturn([
-        'profile' => null, 'main' => null, 'swatch' => null, 'refs' => [], 'warnings' => [],
+        'profile' => null, 'main' => null, 'swatch' => null, 'refs' => [], 'warnings' => []
     ]);
 
     $action = new SaveSingleCharacterAction($app->charService, $app->charRepo, $app->media, $app->auth);

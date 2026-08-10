@@ -1,6 +1,5 @@
 <?php
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Tests\Unit\Infrastructure\Mail;
 
@@ -8,22 +7,20 @@ use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Storage\MailQueueRepositoryInterface;
 use App\Core\Entity\MailJob;
 use App\Infrastructure\Mail\MailQueueService;
-use Closure;
 use Exception;
-use PHPUnit\Framework\MockObject\Stub;
+use PHPUnit\Framework\MockObject\MockObject;
 
 \uses()->group('infrastructure', 'mail');
 
-function setupMailQueueTest(mixed $test): object
-{
-    $stub = Closure::bind(fn (string $c): Stub => $test->createStub($c), $test, $test::class);
+function setupMailQueueTest(mixed $test): object {
+    // We MUST use Mocks here (not Stubs) so we can use expects()
+    $mock = \Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
 
-    return new class($stub(MailQueueRepositoryInterface::class), $stub(MailServiceInterface::class)) {
+    return new class($mock(MailQueueRepositoryInterface::class), $mock(MailServiceInterface::class)) {
         public function __construct(
-            public Stub&MailQueueRepositoryInterface $repo,
-            public Stub&MailServiceInterface $realMail,
-        ) {
-        }
+            public MockObject&MailQueueRepositoryInterface $repo,
+            public MockObject&MailServiceInterface $realMail
+        ) {}
     };
 }
 
@@ -66,7 +63,6 @@ function setupMailQueueTest(mixed $test): object
     $app->repo->method('processBatch')
         ->willReturnCallback(function (int $limit, callable $processor) {
             $processor('test@test.de', 'Sub', 'tpl', ['a' => 1]);
-
             return 1;
         });
 
@@ -85,7 +81,6 @@ function setupMailQueueTest(mixed $test): object
     $app->repo->method('processBatch')
         ->willReturnCallback(function (int $limit, callable $processor) {
             $processor('test@test.de', 'Sub', 'tpl', []);
-
             return 0;
         });
 
