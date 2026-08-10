@@ -42,7 +42,8 @@
     "slevomat/coding-standard": "^8.28",
     "squizlabs/php_codesniffer": "^4.0",
     "phpmd/phpmd": "^3.0",
-    "spaze/phpstan-disallowed-calls": "^4.14"
+    "spaze/phpstan-disallowed-calls": "^4.14",
+    "pestphp/pest-plugin-mutate": "^4.0"
   },
   "autoload": {
     "psr-4": {
@@ -109,7 +110,8 @@
     "test": "pest --parallel",
     "test:full": "pest --parallel --display-deprecations",
     "test:coverage": "XDEBUG_MODE=coverage pest --coverage --coverage-html .build/reports/phpunit-html",
-    "test:mutation": "php -d xdebug.mode=coverage tools/infection.phar --threads=4 --min-msi=30 --coverage=.cache/phpunit",
+    "test:mutation": "php -d xdebug.mode=coverage vendor/bin/pest --mutate",
+    "//test:mutation": "php -d xdebug.mode=coverage tools/infection.phar --threads=4 --min-msi=30 --coverage=.cache/phpunit",
     "//test:phpunit": "phpunit",
     "//test:unit": "phpunit --testsuite Unit",
     "//test:feature": "phpunit --testsuite Feature",
