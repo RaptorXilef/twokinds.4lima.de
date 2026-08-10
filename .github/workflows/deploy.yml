@@ -1,9 +1,13 @@
-name: Deploy to LimaCity
+name: Deploy to LimaCity - twokinds.4lima.de
 
 on:
-  push:
-    branches:
-      - main # Ändere dies in 'master', falls dein Hauptbranch so heißt
+  workflow_dispatch:
+#  push:
+#    tags:
+#      - 'v*' # Startet automatisch, wenn du z.B. v6.0.0 pushst
+#  push:
+#    branches:
+#      - main # Ändere dies in 'master', falls dein Hauptbranch so heißt
 
 jobs:
   deploy:
@@ -32,17 +36,70 @@ jobs:
           exclude: |
             **/.git*
             **/.git*/**
+            .cache/**
+            .debug/**
             .github/**
-            tests/**
+            .husky/**
+            .vscode/**
             config/config.local.php
             config/dev_admin.php
+            config/secrets.php
+            config/email.php
+            config/storage.php
+            config/backup.php
+            docs/**
+            logs/**
             public/assets/images/comics/**
             public/assets/images/characters/**
             public/assets/images/avatars/**
             public/assets/images/reports/**
-            var/backups/**
-            logs/**
+            scripts/**
             src/assets/**
+            tests/**
+            var/backups/**
+            .editorconfig
+            .env.example
+            .git-blame-ignore-revs
+            .gitattributes
+            .gitignore
+            .jsbeautifyrc
+            .markdownlint-cli2.jsonc
+            .markuplintrc
+            .npmrc-example
+            .php-cs-fixer.dist.php
+            .prettierrc
+            .release-it.js
+            CLA.md
+            CONTRIBUTING.md
+            README.md
+            biome.json
+            biome.template.json
+            commitlint.config.cjs
+            cspell-denglisch.txt
+            cspell-folder-names.txt
+            cspell-general.txt
+            cspell-project.txt
+            cspell-proper-names.txt
+            cspell-technical.txt
+            cspell.json
+            deptrac.yaml
+            deptrac.yaml.dist
+            infection.json5
+            package-lock.json
+            phpcs-psr12.xml
+            phpcs-slevomat-coding-standard-ruleset.xml
+            phpcs-universal.xml
+            phpcs.xml.dist
+            phpmd.xml.dist
+            phpstan-baseline.neon
+            phpstan.neon.dist
+            phpunit.xml.dist
+            rector.php
+            stylelint.config.js
+            stylelint.template.js
+            twokinds.4lima.de.code-workspace
+            vite.config.js
+            vitest.config.ts
 
       - name: 🔄 System-Update anstoßen (Cache & DB)
         run: curl -sS "${{ secrets.WEBHOOK_URL }}?token=${{ secrets.WEBHOOK_TOKEN }}"
