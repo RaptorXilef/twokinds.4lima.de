@@ -200,10 +200,11 @@ function optimizeTokens(content, fileExtension) {
     } else if (ext === '.php' || ext === '.phtml') {
         // In PHP/PHTML wird das Padding NUR NOCH innerhalb von <?php ... ?> angewendet!
         // HTML Attribute (href=) bleiben somit zu 100% unangetastet.
+        // FIX: (\?>|$) ist jetzt eine Capturing Group, damit ?> nicht gelöscht wird!
         optimizedContent = optimizedContent.replace(
-            /(<\?[pP][hH][pP]|<\?=)([\s\S]*?)(?:\?>|$)/g,
-            (_match, openTag, phpCode) => {
-                return openTag + phpCode.replace(operatorRegex, ' $1 ');
+            /(<\?[pP][hH][pP]|<\?=)([\s\S]*?)(\?>|$)/g,
+            (_match, openTag, phpCode, closeTag) => {
+                return openTag + phpCode.replace(operatorRegex, ' $1 ') + closeTag;
             }
         );
     }
@@ -318,20 +319,15 @@ function getFiles(dir, filter, exclDirs, exclFiles, includeRoot, currentFiles = 
     return currentFiles;
 }
 
-// Generiert einen sauberen Zeitstempel-Ordnernamen (YYYY-MM-DD_hh-mm-ss)
 function getTimestampString() {
     const d = new Date();
     const pad = (n) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
 }
 
-/**
- * Funktion für den neuen Menüpunkt 6 (Gleiche Ordnerstruktur spiegeln)
- */
 function startStructureMirror() {
     const timestampDirName = getTimestampString();
 
-    // Namenszusatz hinzufügen, wenn DocBlocks aktiviert sind
     const docSuffix = globalKeepDocBlocks ? '_docblock' : '';
     const targetDirName = `${timestampDirName}_minimized${docSuffix}`;
     const targetDir = path.join(debugFolder, targetDirName);
@@ -388,7 +384,6 @@ function startFileCollection(configKey, silent = false) {
     const conf = configs[configKey];
     const timestamp = getTimestampString();
 
-    // Namenszusatz hinzufügen, wenn DocBlocks aktiviert sind
     const docSuffix = globalKeepDocBlocks ? '_docblock' : '';
     const outputName = `${conf.name}_${timestamp}_minimized${docSuffix}${conf.ext}`;
     const outputPath = path.join(debugFolder, outputName);
@@ -468,7 +463,7 @@ if (args.length > 0) {
         process.exit(0);
     }
     if (args.includes('--root')) globalIncludeRootFiles = true;
-    if (args.includes('--docblocks')) globalKeepDocBlocks = true; // CLI
+    if (args.includes('--docblocks')) globalKeepDocBlocks = true;
 
     if (args.includes('--all')) {
         for (const k of ['JS', 'PHP', 'PHTML', 'SCSS']) {
