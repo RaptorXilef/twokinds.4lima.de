@@ -27,7 +27,16 @@ use PHPUnit\Framework\MockObject\Stub;
 
     \expect(\is_dir($tempDir . '/logs'))->toBeTrue();
 
-    // Cleanup
+    // Cleanup: Erstellte Log-Dateien löschen, bevor der Ordner gelöscht wird
+    $files = \glob($tempDir . '/logs/*');
+    if (\is_array($files)) {
+        foreach ($files as $file) {
+            if (\is_file($file)) {
+                \unlink($file);
+            }
+        }
+    }
+
     \rmdir($tempDir . '/logs');
     \rmdir($tempDir);
 })->covers(ErrorLogger::class);
