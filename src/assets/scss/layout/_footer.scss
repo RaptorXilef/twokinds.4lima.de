@@ -59,7 +59,7 @@
         justify-content: center;
         width: 100%;
         margin-top: 5px;
-        overflow-x: hidden;
+        overflow: hidden; // FIX: Verhindert Scrollen am Rand
     }
 
     &__characters-inner {
@@ -67,9 +67,10 @@
         align-items: flex-end;
         justify-content: center;
         height: 89px;
+        width: 100%;
 
         @include respond-to-mobile {
-            height: 45px; // Charaktere auf Mobile verkleinern
+            height: 60px; // FIX: Etwas höher als vorher für bessere Sichtbarkeit
         }
 
         a {
@@ -77,17 +78,20 @@
             z-index: 1;
             display: block;
             height: 100%;
-            margin: 0 -4.5px;
+            margin: 0 -1.5vw; // FIX: Fluide Überlappung, passt sich flexibel an Screen an
             transform-origin: bottom center;
             transition:
                 transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
                 filter 0.2s,
                 z-index 0.2s;
+            flex: 0 1 auto;
+            min-width: 0;
 
             img {
                 display: block;
-                width: auto;
+                width: 100%;
                 height: 100%;
+                object-fit: contain; // FIX: Bild füllt den <a> Rahmen sauber aus ohne zu zerquetschen
                 filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.15));
             }
 

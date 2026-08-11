@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 /**
  * @var string $adminUser
- * @var array  $perms
- * @var bool   $canManageUsers
+ * @var array $perms
+ * @var bool $canManageUsers
  * @var string $baseUrl
  */
 ?>
@@ -67,9 +67,8 @@ declare(strict_types=1);
             <span class="menu-label">Account</span>
             <a href="<?php echo $baseUrl ?? '/'; ?>/" target="_blank">Zur Webseite</a>
 
-            <div id="admin-session-timer"
-                 class="session-timer">
-                <i class="fa-solid fa-clock"></i> 30:00
+            <div class="session-timer js-session-timer">
+                <!-- Timer -->
             </div>
 
             <a href="#" id="admin-logout-btn" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Abmelden</a>

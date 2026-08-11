@@ -52,14 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const api = new Api();
     const formService = new FormService(api, notifications, tracker); // Der neue Form-Manager
     const modalManager = new ModalManager();
-
     const globalUI = new GlobalUI(tracker);
 
     try {
         new MobileMenu(); // FIX: Hamburger Menü Logik laden!
         new TabManager(api);
         new ThemeManager();
-        new SessionTimer(api, 'admin-session-timer', { notifications });
+        // TIMER INIT ÜBER KLASSE
+        new SessionTimer(api, '.js-session-timer', { notifications });
     } catch (err) {
         console.error('[AdminApp] Fehler bei der Core-UI Initialisierung:', err);
     }
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     tableBodySelector: '.comic-editor-table tbody',
                     searchInputId: 'comic-search',
                     perPageSelectId: 'comic-per-page',
-                    paginationContainerId: 'comic-pagination',
+                    paginationContainerSelector: '.comic-pagination', // FIX: Selector statt ID
                 });
             }
 

@@ -6,13 +6,15 @@ export class DataTable {
         this.tableBody = document.querySelector(config.tableBodySelector);
         this.searchInput = document.getElementById(config.searchInputId);
         this.perPageSelect = document.getElementById(config.perPageSelectId);
-        this.paginationContainer = document.getElementById(config.paginationContainerId);
+
+        // FIX: Hole alle Paginierungs-Container (Oben und Unten)
+        this.paginationContainers = document.querySelectorAll(config.paginationContainerSelector);
 
         if (
             !this.tableBody ||
             !this.searchInput ||
             !this.perPageSelect ||
-            !this.paginationContainer
+            this.paginationContainers.length === 0
         )
             return;
 
@@ -92,17 +94,20 @@ export class DataTable {
         const filteredRows = this.allRows.filter((row) =>
             row.textContent.toLowerCase().includes(this.currentSearchQuery.toLowerCase())
         );
+
         const totalItems = filteredRows.length;
         const limit = this.itemsPerPage === 'all' ? totalItems : parseInt(this.itemsPerPage, 10);
         const totalPages = limit > 0 ? Math.ceil(totalItems / limit) : 1;
 
         if (this.currentPage > totalPages) this.currentPage = totalPages || 1;
+
         const startIndex = limit === totalItems ? 0 : (this.currentPage - 1) * limit;
         const endIndex = startIndex + limit;
 
         this.allRows.forEach((row) => {
             row.style.display = 'none';
         });
+
         filteredRows.slice(startIndex, endIndex).forEach((row) => {
             row.style.display = '';
         });
@@ -120,9 +125,12 @@ export class DataTable {
             emptyMsg.style.display = 'none';
         }
 
-        renderPagination(this.paginationContainer, this.currentPage, totalPages, (newPage) => {
-            this.currentPage = newPage;
-            this.renderTable();
+        // Render auf allen Paginierungs-Containern (Oben + Unten)
+        this.paginationContainers.forEach((container) => {
+            renderPagination(container, this.currentPage, totalPages, (newPage) => {
+                this.currentPage = newPage;
+                this.renderTable();
+            });
         });
 
         this.saveState(); // Speichere den Zustand bei jedem Rendern!

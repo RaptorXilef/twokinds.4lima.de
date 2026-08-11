@@ -21,8 +21,8 @@
 
     @include respond-to-mobile {
         flex-direction: column;
-        gap: 10px;
         align-items: stretch;
+        gap: 10px;
     }
 }
 
@@ -44,8 +44,8 @@
         width: 100%;
 
         .button {
-            justify-content: center;
             width: 100%;
+            justify-content: center;
         }
     }
 }
@@ -70,6 +70,7 @@
     overflow-x: auto;
     border: 1px solid var(--border-medium);
     border-radius: 4px;
+    width: 100%;
 }
 
 .admin-table {
@@ -358,11 +359,14 @@ body.theme-night .pagination span:hover:not(.current-page) {
     color: var(--text-color-light);
 }
 
+// FIX: Von Column auf Row, damit sich Pagination-Buttons nebeneinander stapeln!
 .pagination-wrapper {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 25px 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    margin: 15px 0;
 }
 
 .pagination-info {
@@ -439,8 +443,8 @@ body.theme-night .pagination span:hover:not(.current-page) {
 
 .report-desc-preview {
     max-height: 2.5em;
-    overflow: auto;
     font-size: 0.85em;
+    overflow: auto;
     scrollbar-width: thin;
     border: 1px solid var(--border-light);
     border-radius: 3px;

@@ -44,7 +44,7 @@ article {
     margin-bottom: 15px;
 
     @include respond-to-mobile {
-        flex-direction: column; // Sidebar rutscht unter den Hauptinhalt
+        flex-direction: column;
         padding-top: 0;
         margin-top: 0;
     }
@@ -53,11 +53,12 @@ article {
 .l-content-box {
     position: relative;
     z-index: 102;
-    display: inline-block;
+    display: flex; // Flexbox für volles Wachstum
+    flex-direction: column;
     flex: 1 1 auto;
     padding: 10px 15px 11px;
     margin-right: 11px;
-    overflow: hidden; // Verhindert seitliches Scrollen bei großen Tabellen
+    overflow: hidden;
     color: var(--text-color);
     background-color: var(--content-bg);
     border: 1px solid var(--border-medium);
@@ -82,10 +83,10 @@ article {
     }
 
     table {
-        display: block; // Erlaubt horizontales Scrollen von Tabellen auf Smartphones
+        // FIX: Kein display: block! Tabellen nehmen nun 100% ein, overflow wird durch Parent geregelt
+        width: 100%;
         max-width: 100%;
         margin-bottom: 10px;
-        overflow-x: auto;
         border-collapse: collapse;
         border: 1px solid var(--border-black);
     }

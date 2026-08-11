@@ -21,8 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- TEMPORÄRE MIGRATION: v5 -> v6 Lesezeichen ---
     // (Kann in zukünftigen Versionen entfernt werden)
     runBookmarkMigration();
-    // -------------------------------------------------
-
     let api;
     try {
         api = new FrontendApi();
@@ -57,11 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
         safeInit('BookmarksManager', () => new BookmarksManager(api));
         safeInit('AuthForms', () => new AuthForms(api));
         safeInit('ProfileManager', () => new ProfileManager(api));
-
-        // Initialisierung des Timers für das Frontend
+        // TIMER INIT ÜBER KLASSE
         safeInit(
             'SessionTimer',
-            () => new SessionTimer(api, 'frontend-session-timer', { isFrontend: true })
+            () => new SessionTimer(api, '.js-session-timer', { isFrontend: true })
         );
     }
 

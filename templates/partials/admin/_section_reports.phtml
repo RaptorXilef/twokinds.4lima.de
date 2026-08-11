@@ -5,10 +5,11 @@ declare(strict_types=1);
 use App\Core\Entity\Report;
 
 /**
- * @var string   $baseUrl
+ * @var string $baseUrl
  * @var Report[] $allReports
  */
 ?>
+
 <div class="table-controls actions-bar d-flex flex-wrap justify-end gap-15 align-center">
     <div class="search-wrapper d-flex gap-10 align-center flex-wrap">
         <select id="report-status-filter">
@@ -31,6 +32,9 @@ use App\Core\Entity\Report;
                class="min-w-250">
     </div>
 </div>
+
+<div class="pagination-wrapper report-pagination"></div>
+
 <div class="sitemap-table-container">
     <table class="admin-table report-editor-table"
            id="reports-table">
@@ -53,33 +57,33 @@ use App\Core\Entity\Report;
             <?php } else { ?>
                 <?php foreach ($allReports as $rep) {
                     $statusText = match ($rep->status) {
-                        'open'   => 'Offen',
+                        'open' => 'Offen',
                         'closed' => 'Erledigt',
-                        'spam'   => 'Spam',
-                        default  => $rep->status
+                        'spam' => 'Spam',
+                        default => $rep->status
                     };
 
                     // ComicID kann null sein!
                     $comicIdStr = $rep->comicId ? $rep->comicId->value : '';
-                    $avatarImg  = $rep->submitterAvatarUrl
+                    $avatarImg = $rep->submitterAvatarUrl
                         ? "{$baseUrl}/assets/images/avatars/{$rep->submitterAvatarUrl}"
                         : 'https://placehold.co/30x30?text=N/A';
 
                     $reportData = \json_encode([
-                        'id'            => $rep->id->value,
-                        'comicId'       => $comicIdStr,
-                        'userId'        => $rep->userId,
-                        'avatarUrl'     => $rep->submitterAvatarUrl,
-                        'date'          => $rep->date->format('d.m.Y H:i'),
-                        'submitter'     => $rep->submitterName,
-                        'wantsCredit'   => (bool) $rep->wantsCredit,
-                        'type'          => $rep->type,
-                        'description'   => $rep->description,
-                        'suggestion'    => $rep->transcriptSuggestion,
-                        'original'      => $rep->transcriptOriginal,
+                        'id' => $rep->id->value,
+                        'comicId' => $comicIdStr,
+                        'userId' => $rep->userId,
+                        'avatarUrl' => $rep->submitterAvatarUrl,
+                        'date' => $rep->date->format('d.m.Y H:i'),
+                        'submitter' => $rep->submitterName,
+                        'wantsCredit' => (bool) $rep->wantsCredit,
+                        'type' => $rep->type,
+                        'description' => $rep->description,
+                        'suggestion' => $rep->transcriptSuggestion,
+                        'original' => $rep->transcriptOriginal,
                         'screenshotUrl' => $rep->screenshotUrl,
-                        'debug'         => \html_entity_decode($rep->debugInfo, \ENT_QUOTES, 'UTF-8'),
-                        'status'        => $rep->status,
+                        'debug' => \html_entity_decode($rep->debugInfo, \ENT_QUOTES, 'UTF-8'),
+                        'status' => $rep->status,
                     ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
                     ?>
                     <tr data-status="<?php echo \htmlspecialchars($rep->status); ?>">
@@ -129,5 +133,5 @@ use App\Core\Entity\Report;
         </tbody>
     </table>
 </div>
-<div id="report-pagination"
-     class="pagination-wrapper"></div>
+
+<div class="pagination-wrapper report-pagination"></div>

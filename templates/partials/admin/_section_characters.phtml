@@ -165,6 +165,8 @@ foreach ($characters as $c) {
     </div>
 </div>
 
+<div class="pagination-wrapper character-pagination"></div>
+
 <div class="sitemap-table-container">
     <table class="admin-table"
            id="characters-table">
@@ -183,7 +185,8 @@ foreach ($characters as $c) {
                         class="empty-table-message">Keine Charaktere angelegt.</td>
                 </tr>
             <?php } else { ?>
-                <?php foreach ($characters as $char) {
+                <?php
+                foreach ($characters as $char) {
                     $cId = $char->id->value;
                     $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/100x100?text=N/A';
 
@@ -206,7 +209,7 @@ foreach ($characters as $c) {
                     ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
 
                     $searchStr = \strtolower($cId . ' ' . $char->name . ' ' . ($char->fullName ?? '') . ' ' . ($char->altNames ?? '') . ' ' . \strip_tags($char->description ?? ''));
-                ?>
+                    ?>
                     <tr data-search="<?php echo \htmlspecialchars($searchStr); ?>"
                         data-gender="<?php echo \htmlspecialchars($char->gender ?? ''); ?>"
                         data-age="<?php echo \htmlspecialchars($char->age ?? ''); ?>"
@@ -255,5 +258,4 @@ foreach ($characters as $c) {
     </table>
 </div>
 
-<div id="character-pagination"
-     class="pagination-wrapper"></div>
+<div class="pagination-wrapper character-pagination"></div>

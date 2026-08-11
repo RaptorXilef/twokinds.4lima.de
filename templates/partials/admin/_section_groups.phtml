@@ -65,9 +65,9 @@ use App\Core\Entity\CharacterGroup;
          class="flex-1 grid-auto-300">
         <?php foreach ($groups as $group) { ?>
             <div class="character-group">
-                <div class="character-group-header d-flex align-center gap-10">
-                    <i class="fa-solid fa-grip-vertical group-drag-handle"
-                       title="Gruppe verschieben"></i>
+                <div class="character-group-header d-flex align-center gap-10 flex-wrap">
+                    <i class="fa-solid fa-grip-vertical group-drag-handle hide-on-mobile"
+                       title="Gruppe verschieben (Desktop)"></i>
                     <div class="flex-1">
                         <h3 contenteditable="true"
                             spellcheck="false"
@@ -80,17 +80,24 @@ use App\Core\Entity\CharacterGroup;
                                    <?php echo $group->manualSort ? 'checked' : ''; ?>> Manuell sortieren
                         </label>
                     </div>
-                    <button type="button"
-                            class="button add btn-add-char-to-group"
-                            title="Charaktere hinzufügen"><i class="fa-solid fa-user-plus"></i></button>
-                    <button type="button"
-                            class="button delete btn-delete-group"
-                            title="Gruppe löschen"><i class="fa-solid fa-times"></i></button>
+                    <!-- NEU: Hoch/Runter Buttons für das Smartphone (und Desktop) -->
+                    <div class="d-flex gap-5">
+                        <button type="button"
+                                class="button edit btn-move-group-up"
+                                title="Nach oben verschieben"><i class="fa-solid fa-arrow-up"></i></button>
+                        <button type="button"
+                                class="button edit btn-move-group-down"
+                                title="Nach unten verschieben"><i class="fa-solid fa-arrow-down"></i></button>
+                        <button type="button"
+                                class="button add btn-add-char-to-group"
+                                title="Charaktere hinzufügen"><i class="fa-solid fa-user-plus"></i></button>
+                        <button type="button"
+                                class="button delete btn-delete-group"
+                                title="Gruppe löschen"><i class="fa-solid fa-times"></i></button>
+                    </div>
                 </div>
-                <!-- Wir merken uns den Sort-Status im data-Attribut für JS -->
                 <div class="character-list-container sortable-group p-10"
                      data-manual="<?php echo $group->manualSort ? 'true' : 'false'; ?>">
-                     <!-- Wenn manuell aus ist, sortieren wir die Liste für die Anzeige alphabetisch -->
                     <?php $renderChars = [];
             foreach ($group->characterIds as $cidObj) {
                 foreach ($characters as $c) {

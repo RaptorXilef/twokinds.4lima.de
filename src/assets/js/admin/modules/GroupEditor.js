@@ -15,6 +15,7 @@ export class GroupEditor {
 
         /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-groups');
+
         /** @type {boolean} */
         this.poolViewAll = true;
 
@@ -59,14 +60,20 @@ export class GroupEditor {
             const btnTogglePool = e.target.closest('#btn-toggle-pool');
             const btnAddCharToGroup = e.target.closest('.btn-add-char-to-group');
 
+            // Hoch/Runter Buttons
+            const btnUp = e.target.closest('.btn-move-group-up');
+            const btnDown = e.target.closest('.btn-move-group-down');
+
             if (btnAddGroup) {
                 e.preventDefault();
                 this.addGroupHTML();
             }
+
             if (btnSaveGroups || btnSaveSticky) {
                 e.preventDefault();
                 this.saveGroups(btnSaveGroups || btnSaveSticky);
             }
+
             if (btnDelete) {
                 e.preventDefault();
                 this.markDirty();
@@ -74,6 +81,7 @@ export class GroupEditor {
                 if (groupEl) groupEl.remove();
                 this.updatePoolAssignedState();
             }
+
             if (btnRemoveChar) {
                 e.preventDefault();
                 this.markDirty();
@@ -81,13 +89,33 @@ export class GroupEditor {
                 if (entry) entry.remove();
                 this.updatePoolAssignedState();
             }
+
             if (btnTogglePool) {
                 e.preventDefault();
                 this.togglePool(btnTogglePool);
             }
+
             if (btnAddCharToGroup) {
                 e.preventDefault();
                 this.openAddCharModal(btnAddCharToGroup);
+            }
+
+            if (btnUp) {
+                e.preventDefault();
+                const group = btnUp.closest('.character-group');
+                if (group && group.previousElementSibling) {
+                    group.parentNode.insertBefore(group, group.previousElementSibling);
+                    this.markDirty();
+                }
+            }
+
+            if (btnDown) {
+                e.preventDefault();
+                const group = btnDown.closest('.character-group');
+                if (group && group.nextElementSibling) {
+                    group.parentNode.insertBefore(group.nextElementSibling, group);
+                    this.markDirty();
+                }
             }
         });
 
@@ -214,20 +242,24 @@ export class GroupEditor {
 
         const html = `
         <div class="character-group">
-            <div class="character-group-header d-flex align-center gap-10">
-                <i class="fa-solid fa-grip-vertical group-drag-handle" title="Gruppe verschieben"></i>
+            <div class="character-group-header d-flex align-center gap-10 flex-wrap">
+                <i class="fa-solid fa-grip-vertical group-drag-handle hide-on-mobile" title="Gruppe verschieben (Desktop)"></i>
                 <div class="flex-1">
                     <h3 contenteditable="true" spellcheck="false" class="group-title-edit mb-0 border-bottom border-dashed outline-none">Neue Gruppe</h3>
                     <label class="font-small text-light font-normal mt-5 d-flex align-center gap-5">
                         <input type="checkbox" class="manual-sort-cb"> Manuell sortieren
                     </label>
                 </div>
-                <button type="button" class="button add btn-add-char-to-group" title="Charaktere hinzufügen">
-                    <i class="fa-solid fa-user-plus"></i>
-                </button>
-                <button type="button" class="button delete btn-delete-group" title="Gruppe löschen">
-                    <i class="fa-solid fa-times"></i>
-                </button>
+                <div class="d-flex gap-5">
+                    <button type="button" class="button edit btn-move-group-up" title="Nach oben verschieben"><i class="fa-solid fa-arrow-up"></i></button>
+                    <button type="button" class="button edit btn-move-group-down" title="Nach unten verschieben"><i class="fa-solid fa-arrow-down"></i></button>
+                    <button type="button" class="button add btn-add-char-to-group" title="Charaktere hinzufügen">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </button>
+                    <button type="button" class="button delete btn-delete-group" title="Gruppe löschen">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
             </div>
             <div class="character-list-container sortable-group p-10" data-manual="false">
             </div>
@@ -399,6 +431,7 @@ export class GroupEditor {
 
         this.markDirty(); // Tracker markieren und Sticky Button auslösen
         this.updatePoolAssignedState();
+
         document.getElementById('group-add-char-modal').style.display = 'none';
     }
 
@@ -406,6 +439,7 @@ export class GroupEditor {
         const charsInAnyGroup = Array.from(
             document.querySelectorAll('#groups-wrapper .character-entry')
         ).map((el) => el.dataset.id);
+
         document.querySelectorAll('#char-pool .character-entry').forEach((entry) => {
             const isAssigned = charsInAnyGroup.includes(entry.dataset.id);
             if (isAssigned) {

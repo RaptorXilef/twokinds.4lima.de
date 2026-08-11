@@ -5,10 +5,10 @@ declare(strict_types=1);
 use App\Contracts\Config\ConfigInterface;
 
 /**
- * @var string          $baseUrl
+ * @var string $baseUrl
  * @var ConfigInterface $config
- * @var array           $mailQueue
- * @var array           $mailLogs
+ * @var array $mailQueue
+ * @var array $mailLogs
  */
 ?>
 
@@ -49,6 +49,8 @@ use App\Contracts\Config\ConfigInterface;
                    class="min-w-250">
         </div>
     </div>
+
+    <div class="pagination-wrapper mail-queue-pagination"></div>
 
     <div class="sitemap-table-container">
         <table class="admin-table"
@@ -103,8 +105,8 @@ use App\Contracts\Config\ConfigInterface;
             </tbody>
         </table>
     </div>
-    <div id="mail-queue-pagination"
-         class="pagination-wrapper"></div>
+
+    <div class="pagination-wrapper mail-queue-pagination"></div>
 </div>
 
 <!-- TAB: VERLAUF (LOGS) -->
@@ -127,6 +129,8 @@ use App\Contracts\Config\ConfigInterface;
         </div>
     </div>
 
+    <div class="pagination-wrapper mail-log-pagination"></div>
+
     <div class="sitemap-table-container">
         <table class="admin-table"
                id="mail-log-table">
@@ -147,7 +151,7 @@ use App\Contracts\Config\ConfigInterface;
                     </tr>
                 <?php } else { ?>
                     <?php foreach ($mailLogs as $log) {
-                        $isSuccess   = $log['status'] === 'Erfolg';
+                        $isSuccess = $log['status'] === 'Erfolg';
                         $statusClass = $isSuccess ? 'complete' : 'missing';
                         ?>
                         <tr>
@@ -185,6 +189,6 @@ use App\Contracts\Config\ConfigInterface;
             </tbody>
         </table>
     </div>
-    <div id="mail-log-pagination"
-         class="pagination-wrapper"></div>
+
+    <div class="pagination-wrapper mail-log-pagination"></div>
 </div>

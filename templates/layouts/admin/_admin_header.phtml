@@ -99,14 +99,18 @@ use App\Contracts\System\AssetHelperInterface;
 
     <div class="l-page-wrapper">
         <header class="l-header">
-            <!-- Mobile Navigation Bar (Nur auf Handys sichtbar) -->
+            <!-- Mobile Navigation Bar -->
             <div class="l-header__mobile-bar">
+                <div class="session-timer-mobile js-session-timer"
+                     style="font-family: monospace; font-weight: bold;">
+                    <!-- Timer wird durch SessionTimer.js eingefügt -->
+                </div>
+                <span class="mobile-logo">Twokinds Admin</span>
                 <button type="button"
                         id="mobile-menu-toggle"
                         aria-label="Menü">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-                <span class="mobile-logo">Twokinds Admin</span>
             </div>
 
             <div class="l-header__banner"

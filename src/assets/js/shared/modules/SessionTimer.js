@@ -1,5 +1,5 @@
 export class SessionTimer {
-    constructor(api, elementId, options = {}) {
+    constructor(api, selector, options = {}) {
         this.api = api;
         this.notifications = options.notifications || null; // Wird nur im Admin-Bereich übergeben
         this.maxIdleSeconds = options.maxIdleSeconds || 1800; // 30 Minuten
@@ -10,9 +10,9 @@ export class SessionTimer {
         this.isWarningVisible = false;
         this.modalElement = null;
 
-        this.timerElement = document.getElementById(elementId);
+        this.timerElements = document.querySelectorAll(selector);
 
-        if (this.timerElement) {
+        if (this.timerElements.length > 0) {
             this.init();
         }
     }
@@ -118,7 +118,9 @@ export class SessionTimer {
             colorStyle = `color: ${isDark ? '#ffc107' : '#d39e00'} !important; font-weight: bold;`;
         }
 
-        this.timerElement.innerHTML = `<i class="fa-solid fa-clock" style="${colorStyle}"></i> <span style="${colorStyle}">${formatted}</span>`;
+        this.timerElements.forEach((el) => {
+            el.innerHTML = `<i class="fa-solid fa-clock" style="${colorStyle}"></i> <span style="${colorStyle}">${formatted}</span>`;
+        });
     }
 
     async resetTimer() {
