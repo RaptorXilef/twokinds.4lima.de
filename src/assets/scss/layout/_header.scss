@@ -12,26 +12,54 @@
 @use '../abstracts/mixins' as *;
 
 .l-header {
+    &__mobile-bar {
+        display: none;
+        gap: 15px;
+        align-items: center;
+        padding: 10px 15px;
+        color: var(--text-color);
+        background: var(--header-bg);
+        box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+
+        @include respond-to-mobile {
+            display: flex;
+        }
+
+        button {
+            font-size: 1.5em;
+            color: var(--text-color);
+            cursor: pointer;
+            background: transparent;
+            border: none;
+        }
+
+        .mobile-logo {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    }
+
     &__banner {
         position: relative;
         z-index: 99;
         width: 100%;
         max-width: 1099px;
-        height: 314px;
+        height: auto;
+
+        /* FIX: Proportionales Skalieren ohne Abschneiden! */
+        aspect-ratio: 1099 / 314;
         padding-top: 10px;
         margin-left: -10px;
         overflow: hidden;
         text-indent: 105%;
         white-space: nowrap;
         background: transparent
-            url('../images/theme/banners/day.webp?c=20260804') center 10px
+            url('../images/theme/banners/day.webp?c=20260804') center top
             no-repeat;
         background-size: cover;
 
         @include respond-to-mobile {
-            height: 120px;
             margin-left: 0;
-            background-position: center;
         }
 
         @at-root body.theme-night & {
@@ -40,7 +68,6 @@
     }
 }
 
-// Fallback falls dies von JS genutzt wird
 .banner-lights-off {
     position: absolute;
     top: 0;

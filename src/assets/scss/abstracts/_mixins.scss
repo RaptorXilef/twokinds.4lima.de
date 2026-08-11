@@ -27,7 +27,7 @@
 
 // Responsives Mixin inkl. "Desktop erzwingen" Toggle (force-desktop)
 @mixin respond-to-mobile {
-    @media (max-width: 860px) {
+    @media (width <= 860px) {
         :root:not(.force-desktop) & {
             @content;
         }

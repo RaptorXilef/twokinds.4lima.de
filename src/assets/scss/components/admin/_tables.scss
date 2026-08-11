@@ -444,8 +444,8 @@ body.theme-night .pagination span:hover:not(.current-page) {
 
 .report-desc-preview {
     max-height: 2.5em;
-    font-size: 0.85em;
     overflow: auto;
+    font-size: 0.85em;
     scrollbar-width: thin;
     border: 1px solid var(--border-light);
     border-radius: 3px;

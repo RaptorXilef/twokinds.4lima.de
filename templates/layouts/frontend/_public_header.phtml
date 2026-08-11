@@ -15,7 +15,6 @@ use App\Contracts\System\AssetHelperInterface;
 
 // Den doppelten Slash verhindern
 $baseUrl = \rtrim($settings['base_url'], '/');
-
 $currentUrl = $baseUrl . ($_SERVER['REQUEST_URI'] ?? '');
 
 // --- SOCIAL MEDIA META LOGIK ---
@@ -100,6 +99,9 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
     <!-- https://cdnjs.com/libraries/Trumbowyg -->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/ui/trumbowyg.min.css">
+</head>
+
+<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
 
     <!-- ZERO FOUC FIX: Theme sofort anwenden bevor der DOM gezeichnet wird -->
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
@@ -111,12 +113,23 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
     })();
 
     </script>
-</head>
 
-<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
+    <!-- Abdunklung für das mobile Hamburger Menü -->
+    <div id="mobile-menu-backdrop"
+         class="mobile-backdrop"></div>
 
     <div class="l-page-wrapper">
         <header class="l-header">
+            <!-- Mobile Navigation Bar (Nur auf Handys sichtbar) -->
+            <div class="l-header__mobile-bar">
+                <button type="button"
+                        id="mobile-menu-toggle"
+                        aria-label="Menü">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <span class="mobile-logo">Twokinds auf Deutsch</span>
+            </div>
+
             <div class="l-header__banner"
                  id="banner-lights-off">
                 <!-- Hintergrundbild wird über CSS (.banner) geladen -->

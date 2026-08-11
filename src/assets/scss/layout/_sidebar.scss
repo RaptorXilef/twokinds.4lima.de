@@ -12,10 +12,22 @@
     flex: 0 0 200px;
 
     @include respond-to-mobile {
-        flex: 1 1 100%;
-        order: 2; // Auf Smartphones unter den Content schieben
-        justify-content: center;
-        margin-top: 20px;
+        position: fixed;
+        top: 0;
+        left: -300px;
+        z-index: 9999;
+        display: block;
+        width: 280px;
+        height: 100vh;
+        margin: 0;
+        overflow-y: auto;
+        background: var(--sidebar-bg);
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        body.menu-open & {
+            left: 0;
+            box-shadow: 2px 0 15px rgb(0 0 0 / 0.5);
+        }
     }
 
     &__inner {
@@ -29,14 +41,33 @@
 
         @include respond-to-mobile {
             width: 100%;
-            margin-left: 0;
             padding: 20px 10px;
-            border-radius: 5px;
+            margin-left: 0;
+            border-radius: 0;
         }
 
         .full-width-img {
             margin-left: -5px;
         }
+    }
+}
+
+/* NEU: Das verdunkelte Overlay, wenn das Mobile-Menü offen ist */
+.mobile-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9998;
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    background: rgb(0 0 0 / 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+
+    &.is-active {
+        display: block;
+        opacity: 1;
     }
 }
 

@@ -15,6 +15,7 @@ import { ReportModal } from './modules/ReportModal.js';
 import { RssCopier } from './modules/RssCopier.js';
 import { AccordionManager } from './ui/AccordionManager.js';
 import { ImageFallback } from './ui/ImageFallback.js';
+import { MobileMenu } from './ui/MobileMenu.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- TEMPORÄRE MIGRATION: v5 -> v6 Lesezeichen ---
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     safeInit('CharacterFilter', () => new CharacterFilter());
     safeInit('EmailProtector', () => new EmailProtector());
     safeInit('RssCopier', () => new RssCopier());
+    safeInit('MobileMenu', () => new MobileMenu());
 
     // API-abhängige Module nur laden, wenn die API existiert
     if (api) {
@@ -57,7 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
         safeInit('ProfileManager', () => new ProfileManager(api));
 
         // Initialisierung des Timers für das Frontend
-        safeInit('SessionTimer', () => new SessionTimer(api, 'frontend-session-timer', { isFrontend: true }));
+        safeInit(
+            'SessionTimer',
+            () => new SessionTimer(api, 'frontend-session-timer', { isFrontend: true })
+        );
     }
 
     console.info('[Frontend] ES6 Core Architektur erfolgreich hochgefahren.');

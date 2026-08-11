@@ -8,22 +8,10 @@
  * @file       resources/scss/components/_buttons.scss
  */
 
-// Verwendete SCSS-Variablen:
-// - $base-url: Basis-URL für Assets (Bilder/SVGs)
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --text-on-medium: Textfarbe auf mittlerem Hintergrund
-// - --button-bg: Hintergrundfarbe für Standard-Buttons
-// - --button-hover-bg: Hintergrundfarbe bei Hover
-// - --button-disabled-bg: Hintergrundfarbe für deaktivierte Buttons
-// - --status-green-text: Hintergrundfarbe für grüne Buttons (Standard)
-// - --button-green-hover: Hintergrundfarbe für grüne Buttons (Hover)
-
 @use '../abstracts/variables' as *;
 
-// Standard Buttons im Main Container
-.main-container button,
-.main-container a.button {
+.l-page-wrapper button,
+.l-page-wrapper a.button {
     padding: 3px 5px;
     font: inherit;
     font-size: initial;
@@ -42,18 +30,13 @@
     }
 }
 
-.main-container button:disabled {
+.l-page-wrapper button:disabled {
     cursor: not-allowed;
     background-color: var(--button-disabled-bg);
     opacity: 0.5;
-
-    // ! Dark-Mode-Opacity Hack entfernt, da die neue RGBA-Variable `--button-disabled-bg` das sauber über Alpha regelt.
 }
 
-/* --- Globale Aktions-Buttons (Edit/Add/Delete) --- */
-
-// Bearbeiten (Blau)
-.main-container .button.edit,
+.l-page-wrapper .button.edit,
 .button.edit {
     color: #fff;
     background-color: var(--button-edit-bg);
@@ -64,8 +47,7 @@
     }
 }
 
-// Hinzufügen (Grün)
-.main-container .button.add,
+.l-page-wrapper .button.add,
 .button.add {
     color: #fff;
     background-color: var(--button-add-bg);
@@ -76,7 +58,7 @@
     }
 }
 
-.main-container .button.add2,
+.l-page-wrapper .button.add2,
 .button.add2 {
     color: #fff;
     background-color: var(--button-add2-bg);
@@ -87,8 +69,7 @@
     }
 }
 
-// Löschen (Rot)
-.main-container .button.delete,
+.l-page-wrapper .button.delete,
 .button.delete,
 .menu .logout-link {
     color: #fff;
@@ -104,9 +85,8 @@
     font-weight: 700;
 }
 
-// Dropdown Arrows
-.main-container .arrow-down,
-.main-container .arrow-left {
+.l-page-wrapper .arrow-down,
+.l-page-wrapper .arrow-left {
     display: inline-block;
     width: 1em;
     height: 0.6em;
@@ -119,18 +99,17 @@
     }
 }
 
-.main-container .arrow-left {
+.l-page-wrapper .arrow-left {
     rotate: -90deg;
 }
 
 // Theme Overrides (Arrows)
 // ! Der Dropdown-Pfeil hat aktuell noch harte Images. Idealerweise löse ich das in Zukunft über SVG-Masken/CSS, aber für den Moment belassen wir es beim Dark-Mode Bild-Swap.
-body.theme-night .main-container .arrow-down,
-body.theme-night .main-container .arrow-left {
+body.theme-night .l-page-wrapper .arrow-down,
+body.theme-night .l-page-wrapper .arrow-left {
     background-image: url('../images/theme/icons/dropdown-dark.svg?c=20251024');
 }
 
-// Spezifische Button-Klassen (Admin / Reports)
 .button-green {
     color: white;
     background-color: var(--status-green-text);
@@ -150,7 +129,6 @@ body.theme-night .button-green {
     }
 }
 
-// Nutzt das kräftigere Orange des Rahmens
 .button-orange {
     color: #000;
     background-color: var(--status-orange-border);

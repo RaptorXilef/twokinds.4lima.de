@@ -45,8 +45,8 @@ article {
 
     @include respond-to-mobile {
         flex-direction: column; // Sidebar rutscht unter den Hauptinhalt
-        margin-top: 0;
         padding-top: 0;
+        margin-top: 0;
     }
 }
 
@@ -64,11 +64,11 @@ article {
     border-radius: 0 0 5px 5px;
 
     @include respond-to-mobile {
-        margin-right: 0;
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
         padding: 10px;
+        margin-right: 0;
+        border-right: none;
+        border-left: none;
+        border-radius: 0;
     }
 
     li {
@@ -82,12 +82,12 @@ article {
     }
 
     table {
+        display: block; // Erlaubt horizontales Scrollen von Tabellen auf Smartphones
+        max-width: 100%;
         margin-bottom: 10px;
+        overflow-x: auto;
         border-collapse: collapse;
         border: 1px solid var(--border-black);
-        max-width: 100%;
-        overflow-x: auto;
-        display: block; // Erlaubt horizontales Scrollen von Tabellen auf Smartphones
     }
 
     th,

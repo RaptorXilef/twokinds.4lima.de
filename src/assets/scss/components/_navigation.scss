@@ -9,17 +9,6 @@
  * @file       resources/scss/components/_navigation.scss
  */
 
-// Verwendete SCSS-Variablen:
-// - $base-url: Basis-URL für Assets
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --text-on-medium: Textfarbe auf Navigationsleiste
-// - --comic-nav-bg: Hintergrund der Navigationsleiste
-// - --comic-nav-hover-bg: Hintergrund bei Hover über Pfeilen
-// - --comic-nav-archive-bg: Hintergrund Archiv-Button
-// - --comic-nav-archive-hover-bg: Hover Archiv-Button
-// - --text-color: Textfarbe im Dark Mode
-
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
@@ -30,7 +19,8 @@
     gap: 0.5rem;
     align-items: center;
     justify-content: center;
-    width: 825px;
+    width: 100%;
+    max-width: 825px;
     padding: 7px 0;
     margin: 0 auto 15px;
     color: var(--text-on-medium);
@@ -39,219 +29,219 @@
     border-radius: 3px;
     box-shadow: inset 0 2px 2px 0 rgb(0 0 0 / 0.35);
 
-    @include media-retina-mobile {
-        font-size: 1.1em;
+    @include respond-to-mobile {
+        flex-wrap: wrap; // Auf dem Smartphone umbrechen
+        gap: 10px;
+        padding: 10px;
+    }
+
+    &.bottomnav {
+        margin-top: 15px;
+        margin-bottom: 0;
+    }
+
+    img {
+        margin: 0 4px;
+        vertical-align: middle;
+    }
+
+    a,
+    button {
+        color: var(--text-on-medium);
+        text-decoration: none;
+
+        @at-root body.theme-night & {
+            color: var(--text-color);
+        }
+    }
+
+    /* FIX: Navigations-Buttons haben absichtlich keinen Rahmen und Hintergrund durch die Eltern-Klasse! */
+    button.navarrow,
+    button.bookmark {
+        outline: none;
+        background-color: transparent;
+        border: none;
+    }
+
+    button.bookmark {
+        position: absolute;
+        top: 0;
+        right: 1rem;
+        z-index: 1000;
+        flex: 0 0 auto;
+        width: 27px;
+        height: 36px;
+        overflow: hidden;
+        text-indent: -100em;
+        white-space: nowrap;
+        background: url('../images/theme/icons/bookmark.png?c=20260804') 0 0
+            no-repeat;
+        background-size: contain;
+        border-radius: 0;
+        transform: translateY(-36px);
+
+        @include media-retina-mobile {
+            top: -11px;
+            width: 34px;
+            height: 45px;
+            transform: translateY(-34px);
+        }
+
+        &.bookmarked {
+            background: url('../images/theme/icons/bookmark-active.png?c=20260804')
+                0 0 no-repeat;
+            background-size: contain;
+        }
+
+        @at-root body.theme-night & {
+            filter: brightness(1.1);
+
+            &.bookmarked {
+                filter: brightness(1.3);
+            }
+        }
+    }
+
+    .navarrow {
+        display: inline-flex;
+        flex-flow: row nowrap;
+        align-items: stretch;
+        justify-content: center;
+        width: 138px;
+        padding: 2px 5px;
+        margin: 0 3px;
+        text-align: center;
+        background-color: transparent;
+        border: none; // Doppelt hält besser
+        border-radius: 4px;
+
+        @include respond-to-mobile {
+            flex: 1 1 auto; // Auf Mobile strecken sie sich
+            height: 45px;
+        }
+
+        &:not(.disabled):hover {
+            background-color: var(--comic-nav-hover-bg);
+        }
+    }
+
+    .nav-wrapper {
+        display: flex;
+        align-items: center;
+    }
+
+    .navbegin .nav-wrapper {
+        padding-left: 35px;
+        background: url('../images/theme/nav/begin.png?c=20250916') 0 50%
+            no-repeat;
+    }
+
+    .navprev .nav-wrapper {
+        padding-left: 26px;
+        background: url('../images/theme/nav/arrow-left.png?c=20250916') 0 50%
+            no-repeat;
+    }
+
+    .navnext .nav-wrapper {
+        padding-right: 26px;
+        background: url('../images/theme/nav/arrow-right.png?c=20250916') 100%
+            50% no-repeat;
+    }
+
+    .navend .nav-wrapper {
+        padding-right: 35px;
+        background: url('../images/theme/nav/end.png?c=20250916') 100% 50%
+            no-repeat;
+    }
+
+    @at-root body.theme-night & {
+        .navbegin .nav-wrapper {
+            background-image: url('../images/theme/nav/begin-dark.png?c=20250916');
+        }
+
+        .navprev .nav-wrapper {
+            background-image: url('../images/theme/nav/arrow-left-dark.png?c=20250916');
+        }
+
+        .navnext .nav-wrapper {
+            background-image: url('../images/theme/nav/arrow-right-dark.png?c=20250916');
+        }
+
+        .navend .nav-wrapper {
+            background-image: url('../images/theme/nav/end-dark.png?c=20250916');
+        }
+
+        .nav-report-issue .nav-wrapper {
+            background-image: url('../images/theme/nav/issue-dark.png?c=20251029');
+        }
+
+        .bottomnav .nav-lang-toggle .nav-wrapper {
+            background-image: url('../images/theme/nav/de-en-dark.png?c=20250916');
+        }
+    }
+
+    .nav-report-issue {
+        width: auto;
+    }
+
+    .nav-report-issue .nav-wrapper {
+        padding-left: 28px;
+        background: url('../images/theme/nav/issue.png?c=20251029') 0 50%
+            no-repeat;
+        background-size: 20px;
+    }
+
+    .navarchive {
+        display: inline-flex;
+        flex-flow: row nowrap;
+        align-items: stretch;
+        justify-content: center;
+        padding: 2px 20px;
+        margin: 0 6px;
+        color: #fff;
+        text-align: center;
+        background-color: var(--comic-nav-archive-bg);
+        border-radius: 14px;
+
+        @include respond-to-mobile {
+            flex: 1 1 100%;
+            order: -1; // Archiv-Button auf Mobile als volle Zeile nach oben
+            height: 45px;
+            border-radius: 7px;
+        }
+
+        &:hover {
+            background-color: var(--comic-nav-archive-hover-bg);
+        }
+
+        @at-root body.theme-night & {
+            color: var(--text-color);
+        }
+    }
+
+    &.bottomnav .nav-lang-toggle {
+        width: auto;
+    }
+
+    &.bottomnav .nav-lang-toggle .nav-wrapper {
+        padding-left: 55px;
+        background: url('../images/theme/nav/de-en.png?c=20250916') 0 50%
+            no-repeat;
+    }
+
+    .disabled {
+        cursor: default;
+        opacity: 0.4;
     }
 }
 
-.comicnav.bottomnav {
-    margin-top: 15px;
-    margin-bottom: 0;
-}
-
-.comicnav img {
-    margin: 0 4px;
-    vertical-align: middle;
-}
-
-.comicnav a,
-.comicnav button {
-    color: var(--text-on-medium);
-    text-decoration: none;
-}
-
-// Dark Mode Text Reset
-body.theme-night .comicnav a,
-body.theme-night .comicnav button {
-    color: var(--text-color);
-}
-
-// Bookmark Button
-.comicnav button.bookmark {
-    position: absolute;
-    top: 0;
-    right: 1rem;
-    z-index: 1000;
-    flex: 0 0 auto;
-    width: 27px;
-    height: 36px;
-    overflow: hidden;
-    text-indent: -100em;
-    white-space: nowrap;
-    background: url('../images/theme/icons/bookmark.png?c=20260804') 0 0
-        no-repeat;
-    background-size: contain;
-    border-radius: 0;
-    transform: translateY(-36px);
-
-    @include media-retina-mobile {
-        top: -11px;
-        width: 34px;
-        height: 45px;
-        transform: translateY(-34px);
-    }
-}
-
-.comicnav button.bookmark.bookmarked {
-    background: url('../images/theme/icons/bookmark-active.png?c=20260804') 0 0
-        no-repeat;
-    background-size: contain;
-}
-
-body.theme-night .comicnav button.bookmark {
-    filter: brightness(1.1);
-}
-
-body.theme-night .comicnav button.bookmark.bookmarked {
-    filter: brightness(1.3);
-}
-
-// Navigation Arrows (Wrapper)
-.comicnav .navarrow {
-    display: inline-flex;
-    flex-flow: row nowrap;
-    align-items: stretch;
-    justify-content: center;
-    width: 138px;
-    padding: 2px 5px;
-    margin: 0 3px;
-    text-align: center;
-    background-color: transparent;
-    border-radius: 4px;
-
-    @include media-retina-mobile {
-        height: 50px;
-    }
-}
-
-.comicnav .navarrow:not(.disabled):hover {
-    background-color: var(--comic-nav-hover-bg);
-}
-
-.comicnav .nav-wrapper {
-    display: flex;
-    align-items: center;
-}
-
-// --- Icons (Light Mode) ---
-
-.comicnav .navbegin .nav-wrapper {
-    padding-left: 35px;
-    background: url('../images/theme/nav/begin.png?c=20250916') 0 50% no-repeat;
-}
-
-.comicnav .navprev .nav-wrapper {
-    padding-left: 26px;
-    background: url('../images/theme/nav/arrow-left.png?c=20250916') 0 50%
-        no-repeat;
-}
-
-.comicnav .navnext .nav-wrapper {
-    padding-right: 26px;
-    background: url('../images/theme/nav/arrow-right.png?c=20250916') 100% 50%
-        no-repeat;
-}
-
-.comicnav .navend .nav-wrapper {
-    padding-right: 35px;
-    background: url('../images/theme/nav/end.png?c=20250916') 100% 50% no-repeat;
-}
-
-// --- Icons (Dark Mode) ---
-
-body.theme-night .comicnav .navbegin .nav-wrapper {
-    background-image: url('../images/theme/nav/begin-dark.png?c=20250916');
-}
-
-body.theme-night .comicnav .navprev .nav-wrapper {
-    background-image: url('../images/theme/nav/arrow-left-dark.png?c=20250916');
-}
-
-body.theme-night .comicnav .navnext .nav-wrapper {
-    background-image: url('../images/theme/nav/arrow-right-dark.png?c=20250916');
-}
-
-body.theme-night .comicnav .navend .nav-wrapper {
-    background-image: url('../images/theme/nav/end-dark.png?c=20250916');
-}
-
-// --- Report Issue Button ---
-
-.comicnav .nav-report-issue {
-    width: auto;
-}
-
-.comicnav .nav-report-issue .nav-wrapper {
-    padding-left: 28px;
-    background: url('../images/theme/nav/issue.png?c=20251029') 0 50% no-repeat;
-    background-size: 20px;
-}
-
-body.theme-night .comicnav .nav-report-issue .nav-wrapper {
-    background-image: url('../images/theme/nav/issue-dark.png?c=20251029');
-}
-
-// --- Archive Button ---
-
-.comicnav .navarchive {
-    display: inline-flex;
-    flex-flow: row nowrap;
-    align-items: stretch;
-    justify-content: center;
-    padding: 2px 20px;
-    margin: 0 6px;
-    color: #fff;
-    text-align: center;
-    background-color: var(--comic-nav-archive-bg);
-    border-radius: 14px;
-
-    @include media-retina-mobile {
-        height: 50px;
-        border-radius: 7px;
-    }
-}
-
-.comicnav .navarchive:hover {
-    background-color: var(--comic-nav-archive-hover-bg);
-}
-
-body.theme-night .comicnav .navarchive {
-    color: var(--text-color);
-}
-
-// --- Language Toggle ---
-
-.comicnav.bottomnav .nav-lang-toggle {
-    width: auto;
-}
-
-.comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
-    padding-left: 55px;
-    background: url('../images/theme/nav/de-en.png?c=20250916') 0 50% no-repeat;
-}
-
-body.theme-night .comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
-    background-image: url('../images/theme/nav/de-en-dark.png?c=20250916');
-}
-
-// Helper Class
-.comicnav .disabled {
-    cursor: default;
-    opacity: 0.4;
-}
-
-/* Korrekturen */
 .navbegin,
 .navprev,
 .navarchive,
 .navnext,
 .navend {
     img {
-        margin-top: -2px; // Optische Zentrierung zum Text
+        margin-top: -2px;
         vertical-align: middle;
     }
-}
-
-.navarchive-mobile {
-    display: none; // Standardmäßig aus, wird via Media-Query in layout/_sidebar.scss oder hier gesteuert
 }

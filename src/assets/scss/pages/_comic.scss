@@ -9,24 +9,16 @@
  * @file       resources/scss/pages/_comic.scss
  */
 
-// Verwendete SCSS-Variablen:
-// (Keine spezifischen SCSS-Vars in diesem Block)
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --content-box-bg: Hintergrund für Transkript-Box
-// - --border-medium: Mittlere Rahmenfarbe
-// - --text-color: Standard Textfarbe
-// - --sidebar-bg: Hintergrund im Dark Mode
-// - --page-bg: Rahmenfarbe im Dark Mode
-// - --text-on-medium: Textfarbe auf Buttons (Transkript Header)
-// - --button-bg: Hintergrund Header
-// - --button-hover-bg: Hintergrund Header Hover
-// - --text-color-medium: Mittlere Textfarbe
-// - --characters-area-bg: Hintergrund Charakter-Bilder
-// - --link-color: Akzentfarbe für Hover
-
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
+
+// Verhindert horizontales Scrollen auf Smartphones, damit die Wischgeste sauber funktioniert!
+html,
+body {
+    @include respond-to-mobile {
+        overflow-x: hidden;
+    }
+}
 
 .comic {
     margin: auto;
@@ -43,19 +35,21 @@
     margin-bottom: 15px;
 }
 
-// Comic Image Styling
 #comic-image,
 .comic-image {
-    display: block; // Verhindert Abstände unten bei Inline-Images
+    display: block;
     width: 100%;
-    max-width: 100%; // Sicherheitsnetz für kleinere Container
+    max-width: 100%;
     height: auto;
-    margin: 0 auto; // Zentrierung sicherstellen
+    margin: 0 auto;
     border-radius: 7px;
     box-shadow: 0 2px 5px rgb(0 0 0 / 0.2);
+
+    @include respond-to-mobile {
+        border-radius: 0; // Kanten auf dem Handy abschneiden für echten Vollbild-Effekt
+    }
 }
 
-// Transcript Box (Wiederhergestellt: Scroll-Box statt Akkordeon)
 .comic .transcript {
     margin-top: 15px;
     font-size: 0.8em;
@@ -78,40 +72,36 @@
     border: 1px solid var(--border-medium);
     border-radius: 8px;
     box-shadow: inset 0 1px 1px 0 rgb(0 0 0 / 0.35);
-}
 
-body.theme-night .comic .transcript-content {
-    color: var(--text-color);
-    background-color: var(--sidebar-bg); // Accent Dark
-    border-color: var(--page-bg);
-}
+    @at-root body.theme-night & {
+        color: var(--text-color);
+        background-color: var(--sidebar-bg);
+        border-color: var(--page-bg);
+    }
 
-.comic .transcript-content p {
-    margin-bottom: 7px;
-}
+    p {
+        margin-bottom: 7px;
+    }
 
-.comic .transcript-content p:last-of-type {
-    margin-bottom: 0;
-}
+    p:last-of-type {
+        margin-bottom: 0;
+    }
 
-// Unterstützung für Listen in Transkripten (z.B. Fehlerseiten)
-.comic .transcript-content ul {
-    padding-left: 20px;
-    margin-bottom: 10px;
-    list-style-type: disc;
-}
+    ul {
+        padding-left: 20px;
+        margin-bottom: 10px;
+        list-style-type: disc;
+    }
 
-.comic .transcript-content li {
-    margin-bottom: 5px;
-}
+    li {
+        margin-bottom: 5px;
+    }
 
-@include media-retina-mobile {
-    .comic .transcript-content {
-        font-size: 1.3em;
+    @include respond-to-mobile {
+        font-size: 1.1em;
     }
 }
 
-// Below Navigation (Bookmarks)
 .below-nav {
     display: flex;
     flex-flow: row nowrap;
@@ -123,10 +113,17 @@ body.theme-night .comic .transcript-content {
     font-size: 0.9em;
     font-style: italic;
     text-align: left;
-}
 
-body.theme-night .below-nav {
-    color: #ccc;
+    @at-root body.theme-night & {
+        color: #ccc;
+    }
+
+    @include respond-to-mobile {
+        flex-direction: column;
+        align-items: center;
+        margin-top: 0.5rem;
+        font-size: 1.2em;
+    }
 }
 
 .nav-instruction-content {
@@ -134,12 +131,7 @@ body.theme-night .below-nav {
     color: var(--text-color-light);
 }
 
-@include media-retina-mobile {
-    .below-nav {
-        margin-top: 0.5rem;
-        font-size: 1.2em;
-    }
-
+@include respond-to-mobile {
     .below-nav .nav-instruction-content {
         display: none;
     }
@@ -165,13 +157,12 @@ body.theme-night .below-nav {
     font-size: 1em;
 }
 
-@include media-retina-mobile {
+@include respond-to-mobile {
     .below-nav .bookmark-control .button {
         font-size: 1.1em;
     }
 }
 
-// Tag Wrapper - Wiederhergestellt
 .comic .tag-wrapper,
 .below-nav {
     display: flex;
@@ -182,34 +173,6 @@ body.theme-night .below-nav {
     margin-top: 10px;
 }
 
-/*
-.comic .tag-wrapper .comic-tags,
-.comic .below-nav .comic-tags {
-    display: flex;
-    flex: 1 1 auto;
-    flex-flow: row wrap;
-    gap: 0.3rem;
-    row-gap: 0.5rem;
-    align-items: center;
-    font-size: 0.9em;
-    text-align: left;
-}
-
-@include media-retina-mobile {
-    .comic .tag-wrapper .comic-tags,
-    .comic .below-nav .comic-tags {
-        font-size: 1.2em;
-    }
-}
-
-.comic .tag-wrapper .comic-tags .button,
-.comic .below-nav .comic-tags .button {
-    font-size: 1em;
-}
-*/ // Deaktiviert, weil aktuell nicht genutzt
-
-/* .comic .tag-wrapper .permalink,
-.comic .below-nav .permalink */
 .permalink {
     flex: 0 0 auto;
     padding-top: 3px;
@@ -221,27 +184,14 @@ body.theme-night .below-nav {
     color: var(--link-color);
 }
 
-/* body.theme-night .comic .tag-wrapper .permalink,
-body.theme-night .comic .below-nav .permalink, */
-body.theme-night .permalink {
+@at-root body.theme-night .permalink {
     color: #ccc;
 }
 
-@include media-retina-mobile {
-    /* .comic .tag-wrapper .permalink,
-    .comic .below-nav .permalink */
+@include respond-to-mobile {
     .permalink {
-        font-size: 1.2em;
+        font-size: 1.1em;
+        text-align: center;
+        word-break: break-all;
     }
 }
-
-/*
-.comic .comic-footer {
-    margin-top: 7px;
-}
-
-.comic .comic-header {
-    position: relative;
-    margin-bottom: 15px;
-}
-*/ // Deaktiviert, weil aktuell nicht genutzt

@@ -22,6 +22,7 @@
     font-family: 'Noto Sans Mono';
     font-style: normal;
     font-weight: 400;
+
     /* Wir nutzen hier nur WOFF2, da alle modernen Browser das können.
      Das TTF ist als Fallback optional, aber meist nicht mehr nötig. */
     src:
@@ -39,6 +40,7 @@
     font-weight: 700;
 
     /* Hier binden wir die TTF ein, da Sie diese im Screenshot haben. */
+
     /* Chrome 4+, Firefox 3.5+, IE 9+, Safari 3.1+, iOS 4.2+, Android Browser 2.2+ */
     src: url('../fonts/NotoSansMono-Bold.ttf') format('truetype');
     font-display: swap;

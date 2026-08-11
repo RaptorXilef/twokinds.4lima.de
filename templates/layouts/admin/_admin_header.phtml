@@ -67,6 +67,9 @@ use App\Contracts\System\AssetHelperInterface;
     <!-- jsdiff (Vergleicht zwei Texte miteinander und hebt Änderungen grün/rot hervor, genutzt bei den Transkript-Reports) -->
     <!-- https://cdnjs.com/libraries/jsdiff -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.3/diff.min.js"></script>
+</head>
+
+<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
 
     <!-- ZERO FOUC FIX -->
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
@@ -78,9 +81,6 @@ use App\Contracts\System\AssetHelperInterface;
     })();
 
     </script>
-</head>
-
-<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
 
     <div class="l-page-wrapper">
         <header class="l-header">
