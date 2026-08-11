@@ -29,11 +29,12 @@ jobs:
       - name: ⚙️ Node.js einrichten
         uses: actions/setup-node@v7.0.0
         with:
-          node-version: '22' # Nutzt eine aktuelle, sichere Node-Version
+          node-version: '26' # Nutzt Node 26, wie in meiner package.json gefordert
           cache: 'npm'       # Beschleunigt zukünftige Durchläufe
 
       - name: 📦 NPM Abhängigkeiten installieren
-        run: npm ci # 'ci' ist besser als 'install' für Server, da es strikt die package-lock.json nutzt
+        # Nutzen install statt ci, da es fehlertoleranter bei asynchronen lock-Dateien ist
+        run: npm install --no-audit --no-fund
 
       - name: 🛠️ Frontend Assets kompilieren & minifizieren (CSS & JS)
         run: |
