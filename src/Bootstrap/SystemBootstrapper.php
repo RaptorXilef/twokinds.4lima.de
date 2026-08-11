@@ -59,6 +59,7 @@ final class SystemBootstrapper
         if (!\defined('APP_REQUEST_TIME')) {
             \define('APP_REQUEST_TIME', $reqTimeInt);
         }
+
         if (!\defined('APP_REQUEST_TIME_STR')) {
             \define('APP_REQUEST_TIME_STR', \date('Y-m-d H:i:s', $reqTimeInt));
         }
@@ -101,9 +102,9 @@ final class SystemBootstrapper
         $settings['db_schema'] = SchemaRegistry::getSchemas();
         $settings['structure'] = PermissionRegistry::getStructure();
         $settings['admin_ui'] = ['permissions_desc_on_top' => true];
-
         $settings['permissions'] = self::flattenPermissions($settings['structure']);
 
+        // 1. Lade alle *.default.php Dateien (die vom Deployment-Skript hochgeladen wurden)
         $globResult = \glob($appRoot . '/config/*.default.php');
         if (\is_array($globResult)) {
             foreach ($globResult as $defaultFile) {
@@ -116,6 +117,7 @@ final class SystemBootstrapper
             }
         }
 
+        // 2. Lade die Live-Dateien, um die Defaults zu überschreiben
         $hardConfigs = [
             $appRoot . '/config/config.php',
             $appRoot . '/config/email.php',
@@ -152,6 +154,7 @@ final class SystemBootstrapper
     private static function flattenPermissions(array $structure): array
     {
         $flatPerms = [];
+
         $flatten = function (array $nodes) use (&$flatten, &$flatPerms): void {
             foreach ($nodes as $node) {
                 if (!\is_array($node)) {
@@ -187,15 +190,16 @@ final class SystemBootstrapper
         if (!\file_exists($devAdminPath)) {
             $defaultDevContent = <<<'PHP'
                 <?php
-                declare(strict_types=1);
+                declare(strict_types = 1);
                 return [
-                    'user'  => 'Systembetreuer',
-                    'pass'  => 'mein_passwort_123',
+                    'user' => 'Systembetreuer',
+                    'pass' => 'mein_passwort_123',
                     'label' => 'Systembetreuer'
                 ];
                 PHP;
             \file_put_contents($devAdminPath, $defaultDevContent, \LOCK_EX);
         }
+
         $settings['superadmin'] = require $devAdminPath;
 
         $settings['backdoor'] = [
@@ -205,11 +209,14 @@ final class SystemBootstrapper
         ];
 
         $settings['root_path'] = $appRoot;
+
         $httpHostRaw = $_SERVER['HTTP_HOST'] ?? 'localhost';
         $httpHost = \is_string($httpHostRaw) ? $httpHostRaw : 'localhost';
+
         $settings['server_host'] = $httpHost;
         $settings['server_protocol'] = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://';
         $settings['server_script'] = $_SERVER['SCRIPT_NAME'] ?? '';
+
         $settings['is_local_env'] = \str_ends_with($httpHost, '.local')
             || $httpHost === 'localhost'
             || $httpHost === '127.0.0.1'

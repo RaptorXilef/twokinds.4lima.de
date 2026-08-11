@@ -41,6 +41,15 @@ jobs:
           npm run legacy:css:build
           npm run legacy:js:build
 
+      - name: 📝 Config-Dateien zu .default.php umbenennen
+        run: |
+          cd config
+          [ -f config.php ] && mv config.php config.default.php
+          [ -f email.php ] && mv email.php email.default.php
+          [ -f storage.php ] && mv storage.php storage.default.php
+          [ -f backup.php ] && mv backup.php backup.default.php
+          [ -f secrets.php ] && mv secrets.php secrets.default.php
+
       - name: 🌐 Dateien per FTP hochladen
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
@@ -62,17 +71,18 @@ jobs:
             .husky/**
             .vscode/**
             node_modules/**
-            config/config.local.php
-            config/dev_admin.php
-            config/secrets.php
-            config/email.php
-            config/storage.php
             config/backup.php
+            config/config.local.php
+            config/config.php
+            config/dev_admin.php
+            config/email.php
+            config/secrets.php
+            config/storage.php
             docs/**
             logs/**
-            public/assets/images/comics/**
-            public/assets/images/characters/**
             public/assets/images/avatars/**
+            public/assets/images/characters/**
+            public/assets/images/comics/**
             public/assets/images/reports/**
             scripts/**
             src/assets/**
