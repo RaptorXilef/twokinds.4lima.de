@@ -38,6 +38,7 @@ jobs:
           exclude: |
             **/.git*
             **/.git*/**
+            .build/**
             .cache/**
             .debug/**
             .github/**
@@ -58,7 +59,9 @@ jobs:
             scripts/**
             src/assets/**
             tests/**
+            tools/**
             var/backups/**
+            .env
             .editorconfig
             .env.example
             .git-blame-ignore-revs

@@ -22,7 +22,7 @@
     "ext-gd": "*",
     "ext-hash": "*",
     "ext-openssl": "*",
-    "symfony/html-sanitizer": "^8.1"
+    "symfony/html-sanitizer": "^7.4"
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
@@ -57,7 +57,7 @@
   },
   "config": {
     "platform": {
-      "php": "8.5.0"
+      "php": "8.3.0"
     },
     "vendor-dir": "vendor/",
     "optimize-autoloader": true,
