@@ -55,6 +55,7 @@
         }
     }
 
+    /* FIX: Navigations-Buttons haben absichtlich keinen Rahmen und Hintergrund durch die Eltern-Klasse! */
     button.navarrow,
     button.bookmark {
         outline: none;
@@ -116,7 +117,7 @@
         border-radius: 4px;
 
         @include respond-to-mobile {
-            flex: 1 1 auto;
+            flex: 1 1 auto; // Auf Mobile strecken sie sich gleichmäßig
             width: auto;
             height: 45px;
             padding: 0;
@@ -149,12 +150,12 @@
         }
     }
 
-    /* Nur Icon für Archiv auf Smartphone */
+    /* Icon für Archiv */
     .nav-icon-only {
-        display: none;
+        margin-right: 5px; // Auf PC Abstand zum Text
 
         @include respond-to-mobile {
-            display: inline-block;
+            margin-right: 0; // Auf Mobile ist der Text weg
             font-size: 1.4em;
             line-height: 24px;
         }
@@ -205,7 +206,8 @@
             background-image: url('../images/theme/nav/issue-dark.png?c=20251029');
         }
 
-        .bottomnav .nav-lang-toggle .nav-wrapper {
+        /* FIX: Kein Leerzeichen vor .nav-lang-toggle ! */
+        .nav-lang-toggle .nav-wrapper {
             background-image: url('../images/theme/nav/de-en-dark.png?c=20250916');
         }
     }
@@ -224,30 +226,45 @@
     .navarchive {
         display: inline-flex;
         flex-flow: row nowrap;
-        align-items: stretch;
+        align-items: center;
         justify-content: center;
         padding: 2px 20px;
         margin: 0 6px;
         color: #fff;
         text-align: center;
         background-color: var(--comic-nav-archive-bg);
+        border: none;
         border-radius: 14px;
 
         @include respond-to-mobile {
             flex: 1 1 auto;
-            align-items: center;
             order: 0; // Bleibt in der gleichen Reihe
             height: 45px;
             padding: 0;
-            border-radius: 7px;
+            margin: 0 3px;
+            color: var(--comic-nav-archive-bg); // Färbt das Icon ein
+            background-color: transparent; // Nimmt Background weg
+            border-radius: 4px;
         }
 
         &:hover {
             background-color: var(--comic-nav-archive-hover-bg);
+
+            @include respond-to-mobile {
+                background-color: var(
+                    --comic-nav-hover-bg
+                ); // Gleicher Hover wie die anderen Pfeile
+            }
         }
 
         @at-root body.theme-night & {
             color: var(--text-color);
+
+            @include respond-to-mobile {
+                color: var(
+                    --comic-nav-archive-bg
+                ); // Zieht sich im dunklen Modus die dunklere Farbe
+            }
         }
     }
 
@@ -259,6 +276,10 @@
         padding-left: 55px;
         background: url('../images/theme/nav/de-en.png?c=20250916') 0 50%
             no-repeat;
+
+        @include respond-to-mobile {
+            width: 38px; // FIX: Breite auf 32px auf dem Smartphone für mehr Lesbarkeit
+        }
     }
 
     .disabled {
