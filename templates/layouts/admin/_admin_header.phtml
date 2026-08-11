@@ -29,7 +29,22 @@ use App\Contracts\System\AssetHelperInterface;
         <?php echo $asset->getImportMap('assets/js'); ?>
     </script>
 
-    <!-- CSS -->
+    <!-- FOUC FIX: Verhindert violettes Aufblitzen in Firefox bei schlechter Verbindung -->
+    <style>
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #002b3c;
+    }
+
+    /* #81dbfe */
+    body.theme-night {
+        background-color: #002b3c;
+    }
+
+    </style>
+
     <link rel="stylesheet"
           href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
 
