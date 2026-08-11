@@ -450,6 +450,13 @@ body.theme-night .row-highlight {
     display: none;
 }
 
+/* NEU: Hilfsklasse um Elemente auf dem Handy komplett zu verstecken */
+.hide-on-mobile {
+    @include respond-to-mobile {
+        display: none !important;
+    }
+}
+
 #fixed-buttons-container {
     position: sticky;
     bottom: 0;

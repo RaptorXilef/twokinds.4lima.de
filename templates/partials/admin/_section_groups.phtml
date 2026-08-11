@@ -30,7 +30,8 @@ use App\Core\Entity\CharacterGroup;
 
 <!-- FIX: flex-wrap hinzugefügt, damit der Pool auf Mobile nach oben rutscht und nicht zerquetscht wird -->
 <div class="d-flex flex-wrap gap-20 align-start">
-    <div class="character-group bg-even w-300">
+    <!-- FIX: .hide-on-mobile hinzugefügt -->
+    <div class="character-group bg-even w-300 hide-on-mobile">
         <div class="character-group-header flex-column align-start cursor-default">
             <h3>Charakter-Pool</h3>
             <button type="button"
@@ -100,7 +101,7 @@ use App\Core\Entity\CharacterGroup;
                     }
                 }
             }
-            if (! $group->manualSort) {
+            if (!$group->manualSort) {
                 \usort($renderChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
             }
 
