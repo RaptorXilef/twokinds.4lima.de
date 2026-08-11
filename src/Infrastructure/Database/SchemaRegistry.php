@@ -19,6 +19,12 @@ final class SchemaRegistry
     public static function getSchemas(): array
     {
         return [
+            // --- UPDATE UND MIGRATION ---
+            'migrations' => 'CREATE TABLE IF NOT EXISTS `migrations` (
+                `version` VARCHAR(255) PRIMARY KEY,
+                `applied_at` DATETIME NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
+
             // --- DAS NEUE BENUTZERSYSTEM ---
             'roles' => 'CREATE TABLE IF NOT EXISTS `roles` (
                 `id` VARCHAR(50) PRIMARY KEY,

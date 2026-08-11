@@ -107,7 +107,7 @@ config/secrets/*
 /html-coverage/*
 
 # Datenbank Dumps
-*.sql
+#*.sql
 *.sqlite
 *.sqlite3
 

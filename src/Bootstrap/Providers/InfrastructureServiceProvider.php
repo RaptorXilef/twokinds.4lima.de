@@ -1,6 +1,5 @@
 <?php
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Bootstrap\Providers;
 
@@ -28,6 +27,7 @@ use App\Contracts\Storage\UserRepositoryInterface;
 use App\Contracts\System\AnalyticsClientInterface;
 use App\Contracts\System\AssetHelperInterface;
 use App\Contracts\System\BackupServiceInterface;
+use App\Contracts\System\DatabaseMigratorInterface;
 use App\Contracts\System\ErrorLoggerInterface;
 use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
@@ -37,6 +37,7 @@ use App\Contracts\System\RouteCacheInterface;
 use App\Contracts\System\SiteGeneratorInterface;
 use App\Contracts\System\SystemInfoInterface;
 use App\Contracts\Utils\ClockInterface;
+use App\Infrastructure\Database\DatabaseMigrator;
 use App\Infrastructure\Database\PdoFactory;
 use App\Infrastructure\Logging\ErrorLogger;
 use App\Infrastructure\Mail\MailQueueService;
@@ -316,6 +317,17 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             \assert($charRepo instanceof CharacterRepositoryInterface);
 
             return new StaticSiteGenerator($comicRepo, $chapterRepo, $config, $charRepo);
+        });
+
+        $container->bind(DatabaseMigratorInterface::class, function () use ($container): DatabaseMigrator {
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
+            $clock = $container->get(ClockInterface::class);
+            \assert($clock instanceof ClockInterface);
+
+            return new DatabaseMigrator($pdo, $config, $clock);
         });
     }
 }

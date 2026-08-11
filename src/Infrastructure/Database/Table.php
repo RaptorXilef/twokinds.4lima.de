@@ -23,4 +23,5 @@ final class Table
     public const string MAGIC_LINKS = 'magic_links';
     public const string MAIL_QUEUE = 'mail_queue';
     public const string MAIL_LOGS = 'mail_logs';
+    public const string MIGRATIONS = 'migrations';
 }

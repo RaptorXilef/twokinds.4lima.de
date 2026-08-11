@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD COLUMN `test_spalte` VARCHAR(255) DEFAULT NULL;

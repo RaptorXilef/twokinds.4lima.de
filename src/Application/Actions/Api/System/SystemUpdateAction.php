@@ -9,6 +9,7 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\System\DatabaseMigratorInterface;
 use App\Contracts\System\RouteCacheInterface;
 use PDO;
 use Throwable;
@@ -20,6 +21,7 @@ final readonly class SystemUpdateAction implements ActionInterface
         private ConfigInterface $config,
         private RouteCacheInterface $routeCache,
         private PDO $pdo,
+        private DatabaseMigratorInterface $migrator,
     ) {
     }
 
@@ -44,12 +46,15 @@ final readonly class SystemUpdateAction implements ActionInterface
             }
 
             // 2. PDO wurde durch Dependency Injection bereits geladen.
-            // Das triggert intern PdoFactory::verifyAndRepairSchema().
-            // Wir machen hier nur einen Dummy-Check, um sicherzugehen.
+            // Das triggert intern PdoFactory::verifyAndRepairSchema() für neue Tabellen.
             $this->pdo->query('SELECT 1');
+
+            // 3. Ausstehende SQL-Migrationen (ALTER TABLE etc.) ausführen
+            $migrationsCount = $this->migrator->migrate();
 
             return JsonResponse::success([
                 'message' => 'System-Update erfolgreich! Cache geleert & DB-Schema geprüft.',
+                'migrations_applied' => $migrationsCount,
             ]);
 
         } catch (Throwable $e) {
