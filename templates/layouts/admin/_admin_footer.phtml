@@ -1,24 +1,21 @@
 <?php
 
 declare(strict_types=1); ?>
-</div> <!-- Schließt .content -->
-</div> <!-- Schließt .content-area -->
+</div> <!-- End .l-main-content -->
 
-<footer>
-    <div class="bottom">
-        <div class="bottom-left"></div>
-        <div class="bottom-ctr">
+<footer class="l-footer">
+    <div class="l-footer__info-box">
+        <div class="l-footer__text">
             <p>Twokinds Admin-Panel</p>
             <p>Programmierung:
-                <a href="https://github.com/RaptorXilef" target="_blank" rel="noopener noreferrer">Felix Maywald</a>
-            </p>
+                <a href="https://github.com/RaptorXilef" target="_blank" rel="noopener noreferrer">Felix Maywald</a></p>
             <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version'] ?? 'x'); ?> | <a href="<?php echo $baseUrl ?? ''; ?>/" target="_blank">Zur Webseite</a></div>
         </div>
-        <div class="bottom-right"></div>
     </div>
-    <div class="footer-img">
+
+    <div class="l-footer__characters">
         <!-- Das dynamische Footer-Gimmick (Crowd) -->
-        <div class="footer-chars-container">
+        <div class="l-footer__characters-inner">
             <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0016" title="Karen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/theme/footer-chars/karen.webp" alt="Karen"></a>
             <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0017" title="Maren"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/theme/footer-chars/maren.webp" alt="Maren"></a>
             <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0009" title="Raine"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/theme/footer-chars/raine.webp" alt="Raine"></a>
@@ -38,4 +35,4 @@ declare(strict_types=1); ?>
         </div>
     </div>
 </footer>
-</div> <!-- Schließt .main-container -->
+</div> <!-- End .l-page-wrapper -->

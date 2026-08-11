@@ -6,16 +6,16 @@ use App\Contracts\System\AssetHelperInterface;
 
 /**
  * @var AssetHelperInterface $asset
- * @var string               $baseUrl
- * @var bool                 $isLoggedIn
- * @var string               $currentUserName
- * @var string               $currentUserRole
+ * @var string $baseUrl
+ * @var bool $isLoggedIn
+ * @var string $currentUserName
+ * @var string $currentUserRole
  */
 ?>
 
 <!-- Die Sidebar (Navigation) -->
-<aside class="sidebar">
-    <div class="sidebar-content">
+<aside class="l-sidebar">
+    <div class="l-sidebar__inner">
         <div class="social-icons-container">
             <!-- Patreon Link -->
             <?php if (! empty($settings['social_patreon'])) { ?>

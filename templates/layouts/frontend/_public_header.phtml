@@ -5,39 +5,38 @@ declare(strict_types=1);
 use App\Contracts\System\AssetHelperInterface;
 
 /**
- * @var array                $settings
- * @var string|null          $pageTitle
+ * @var array $settings
+ * @var string|null $pageTitle
  * @var AssetHelperInterface $asset
- * @var bool                 $isLoggedIn
- * @var string               $currentUserName
- * @var string               $currentUserRole
+ * @var bool $isLoggedIn
+ * @var string $currentUserName
+ * @var string $currentUserRole
  */
 
 // Den doppelten Slash verhindern
 $baseUrl = \rtrim($settings['base_url'], '/');
 
-// --- SOCIAL MEDIA META LOGIK ---
 $currentUrl = $baseUrl . ($_SERVER['REQUEST_URI'] ?? '');
-$metaTitle  = $pageTitle ?? ($settings['site_title'] ?? 'Twokinds auf Deutsch');
-$metaDesc   = $siteDescription ?? ($settings['site_description'] ?? 'Die deutsche Übersetzung des Webcomics Twokinds.');
 
-// Standard-Bild für alle Seiten (z.B. das Tages-Banner)
+// --- SOCIAL MEDIA META LOGIK ---
+$metaTitle = $pageTitle ?? ($settings['site_title'] ?? 'Twokinds auf Deutsch');
+$metaDesc = $siteDescription ?? ($settings['site_description'] ?? 'Die deutsche Übersetzung des Webcomics Twokinds.');
 $metaImage = $baseUrl . '/assets/images/theme/banners/night.webp';
-$metaType  = 'website';
+$metaType = 'website';
 
 // 1. Sind wir auf einer Comicseite? -> Zugeschnittenes Social-Media-Bild!
 if (isset($isComicPage) && $isComicPage && isset($comic)) {
-    $metaType  = 'article';
-    $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+    $metaType = 'article';
+    $cb = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
     $metaImage = "{$baseUrl}/assets/images/comics/social/{$comic->id->value}.jpg{$cb}";
 
 // 2. Sind wir auf einer Charakter-Detailseite? -> Charakter-Artwork!
 } elseif (isset($character) && \is_object($character)) {
     $metaType = 'profile';
     // Bevorzuge das große Hauptbild, falle sonst auf das kleine Avatar-Bild zurück
-    if (! empty($character->mainPic)) {
+    if (!empty($character->mainPic)) {
         $metaImage = "{$baseUrl}/assets/images/characters/portraits/" . $character->mainPic;
-    } elseif (! empty($character->picUrl)) {
+    } elseif (!empty($character->picUrl)) {
         $metaImage = "{$baseUrl}/assets/images/characters/profiles/" . $character->picUrl;
     }
 }
@@ -50,6 +49,7 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
     <title><?php echo \htmlspecialchars($metaTitle); ?></title>
+
     <meta name="description"
           content="<?php echo \htmlspecialchars($metaDesc); ?>">
 
@@ -100,9 +100,6 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
     <!-- https://cdnjs.com/libraries/Trumbowyg -->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/ui/trumbowyg.min.css">
-</head>
-
-<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
 
     <!-- ZERO FOUC FIX: Theme sofort anwenden bevor der DOM gezeichnet wird -->
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
@@ -114,17 +111,20 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
     })();
 
     </script>
+</head>
 
-    <div class="main-container">
-        <header>
-            <div class="banner"
+<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
+
+    <div class="l-page-wrapper">
+        <header class="l-header">
+            <div class="l-header__banner"
                  id="banner-lights-off">
                 <!-- Hintergrundbild wird über CSS (.banner) geladen -->
             </div>
         </header>
 
-        <div class="content-area">
+        <div class="l-main-content">
             <?php include __DIR__ . '/_frontend_menu.phtml'; ?>
 
             <!-- Start des eigentlichen Inhalts -->
-            <div class="content">
+            <div class="l-content-box">

@@ -5,31 +5,36 @@ declare(strict_types=1);
 use App\Contracts\System\AssetHelperInterface;
 
 /**
- * @var array                $settings
- * @var string               $pageTitle
+ * @var array $settings
+ * @var string $pageTitle
  * @var AssetHelperInterface $asset
  */
-$baseUrl   = \rtrim($settings['base_url'], '/');
+$baseUrl = \rtrim($settings['base_url'], '/');
 $bodyClass = 'page-login';
 
 include __DIR__ . '/../../layouts/admin/_admin_header.phtml';
 ?>
-<aside class="sidebar">
-    <div class="sidebar-content">
+
+<aside class="l-sidebar">
+    <div class="l-sidebar__inner">
         <nav id="menu"
-             class="menu">
+             class="menu"
+             style="margin-top: 100px;">
             <a href="<?php echo $baseUrl; ?>/">Zurück zur Webseite</a>
             <a id="toggle_lights" class="theme" href="#" title="Design umschalten"></a>
             <!-- JS lädt hier sofort das richtige Icon rein -->
         </nav>
     </div>
 </aside>
-<div class="content">
+
+<div class="l-content-box">
     <div class="admin-login-container">
         <h2>Systemzugang</h2>
         <p class="intro-text">Bitte melde dich an, um auf die Verwaltungsoberfläche zuzugreifen.</p>
+
         <div id="login-status-message"
              class="status-message"></div>
+
         <form id="admin-login-form"
               class="admin-form"
               method="POST">
@@ -42,6 +47,7 @@ include __DIR__ . '/../../layouts/admin/_admin_header.phtml';
                        autocomplete="username"
                        autofocus>
             </div>
+
             <div class="form-group">
                 <label for="password">Passwort</label>
                 <div class="password-wrapper">
@@ -52,6 +58,7 @@ include __DIR__ . '/../../layouts/admin/_admin_header.phtml';
                            autocomplete="current-password">
                 </div>
             </div>
+
             <button type="submit"
                     id="login-submit-btn">Anmelden</button>
         </form>
@@ -61,8 +68,8 @@ include __DIR__ . '/../../layouts/admin/_admin_header.phtml';
 
     <!-- Das NEUE, modulare Script laden -->
     <script type="module"
-        nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-        src="<?php echo $asset->url('assets/js/admin/login.js'); ?>"></script>
+            nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+            src="<?php echo $asset->url('assets/js/admin/login.js'); ?>"></script>
     </body>
 
     </html>

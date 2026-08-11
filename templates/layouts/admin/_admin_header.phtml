@@ -6,7 +6,7 @@ use App\Contracts\System\AssetHelperInterface;
 
 /**
  * @var AssetHelperInterface $asset
- * @var string|null          $pageTitle
+ * @var string|null $pageTitle
  */
 ?>
 
@@ -17,7 +17,7 @@ use App\Contracts\System\AssetHelperInterface;
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
-    <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds Admin</title>
+    <title><?php echo \htmlspecialchars($pageTitle ?? 'Admin'); ?> - Twokinds Admin</title>
 
     <!-- Meta-Tags für Sicherheit -->
     <meta name="csrf-token"
@@ -67,11 +67,8 @@ use App\Contracts\System\AssetHelperInterface;
     <!-- jsdiff (Vergleicht zwei Texte miteinander und hebt Änderungen grün/rot hervor, genutzt bei den Transkript-Reports) -->
     <!-- https://cdnjs.com/libraries/jsdiff -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.3/diff.min.js"></script>
-</head>
 
-<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
-
-    <!-- ZERO FOUC FIX: Theme sofort anwenden bevor der DOM gezeichnet wird -->
+    <!-- ZERO FOUC FIX -->
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
     (function() {
         var t = localStorage.getItem('themePref');
@@ -81,10 +78,15 @@ use App\Contracts\System\AssetHelperInterface;
     })();
 
     </script>
+</head>
 
-    <div class="main-container">
-        <header>
-            <div class="banner"
+<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
+
+    <div class="l-page-wrapper">
+        <header class="l-header">
+            <div class="l-header__banner"
                  id="banner-lights-off"></div>
         </header>
-        <div class="content-area">
+
+        <div class="l-main-content">
+            <!-- HINWEIS: .l-content-box wird im Admin-Bereich direkt in der dashboard.phtml oder login.phtml geöffnet! -->

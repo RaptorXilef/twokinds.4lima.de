@@ -5,20 +5,17 @@ declare(strict_types=1);
 use App\Contracts\System\AssetHelperInterface;
 
 /**
- * @var string               $baseUrl
- * @var array                $settings
+ * @var string $baseUrl
+ * @var array $settings
  * @var AssetHelperInterface $asset
  */
 ?>
-</div> <!-- Schließt .content aus dem Header -->
-</div> <!-- Schließt .content-area aus dem Header -->
+</div> <!-- End .l-content-box -->
+</div> <!-- End .l-main-content -->
 
-<footer>
-    <div class="bottom">
-        <div class="bottom-left">
-            <!-- Platzhalter für Empfehlungen / Links -->
-        </div>
-        <div class="bottom-ctr">
+<footer class="l-footer">
+    <div class="l-footer__info-box">
+        <div class="l-footer__text">
             <p>Twokinds auf Deutsch</p>
             <p>Übersetzung & Programmierung:
                 <a href="https://github.com/RaptorXilef" target="_blank" rel="noopener noreferrer">Felix Maywald</a>
@@ -30,16 +27,14 @@ use App\Contracts\System\AssetHelperInterface;
                 <a href="https://www.lima-city.de/" target="_blank" rel="noopener noreferrer">Lima City</a>
             </p>
             <!-- Dynamische, serverseitige Versionsnummer aus package.json und Fehler-Link -->
-            <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version'] ?? 'x'); ?> | <a href="#" id="open-global-report">Fehler melden</a></div>
+            <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version'] ?? 'x'); ?> | <a href="#" id="open-global-report">Fehler melden</a>
         </div>
-        <div class="bottom-right">
-            <!-- Platzhalter für Twitter Box etc. -->
         </div>
     </div>
 
-    <div class="footer-img">
+    <div class="l-footer__characters">
         <!-- Das dynamische Footer-Gimmick (Crowd) -->
-        <div class="footer-chars-container">
+        <div class="l-footer__characters-inner">
             <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0016" title="Karen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/theme/footer-chars/karen.webp" alt="Karen"></a>
             <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0017" title="Maren"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/theme/footer-chars/maren.webp" alt="Maren"></a>
             <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0009" title="Raine"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/theme/footer-chars/raine.webp" alt="Raine"></a>
@@ -59,10 +54,9 @@ use App\Contracts\System\AssetHelperInterface;
         </div>
     </div>
 </footer>
-</div> <!-- Schließt .main-container aus dem Header -->
+</div> <!-- End .l-page-wrapper -->
 
-
-<?php if (! empty($settings['google_analytics_id'])) {
+<?php if (!empty($settings['google_analytics_id'])) {
     // Isolierten Cookie-Banner laden
     include __DIR__ . '/../../partials/frontend/_cookie_consent.phtml';
 } ?>
@@ -70,7 +64,7 @@ use App\Contracts\System\AssetHelperInterface;
 <?php include __DIR__ . '/../../partials/frontend/_global_report_modal.phtml'; ?>
 
 <!-- Google Analytics -->
-<?php if (! empty($settings['google_analytics_id'])) { ?>
+<?php if (!empty($settings['google_analytics_id'])) { ?>
     <!-- biome-ignore lint/suspicious/noInlineScript: GA Config needs inline execution -->
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
     window.GA_MEASUREMENT_ID = "<?php echo \htmlspecialchars($settings['google_analytics_id']); ?>";

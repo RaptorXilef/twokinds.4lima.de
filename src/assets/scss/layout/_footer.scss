@@ -9,74 +9,11 @@
  * @file       resources/scss/layout/_footer.scss
  */
 
-// Verwendete SCSS-Variablen:
-// - $base-url: Basis-URL für Assets
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --border-medium: Mittlere Rahmenfarbe
-// - --page-bg: Rahmenfarbe im Dark Mode
-// - --text-color: Standard Textfarbe
-// - --link-color: Linkfarbe
-// - --text-color-medium: Mittlere Textfarbe für Meta-Infos
-
 @use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
 
-.bottom {
-    display: flex;
-    flex-flow: row nowrap;
-    gap: 10px;
-    width: 1039px;
-
-    // min-height: 350px;
-    padding: 8px;
-    margin: auto;
-    margin-bottom: 10px;
-    border: 1px solid var(--border-medium);
-    border-radius: 5px;
-}
-
-body.theme-night .bottom {
-    border-color: var(--page-bg);
-}
-
-.bottom-left {
-    display: flex;
-    flex: 0 0 300px;
-    flex-direction: column;
-    justify-content: flex-start;
-}
-
-.bottom-ctr {
-    flex: 1 1 100%;
-    overflow: hidden;
-}
-
-.twitter-box {
-    height: 377px;
-    overflow: auto;
-}
-
-.bottom-right {
-    flex: 0 0 300px;
-}
-
-.rec-comic {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: center;
-    width: 100%;
-    margin: -4px auto 0;
-}
-
-.rec-comic-btn {
-    flex: 0 0 88px;
-    height: 31px;
-    margin: 4px 2px 0;
-    background-color: var(--border-medium);
-}
-
-footer {
-    padding: /*20px*/ 0 10px;
+.l-footer {
+    padding: 0 10px;
     font-size: 0.85em;
     line-height: 1.6;
     color: var(--text-color);
@@ -90,64 +27,86 @@ footer {
             color: var(--link-color);
         }
     }
-}
 
-/* ==========================================================================
-   NEUES FOOTER GIMMICK: Crowd-Effekt
-   ========================================================================== */
-.footer-img {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    margin-top: 5px;
-}
+    &__info-box {
+        display: flex;
+        flex-flow: row nowrap;
+        gap: 10px;
+        width: 100%;
+        max-width: 1039px;
+        padding: 8px;
+        margin: auto;
+        margin-bottom: 10px;
+        border: 1px solid var(--border-medium);
+        border-radius: 5px;
 
-.footer-chars-container {
-    display: flex;
-    align-items: flex-end; /* Alle sitzen unten bündig auf einer Linie */
-    justify-content: center;
-    height: 89px; /* Maximale Höhe des Footers */
+        @include respond-to-mobile {
+            flex-direction: column;
+        }
 
-    a {
-        position: relative;
-        z-index: 1;
-        display: block;
-        height: 100%;
-        margin: 0 -4.5px; /* Zieht die Charaktere leicht ineinander für den Gruppen-Effekt */
+        @at-root body.theme-night & {
+            border-color: var(--page-bg);
+        }
+    }
 
-        /* NEU: Skaliert von der unteren Kante aus, damit sie nicht hochfliegen! */
-        transform-origin: bottom center;
-        transition:
-            transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-            filter 0.2s,
-            z-index 0.2s;
+    &__text {
+        flex: 1 1 100%;
+        overflow: hidden;
+    }
 
-        img {
+    &__characters {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-top: 5px;
+        overflow-x: hidden;
+    }
+
+    &__characters-inner {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        height: 89px;
+
+        @include respond-to-mobile {
+            height: 45px; // Charaktere auf Mobile verkleinern
+        }
+
+        a {
+            position: relative;
+            z-index: 1;
             display: block;
-            width: auto;
             height: 100%;
+            margin: 0 -4.5px;
+            transform-origin: bottom center;
+            transition:
+                transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                filter 0.2s,
+                z-index 0.2s;
 
-            /* Ein zarter Schatten trennt überlappende Charaktere optisch voneinander */
-            filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.15));
+            img {
+                display: block;
+                width: auto;
+                height: 100%;
+                filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.15));
+            }
+
+            &:hover {
+                z-index: 10;
+                filter: brightness(1.1);
+                transform: scale(1.1);
+            }
+
+            @at-root body.theme-night & {
+                img {
+                    filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.5));
+                }
+
+                &:hover {
+                    filter: brightness(1.1);
+                }
+            }
         }
-
-        /* Der Hover-Effekt: Charakter drängt sich nach vorne, wächst um 3% (~2.6 Pixel) und leuchtet */
-        &:hover {
-            z-index: 10;
-            filter: brightness(1.1);
-            transform: scale(1.1); /* translateY() wurde entfernt! */
-        }
-    }
-}
-
-/* Angepasste Schatten & Helligkeit für den Dark Mode */
-body.theme-night .footer-chars-container a {
-    img {
-        filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.5));
-    }
-
-    &:hover {
-        filter: brightness(1.1);
     }
 }
 

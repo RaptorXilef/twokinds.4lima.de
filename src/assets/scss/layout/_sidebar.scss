@@ -7,34 +7,46 @@
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
-.sidebar {
+.l-sidebar {
     display: flex;
     flex: 0 0 200px;
-}
 
-.sidebar-content {
-    box-sizing: border-box;
-    width: 175px;
-    padding: 11px 4px 7px;
-    margin-left: 12px;
-    text-align: center;
-    background-color: var(--sidebar-bg);
-    border-radius: 0 0 5px 5px;
+    @include respond-to-mobile {
+        flex: 1 1 100%;
+        order: 2; // Auf Smartphones unter den Content schieben
+        justify-content: center;
+        margin-top: 20px;
+    }
 
-    .full-width-img {
-        margin-left: -5px;
+    &__inner {
+        box-sizing: border-box;
+        width: 175px;
+        padding: 11px 4px 7px;
+        margin-left: 12px;
+        text-align: center;
+        background-color: var(--sidebar-bg);
+        border-radius: 0 0 5px 5px;
+
+        @include respond-to-mobile {
+            width: 100%;
+            margin-left: 0;
+            padding: 20px 10px;
+            border-radius: 5px;
+        }
+
+        .full-width-img {
+            margin-left: -5px;
+        }
     }
 }
 
-/* --- Social Icons --- */
 .social-icons-container {
     display: flex;
-    flex-wrap: wrap; /* NEU: Lässt Icons in die nächste Zeile fließen */
+    flex-wrap: wrap;
     gap: 8px;
     justify-content: center;
     margin-bottom: 12px;
 
-    /* Nötig für die Copy-Sprechblase beim RSS-Button */
     .js-copy-rss {
         position: relative;
     }
@@ -42,7 +54,7 @@
 
 .social-icon {
     display: block;
-    font-size: 26px; /* VORHER: 32px */
+    font-size: 26px;
     line-height: 1;
     border-radius: 4px;
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -51,190 +63,108 @@
         transform: scale(1.15);
     }
 
-    /* Markenfarben */
     &.icon-patreon,
     &.icon-github {
-        color: #000; /* Schwarz im Light Mode */
+        color: #000;
     }
 
     &.icon-paypal {
-        color: #0079c1; /* Offizielles PayPal Blau */
+        color: #0079c1;
     }
 
     &.icon-rss {
-        color: #f26522; /* Offizielles RSS Orange */
+        color: #f26522;
+    }
+
+    @at-root body.theme-night & {
+        &.icon-patreon,
+        &.icon-github {
+            color: #fff;
+        }
     }
 }
 
-/* Patreon & GitHub im Dark Mode invertieren */
-body.theme-night .social-icon.icon-patreon,
-body.theme-night .social-icon.icon-github {
-    color: #fff;
-}
-
-/* Entfernt
-.patreon-icon-wrapper {
-    display: inline-block;
-
-    .patreon-light-icon {
-        display: inline-block;
-    }
-
-    .patreon-dark-icon {
-        display: none;
-    }
-}
-
-body.theme-night .patreon-icon-wrapper {
-    .patreon-light-icon {
-        display: none;
-    }
-
-    .patreon-dark-icon {
-        display: inline-block;
-    }
-}
-*/
-
-/* --- Navigation Menu --- */
 .menu {
     margin-bottom: 10px;
     font-size: 14px;
-}
 
-.menu-label {
-    display: block;
-    margin: 14px 0 4px;
-    font-size: 10px;
-    font-weight: 800;
-    color: var(--text-on-medium);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.5;
-}
-
-.menu a {
-    position: relative;
-    box-sizing: border-box;
-    display: block;
-    width: 160px;
-    padding: 5px 0;
-    margin: 3px auto;
-    color: var(--text-on-medium);
-    text-transform: uppercase;
-    text-decoration: none;
-    background-color: var(--menu-bg);
-    border-radius: 4px;
-    transition:
-        transform 0.2s ease,
-        background-color 0.2s ease;
-
-    &:hover {
-        background-color: var(--menu-hover-bg);
-        transform: translateX(3px);
-    }
-}
-
-/* DYNAMISCHER NEU-TAG (Spießer-Edition) */
-.menu a.menu-new {
-    padding-left: 16px;
-
-    &::after {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 16px;
-        font-size: 0.55rem;
-        font-weight: 900;
-        color: #fff;
-        content: 'NEU';
-        background-color: var(--new-tag-bg);
-
-        // Da wir 180 Grad drehen, müssen TR und BR gerundet werden,
-        // damit sie nach der Drehung auf der linken Seite liegen.
-        border-radius: 0 4px 4px 0;
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-    }
-}
-
-/* Theme Toggle */
-.menu a.theme {
-    display: flex;
-    flex-flow: column nowrap;
-    padding: 0;
-    margin: 10px auto;
-
-    &:hover {
-        transform: none;
-    }
-
-    span.themelabel {
-        padding: 2px;
-        font-size: 0.7em;
-        color: #fff;
-        background-color: var(--theme-label-bg);
-    }
-
-    span.themename {
-        padding: 4px;
-        color: var(--text-on-medium);
-    }
-}
-
-/* --- Admin & Incentive --- */
-
-/* --- Professioneller Incentive-Bereich (v5.0.0-alpha.17) --- */
-.incentive {
-    width: 160px;
-    margin: 20px auto 10px; // Etwas mehr Luft nach oben zur Abgrenzung
-    text-align: center;
-
-    .tinytext {
-        margin-bottom: 6px;
+    &-label {
+        display: block;
+        margin: 14px 0 4px;
         font-size: 10px;
         font-weight: 800;
         color: var(--text-on-medium);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        opacity: 0.6;
+        opacity: 0.5;
     }
 
-    // Wir überschreiben die Standard-Link-Stile gezielt ohne !important
     a {
+        position: relative;
+        box-sizing: border-box;
         display: block;
-        width: 100%;
-        padding: 0; // Entfernt das Padding der Text-Buttons
-        margin: 0;
-        overflow: hidden; // Sorgt dafür, dass das Bild an den Ecken nicht übersteht
-        cursor: pointer;
-        background: none; // Entfernt den Button-Hintergrund
-        border: none; // Entfernt eventuelle Rahmen
+        width: 160px;
+        padding: 5px 0;
+        margin: 3px auto;
+        color: var(--text-on-medium);
+        text-transform: uppercase;
+        text-decoration: none;
+        background-color: var(--menu-bg);
         border-radius: 4px;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition:
+            transform 0.2s ease,
+            background-color 0.2s ease;
 
-        // Die neue, elegante Animation (kein translateX mehr!)
         &:hover {
-            background: none; // Sicherstellung
-            transform: translateY(-3px) scale(1.02); // Leichtes Anheben und Vergrößern
+            background-color: var(--menu-hover-bg);
+            transform: translateX(3px);
         }
-    }
 
-    img {
-        display: block; // Verhindert den Ghost-Margin unter Bildern
-        width: 100%; // Füllt die vollen 160px aus
-        height: auto;
-        border-radius: 4px; // Abgerundete Ecken direkt am Bild
-        box-shadow: 0 2px 5px rgb(0 0 0 / 0.1); // Dezenter Schatten für Tiefe
-        transition: filter 0.3s ease;
-    }
+        &.menu-new {
+            padding-left: 16px;
 
-    a:hover img {
-        filter: brightness(1.05); // Dezentes Aufleuchten beim Hover
+            &::after {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 16px;
+                font-size: 0.55rem;
+                font-weight: 900;
+                color: #fff;
+                content: 'NEU';
+                background-color: var(--new-tag-bg);
+                border-radius: 0 4px 4px 0;
+                writing-mode: vertical-rl;
+                transform: rotate(180deg);
+            }
+        }
+
+        &.theme {
+            display: flex;
+            flex-flow: column nowrap;
+            padding: 0;
+            margin: 10px auto;
+
+            &:hover {
+                transform: none;
+            }
+
+            span.themelabel {
+                padding: 2px;
+                font-size: 0.7em;
+                color: #fff;
+                background-color: var(--theme-label-bg);
+            }
+
+            span.themename {
+                padding: 4px;
+                color: var(--text-on-medium);
+            }
+        }
     }
 }
 
@@ -254,25 +184,23 @@ body.theme-night .patreon-icon-wrapper {
     i {
         margin-right: 8px;
     }
+
+    @at-root body.theme-night & {
+        color: #fff;
+        background-color: #002b3c;
+        border-color: #2a6177;
+    }
 }
 
-body.theme-night .session-timer {
-    color: #fff;
-    background-color: #002b3c;
-    border-color: #2a6177;
-}
-
-/* --- Modernes RSS Copy Feedback (v4.0) --- */
 #rssFeedLink {
-    position: relative; // Wichtiger Ankerpunkt
+    position: relative;
 }
 
-/* Copy Feedback */
 .copy-feedback {
     position: absolute;
-    bottom: 130%; // Etwas mehr Abstand zum Icon
+    bottom: 130%;
     left: 50%;
-    z-index: 105; // Dein Korrektur-Vorschlag
+    z-index: 105;
     visibility: hidden;
     padding: 6px 12px;
     font-size: 11px;
@@ -290,7 +218,6 @@ body.theme-night .session-timer {
         transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
         visibility 0.3s;
 
-    // Kleiner Pfeil nach unten
     &::after {
         position: absolute;
         top: 100%;
@@ -307,17 +234,16 @@ body.theme-night .session-timer {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
     }
-}
 
-body.theme-night .copy-feedback {
-    background-color: #3c763d;
+    @at-root body.theme-night & {
+        background-color: #3c763d;
 
-    &::after {
-        border-top-color: #3c763d;
+        &::after {
+            border-top-color: #3c763d;
+        }
     }
 }
 
-// Nur wenn wir auf der Login-Seite sind (z.B. über eine Body-Klasse .page-login)
 .page-login .menu {
     margin-top: 100px;
 }

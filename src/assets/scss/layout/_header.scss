@@ -8,37 +8,39 @@
  * @file      resources/scss/layout/_header.scss
  */
 
-// Verwendete SCSS-Variablen:
-// - $base-url: Basis-URL für Assets
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --maintbanner-text: Textfarbe Wartungsbanner
-// - --maintbanner-bg: Hintergrund Wartungsbanner
-
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
-.banner {
-    position: relative;
-    z-index: 99;
-    width: 1099px;
-    height: 314px;
-    padding-top: 10px;
-    margin-left: -10px;
-    overflow: hidden;
-    text-indent: 105%;
-    white-space: nowrap;
-    background: transparent url('../images/theme/banners/day.webp?c=20260804') 0
-        10px no-repeat;
+.l-header {
+    &__banner {
+        position: relative;
+        z-index: 99;
+        width: 100%;
+        max-width: 1099px;
+        height: 314px;
+        padding-top: 10px;
+        margin-left: -10px;
+        overflow: hidden;
+        text-indent: 105%;
+        white-space: nowrap;
+        background: transparent
+            url('../images/theme/banners/day.webp?c=20260804') center 10px
+            no-repeat;
+        background-size: cover;
+
+        @include respond-to-mobile {
+            height: 120px;
+            margin-left: 0;
+            background-position: center;
+        }
+
+        @at-root body.theme-night & {
+            background-image: url('../images/theme/banners/night.webp?c=20260804');
+        }
+    }
 }
 
-// Dark Mode Banner Override
-body.theme-night .banner {
-    background-image: url('../images/theme/banners/night.webp?c=20260804');
-}
-
-// Spezieller Banner Mode (Preloader für Night-Mode Image)
-// Verhindert Flackern beim Umschalten des Themes
+// Fallback falls dies von JS genutzt wird
 .banner-lights-off {
     position: absolute;
     top: 0;
@@ -49,34 +51,4 @@ body.theme-night .banner {
 
 body.theme-night #banner-lights-off {
     background-image: url('../images/theme/banners/night.webp?c=20260804');
-}
-
-// Maintenance Banner
-.maintbanner {
-    position: relative;
-    z-index: 200;
-    padding: 1em 8em;
-    font-size: 0.9em;
-    color: var(--maintbanner-text);
-    text-align: center;
-    background-color: var(--maintbanner-bg);
-
-    @include media-retina-mobile {
-        font-size: 1.2em;
-    }
-}
-
-.maintbanner a,
-.maintbanner a:link,
-.maintbanner a:visited,
-.maintbanner a:active {
-    color: var(--maintbanner-text);
-}
-
-.l-main-container__disclaimer {
-    display: block;
-    width: 100%;
-    text-align: center;
-
-    // Ggf. noch margin/font-size ergänzen
 }
