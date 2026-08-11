@@ -106,21 +106,28 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
     <!-- ZERO FOUC FIX: Theme sofort anwenden bevor der DOM gezeichnet wird -->
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
     (function() {
-        var t = localStorage.getItem('themePref');
-        var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
-        else document.body.classList.remove('theme-night');
+        // Sicherstellen, dass body geladen wurde (verhindert "document.body is null")
+        var b = document.body || document.getElementsByTagName('body')[0];
+        if (b) {
+            var t = localStorage.getItem('themePref');
+            var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (t === '2' || (t !== '1' && d)) b.classList.add('theme-night');
+            else b.classList.remove('theme-night');
+        }
 
-        // Desktop-Ansicht sofort setzen, um FOUC zu vermeiden
-        var fd = localStorage.getItem('forceDesktop');
-        if (fd === 'true') document.documentElement.classList.add('force-desktop');
+        // ViewMode sicher anwenden
+        var vm = localStorage.getItem('themeViewMode');
+        var vp = document.querySelector('meta[name="viewport"]');
+        if (vm === 'desktop') {
+            document.documentElement.classList.add('force-desktop');
+            if (vp) vp.setAttribute('content', 'width=1079');
+        } else if (vm === 'mobile') {
+            document.documentElement.classList.add('force-mobile');
+            if (vp) vp.setAttribute('content', 'width=device-width, initial-scale=1.0');
+        }
     })();
 
     </script>
-
-    <!-- Abdunklung für das mobile Hamburger Menü -->
-    <div id="mobile-menu-backdrop"
-         class="mobile-backdrop"></div>
 
     <div class="l-page-wrapper">
         <header class="l-header">

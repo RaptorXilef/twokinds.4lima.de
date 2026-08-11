@@ -28,7 +28,7 @@
 // Responsives Mixin mit bidirektionalem Toggle (.force-desktop & .force-mobile)
 @mixin respond-to-mobile {
     // Reguläres Handy (Wenn NICHT Desktop erzwungen wird)
-    @media (max-width: 860px) {
+    @media (width <= 860px) {
         :root:not(.force-desktop) & {
             @content;
         }

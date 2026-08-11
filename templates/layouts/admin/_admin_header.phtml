@@ -74,14 +74,25 @@ use App\Contracts\System\AssetHelperInterface;
     <!-- ZERO FOUC FIX -->
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
     (function() {
-        var t = localStorage.getItem('themePref');
-        var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
-        else document.body.classList.remove('theme-night');
+        // Sicherstellen, dass body geladen wurde
+        var b = document.body || document.getElementsByTagName('body')[0];
+        if (b) {
+            var t = localStorage.getItem('themePref');
+            var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (t === '2' || (t !== '1' && d)) b.classList.add('theme-night');
+            else b.classList.remove('theme-night');
+        }
 
+        // ViewMode sicher anwenden
         var vm = localStorage.getItem('themeViewMode');
-        if (vm === 'desktop') document.documentElement.classList.add('force-desktop');
-        if (vm === 'mobile') document.documentElement.classList.add('force-mobile');
+        var vp = document.querySelector('meta[name="viewport"]');
+        if (vm === 'desktop') {
+            document.documentElement.classList.add('force-desktop');
+            if (vp) vp.setAttribute('content', 'width=1079');
+        } else if (vm === 'mobile') {
+            document.documentElement.classList.add('force-mobile');
+            if (vp) vp.setAttribute('content', 'width=device-width, initial-scale=1.0');
+        }
     })();
 
     </script>

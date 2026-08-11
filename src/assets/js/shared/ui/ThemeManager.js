@@ -1,7 +1,7 @@
 export class ThemeManager {
     constructor() {
         this.body = document.body;
-        this.html = document.documentElement; // Root Element <html>
+        this.html = document.documentElement;
         this.toggleBtn = document.querySelector('#toggle_lights');
         this.desktopToggleBtn = document.querySelector('#toggle_desktop_mode');
         this.init();
@@ -42,7 +42,7 @@ export class ThemeManager {
                 isDark = !this.body.classList.contains('theme-night');
                 try {
                     localStorage.setItem('themePref', isDark ? '2' : '1');
-                    // biome-ignore lint/suspicious/noDocumentCookie: CookieStore API lacks cross-browser support
+                    // biome-ignore lint/suspicious/noDocumentCookie: CookieStore API lacks full cross-browser support (Firefox/Safari)
                     document.cookie = `themePref=${isDark ? '2' : '1'}; max-age=31536000; path=/; SameSite=Lax`;
                 } catch (err) {
                     console.error('[ThemeManager] Konnte Theme-Einstellung nicht speichern:', err);
@@ -51,19 +51,26 @@ export class ThemeManager {
             });
         }
 
-        // 2. Ansicht Toggle (Desktop/Mobile)
+        // 2. Mobile/Desktop Toggle Logik
         let viewMode = localStorage.getItem('themeViewMode') || 'auto';
-
-        // Alte Leichen im Cache aufräumen
-        localStorage.removeItem('forceDesktop');
+        localStorage.removeItem('forceDesktop'); // Alte Cache-Leiche aufräumen
 
         const applyViewMode = (mode) => {
             this.html.classList.remove('force-desktop', 'force-mobile');
-            if (mode === 'desktop') this.html.classList.add('force-desktop');
-            if (mode === 'mobile') this.html.classList.add('force-mobile');
+            const vp = document.querySelector('meta[name="viewport"]');
+
+            if (mode === 'desktop') {
+                this.html.classList.add('force-desktop');
+                if (vp) vp.setAttribute('content', 'width=1079'); // Zwingt Handys zum Herauszoomen
+            } else if (mode === 'mobile') {
+                this.html.classList.add('force-mobile');
+                if (vp) vp.setAttribute('content', 'width=device-width, initial-scale=1.0');
+            } else {
+                if (vp) vp.setAttribute('content', 'width=device-width, initial-scale=1.0');
+            }
         };
 
-        // Aufruf bereits durch FOUC Script im Head passiert, hier nur Fallback
+        // Direkt aufrufen (FOUC im Header passiert bereits parallel)
         applyViewMode(viewMode);
 
         if (this.desktopToggleBtn) {
@@ -107,7 +114,7 @@ export class ThemeManager {
 
             updateDesktopButton();
 
-            // Wenn das Fenster skaliert wird und der Modus auf Auto steht, Button updaten
+            // Re-render button if window resizes and mode is auto
             window.matchMedia('(max-width: 860px)').addEventListener('change', () => {
                 if (viewMode === 'auto') updateDesktopButton();
             });
