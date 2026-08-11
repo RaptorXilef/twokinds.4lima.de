@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.18.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.18.0...v6.18.1) (2026-08-11)
+
+### 🐛 Bug Fixes
+
+* **ci:** Resolve bash exit code 1 in config rename step ([d070625](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d0706254c4018fb4cc8e870669b6590a92a2c380)), references [#113](https://github.com/RaptorXilef/twokinds.4lima.de/issues/113) [#116](https://github.com/RaptorXilef/twokinds.4lima.de/issues/116)
+* **infrastructure:** Switch SCSS assets from absolute URL to relative paths ([4f5e3bc](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4f5e3bc313b22cbbd4084f0697dc53c95f49446a)), closes [#114](https://github.com/RaptorXilef/twokinds.4lima.de/issues/114)
+
 ## [6.18.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.17.0...v6.18.0) (2026-08-11)
 
 ### 🚀 Features
