@@ -26,6 +26,11 @@
     font-size: 1.8em;
     font-weight: 300;
     text-align: center;
+
+    @include respond-to-mobile {
+        flex-direction: column;
+        gap: 6px;
+    }
 }
 
 .bookmarks-page .page-header strong {
@@ -46,6 +51,10 @@
     white-space: nowrap;
     background-color: var(--button-bg);
     border-radius: 12px;
+
+    @include respond-to-mobile {
+        margin-left: 0;
+    }
 }
 
 .bookmarks-page .bookmark-example {
@@ -60,6 +69,12 @@
     font-style: italic;
     color: #555;
     text-align: center;
+
+    @include respond-to-mobile {
+        justify-content: center;
+        margin-top: 10px;
+        margin-right: 0;
+    }
 }
 
 .bookmarks-page .bookmark-example .ribbon {
@@ -84,6 +99,11 @@
         margin: 0;
         font-style: italic;
         color: var(--text-color-medium);
+    }
+
+    @include respond-to-mobile {
+        padding: 1.5rem 1rem;
+        font-size: 1rem;
     }
 }
 
@@ -112,6 +132,12 @@
 
         &:hover {
             background-color: var(--cookie-btn-accept-hover);
+        }
+
+        @include respond-to-mobile {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
         }
     }
 
@@ -355,6 +381,11 @@ body.theme-night .character-group h4 {
     align-items: stretch;
     justify-content: center;
     padding: 20px;
+
+    @include respond-to-mobile {
+        gap: 15px;
+        padding: 10px;
+    }
 }
 
 .character-item {
@@ -363,6 +394,10 @@ body.theme-night .character-group h4 {
     align-items: center;
     width: 120px;
     text-align: center;
+
+    @include respond-to-mobile {
+        width: 90px;
+    }
 
     &:hover img {
         border-color: #007bff;
@@ -401,6 +436,11 @@ body.theme-night .character-group h4 {
         border: 2px solid var(--border-medium);
         border-radius: 50%;
         box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+
+        @include respond-to-mobile {
+            width: 65px;
+            height: 65px;
+        }
     }
 
     .character-name {
@@ -415,6 +455,10 @@ body.theme-night .character-group h4 {
         font-weight: bold;
         line-height: 1.2;
         overflow-wrap: break-word;
+
+        @include respond-to-mobile {
+            font-size: 0.8em;
+        }
     }
 
     &:hover .character-tags .char-tag {
@@ -499,6 +543,12 @@ body.theme-night .character-item .character-tags .char-tag {
             i {
                 margin-right: 6px;
             }
+        }
+
+        @include respond-to-mobile {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
     }
 

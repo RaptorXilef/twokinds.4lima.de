@@ -7,20 +7,8 @@
  * @file       resources/scss/pages/_misc.scss
  */
 
-// Variablen-Index:
-// - --border-medium: Mittlere Rahmenfarbe
-// - --border-light: Helle Rahmenfarbe
-// - --text-color: Standard Textfarbe
-// - --text-on-medium: Textfarbe auf Buttons
-// - --link-color: Akzentfarbe für Links
-// - --button-bg: Hintergrund für Buttons
-// - --button-hover-bg: Hintergrund bei Hover
-// - --font-mono: Monospace Schriftart (für URLs)
-
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
-
-/* --- General Info Sections --- */
 
 .about-section,
 .imprint-container,
@@ -66,19 +54,16 @@
     }
 }
 
-/* --- About Mugshots (Tom & Felix) --- */
-
 .about-mugshot {
-    // FIX: Feste Breite reserviert den Platz vor dem Laden (verhindert Text-Springen)
     width: 200px;
     height: auto;
     margin-bottom: 15px;
-    object-fit: cover; // Stellt sicher, dass das Bild innerhalb der 200x275px gut aussieht
+    object-fit: cover;
     border: 1px solid var(--border-medium);
     border-radius: 7px;
     box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
 
-    @include media-retina-mobile {
+    @include respond-to-mobile {
         float: none;
         display: block;
         width: 100%;
@@ -88,10 +73,8 @@
 }
 
 .about-bio {
-    overflow: hidden; // Behält den Text rechts vom Bild (Clearfix-Verhalten)
+    overflow: hidden;
 }
-
-/* --- Lists and Technical Elements --- */
 
 .about-section,
 .imprint-container,
@@ -124,14 +107,12 @@
         padding: 2px 6px;
         font-family: var(--font-mono, monospace);
         font-size: 0.9em;
-        word-break: break-all; // Wichtig für lange URLs auf Mobile
+        word-break: break-all;
         background-color: var(--table-row-even, #f4f4f4);
         border: 1px solid var(--border-medium);
         border-radius: 4px;
     }
 }
-
-/* --- Icons & Specific Links --- */
 
 .license-image {
     display: inline-block;
@@ -145,7 +126,6 @@
     border-radius: 3px;
 }
 
-// Email Button (Maximale Inline-Kompatibilität)
 #impressum-email-button {
     display: inline-flex;
     align-items: center;
@@ -175,8 +155,6 @@
     }
 }
 
-/* --- Theme Overrides --- */
-
 body.theme-night {
     .about-section h3,
     .imprint-container h3,
@@ -197,9 +175,6 @@ body.theme-night {
     }
 }
 
-/* ==========================================================================
-   FRONTEND AUTH & PROFILE CONTAINERS
-   ========================================================================== */
 .auth-container {
     max-width: 500px;
     padding: 20px;
@@ -247,6 +222,10 @@ body.theme-night {
     border: 1px solid var(--border-medium);
     border-radius: 8px;
     box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+
+    @include respond-to-mobile {
+        padding: 20px;
+    }
 }
 
 body.theme-night .content-box-shadow {
@@ -293,6 +272,11 @@ body.theme-night .content-box-shadow {
         font-weight: normal;
         color: var(--text-color-faded);
     }
+
+    @include respond-to-mobile {
+        flex-direction: column;
+        gap: 10px;
+    }
 }
 
 .checkbox-item {
@@ -330,9 +314,6 @@ body.theme-night .checkbox-item {
     background: rgb(0 0 0 / 0.2);
 }
 
-/* ==========================================================================
-   FRONTEND LAYOUT & UTILITIES
-   ========================================================================== */
 .max-w-600 {
     max-width: 600px;
 }
@@ -442,11 +423,13 @@ body.theme-night .checkbox-item {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
+
+    @include respond-to-mobile {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+    }
 }
 
-/* ==========================================================================
-   Bookmarks JS Template Classes
-   ========================================================================== */
 .bookmark-card {
     position: relative;
     display: flex;
@@ -477,9 +460,9 @@ body.theme-night .checkbox-item {
         opacity: 1;
     }
 
-    @include media-tablet {
+    @include respond-to-mobile {
         .delete-btn {
-            opacity: 1; /* Auf Touch-Geräten immer sichtbar */
+            opacity: 1;
         }
     }
 }
@@ -547,9 +530,6 @@ body.theme-night .bookmark-card {
     background: var(--status-red-bg);
 }
 
-/* ==========================================================================
-   FRONTEND BUGFIX UTILITIES
-   ========================================================================== */
 .text-left {
     text-align: left;
 }
@@ -596,7 +576,6 @@ body.theme-night .bookmark-card {
     line-height: 1.6;
 }
 
-/* Formatierung für lange Lesetexte (Datenschutz, Impressum, FAQ) */
 .legal-content {
     p,
     li {
@@ -618,7 +597,6 @@ body.theme-night .bookmark-card {
     }
 }
 
-/* Letzte Layout-Helfer für Project-Info */
 .d-inline-flex {
     display: inline-flex;
 }
@@ -635,10 +613,6 @@ body.theme-night .bookmark-card {
 body.theme-night .faq-box {
     box-shadow: 0 2px 8px rgb(0 0 0 / 0.3);
 }
-
-// =========================================
-// User Profile & Settings
-// =========================================
 
 .word-break-all {
     word-break: break-all;
@@ -718,4 +692,25 @@ body.theme-night .social-link-btn {
     width: 100%;
     height: 60px;
     resize: vertical;
+}
+
+.profile-header {
+    @include respond-to-mobile {
+        flex-direction: column;
+        text-align: center;
+
+        .flex-1 {
+            width: 100%;
+        }
+    }
+}
+
+.grid-auto-300 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+
+    @include respond-to-mobile {
+        grid-template-columns: 1fr;
+    }
 }

@@ -9,15 +9,6 @@
  * @file       resources/scss/pages/_archive.scss
  */
 
-// Verwendete SCSS-Variablen:
-// (Keine spezifischen SCSS-Vars in diesem Block)
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --text-color: Standard Textfarbe
-// - --text-on-medium: Textfarbe für Links/Header (Standard)
-// - --link-color: Akzentfarbe für Links und Hover
-// - --border-medium: (Indirekt genutzt in globalen Elementen)
-
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
@@ -32,40 +23,35 @@
 
         a {
             font-weight: 700;
-            color: var(--text-on-medium); // Im Original Schwarz/Dunkelgrau
+            color: var(--text-on-medium);
         }
     }
 }
 
-// Dark Mode Override für Links
 body.theme-night .chapter p a {
     color: var(--link-color);
 }
 
-// Chapter Headline (Akkordeon-Trigger)
 .chapter h2 {
-    display: flex; // Flexbox statt inline-block
-    align-items: center; // Vertikale Zentrierung
-    // width: 100%; // Volle Breite nutzen
+    display: flex;
+    align-items: center;
     margin: 0;
     font-size: 1.2em;
     color: var(--text-on-medium);
     cursor: pointer;
-    border-bottom: 1px solid transparent; // Unsichtbarer Border um Layout-Shifts zu vermeiden
+    border-bottom: 1px solid transparent;
 
-    @include media-retina-mobile {
-        font-size: 2em;
+    @include respond-to-mobile {
+        font-size: 1.4em;
     }
 }
 
-// Hover State für Headline
 .chapter h2:hover {
     color: var(--link-color);
     text-decoration: none;
     border-bottom-color: var(--link-color);
 }
 
-// Dark Mode Override für Headline
 body.theme-night .chapter h2 {
     color: var(--text-color);
 }
@@ -74,30 +60,22 @@ body.theme-night .chapter h2:hover {
     color: var(--link-color);
 }
 
-// Collapsible Arrow (Indikator)
-// Standard-Status: Ausgeklappt (Pfeil nach unten)
 .chapter h2::before {
     display: inline-block;
-    flex-shrink: 0; // Verhindert das Quetschen des Symbols
+    flex-shrink: 0;
     margin-right: 10px;
-    content: '►'; // Als führender optischer Pfeil, der auf die Überschrift zeigt
-    // transform: rotate(90deg);
-    // transition: transform 0.2s;
+    content: '►';
 }
 
-// Status: Eingeklappt (Pfeil nach rechts)
 .chapter.collapsed h2::before {
     transform: rotate(0deg);
 }
 
-// Der zweite Pfeil (span.arrow-left) an den rechten Rand schieben
 .chapter h2 .arrow-left {
     flex-shrink: 0;
-    margin-left: auto; // Das ist der "Zaubertrick", der alles nach rechts schiebt
+    margin-left: auto;
 }
 
-// Content visibility toggle
-// Versteckt die .chapter-links (Thumbnail Grid), wenn eingeklappt
 .chapter.collapsed .chapter-links {
     display: none;
 }
