@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: CC BY-NC-SA 4.0
-
 ///
 /// Archiv-Übersicht.
 ///
@@ -10,28 +8,6 @@
 /*!
  * @file       resources/scss/pages/_archive.scss
  */
-/// @link      twokinds.4lima.de
-///
-/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
-/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
-///
-/// @author    Felix Maywald (@RaptorXilef)
-/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
-///
-
-///
-/// @since    5.0.0
-/// - Refactoring auf CSS Vars.
-/// - style(Linter): Spezifitätsprobleme bei Link-Hover behoben.
-/// - style(Linter): Link-Hover Reihenfolge korrigiert.
-/// - fix(CSS): Linter-Fehler (no-descending-specificity) durch Umsortierung der Hover-States behoben.
-/// - style(Linter): Block-Reihenfolge getauscht (.chapter-links vor .chapter) und Img-Selektoren sortiert.
-/// - style(Linter): Interne Reihenfolge von Links und Bildern in .chapter-links korrigiert (Low -> High Specificity).
-/// - style(Linter): Theme-Overrides separiert und ans Ende verschoben.
-/// - chore(Linter): False-Positive bei Dark-Mode Link-Spezifität global für den Theme-Block ignoriert.
-/// - refactor(SCSS): .chapter-links in eigene Komponente ausgelagert.
-/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
-///
 
 // Verwendete SCSS-Variablen:
 // (Keine spezifischen SCSS-Vars in diesem Block)

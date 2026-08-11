@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace App\Infrastructure\Config;
 
 use App\Contracts\Config\ConfigInterface;
-use RuntimeException;
 
 final readonly class Config implements ConfigInterface
 {
     /**
      * @param array<string, mixed> $settings Das rohe, zusammengeführte Konfigurations-Array.
      */
-    public function __construct(
-        private array $settings,
-    ) {
+    public function __construct(private array $settings)
+    {
     }
 
     /**
@@ -38,7 +36,6 @@ final readonly class Config implements ConfigInterface
     public function getMailSettings(): array
     {
         $mail = $this->get('mail', []);
-
         if (!\is_array($mail)) {
             return [];
         }
@@ -56,30 +53,31 @@ final readonly class Config implements ConfigInterface
 
     public function getBaseUrl(): string
     {
+        // 1. Wenn explizit in der Config gesetzt, diese bevorzugen
         $configured = $this->get('base_url');
         if (\is_string($configured) && $configured !== '') {
-            return \rtrim($configured, '/') . '/';
+            return \rtrim($configured, '/');
         }
 
-        if ($this->get('is_local_env', false) === true) {
-            $protocolRaw = $this->get('server_protocol', 'http://');
-            $protocol = \is_string($protocolRaw) ? $protocolRaw : 'http://';
+        // 2. CLI-Modus (Kommandozeile/Cronjobs) erkennen
+        $isCli = \php_sapi_name() === 'cli' || !isset($_SERVER['HTTP_HOST']);
+        if ($isCli) {
+            $fallbackRaw = $this->get('cli_fallback_url', 'http://localhost');
+            $fallback = \is_string($fallbackRaw) ? $fallbackRaw : 'http://localhost';
 
-            $hostRaw = $this->get('server_host', 'localhost');
-            $host = \is_string($hostRaw) ? $hostRaw : 'localhost';
-
-            $scriptRaw = $this->get('server_script', '');
-            $script = \is_string($scriptRaw) ? $scriptRaw : '';
-
-            $path = \rtrim(\dirname($script), '/\\');
-            $path = \str_replace('/api', '', $path);
-
-            return $protocol . $host . $path . '/';
+            return \rtrim($fallback, '/');
         }
 
-        throw new RuntimeException(
-            'Sicherheits-Abbruch: "base_url" ist in der config/config.php nicht gesetzt! Host-Header-Fallback ist deaktiviert.', // phpcs:ignore Generic.Files.LineLength.TooLong
-        );
+        // 3. Regulärer Web-Aufruf: Protokoll und Host dynamisch auslesen
+        $isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+
+        $protocol = $isSecure ? 'https' : 'http';
+
+        $hostRaw = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $host = \is_string($hostRaw) ? $hostRaw : 'localhost';
+
+        return $protocol . '://' . $host;
     }
 
     public function getStoragePath(string $fileName): string

@@ -1,13 +1,13 @@
+/// Globaler Base-Layer für Reset, Typografie und Element-Standards.
+
 /**
- * @description Globaler Base-Layer für Reset, Typografie und Element-Standards.
  * @file        base/_core.scss
- * @since       2.2.1
  * - feat(base): Implementierung von Modern Reset, Typografie und globalen Element-Styles.
- *
- * @variables-index:
- * - Benutzt CSS-Variablen aus :root (--font-main, --color-surface, etc.)
- * - Definiert Basis-Abstände und Standard-Interaktionen.
  */
+
+// @variables-index:
+// - Benutzt CSS-Variablen aus :root (--font-main, --color-surface, etc.)
+// - Definiert Basis-Abstände und Standard-Interaktionen.
 
 // Hinweis: In einer echten Umgebung würde hier @use "../abstracts/core" stehen.
 // Wir setzen voraus, dass die Variablen im :root bereits durch den Abstracts-Layer generiert wurden.

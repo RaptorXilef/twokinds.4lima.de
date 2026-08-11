@@ -1,16 +1,15 @@
+/// Styles für den universellen Social Media Debugger im Header.
+
 /**
  * @file       resources/scss/components/_debug.scss
- * @description Styles für den universellen Social Media Debugger im Header.
- * @since      5.0.0-alpha.21
- * - feat(debug): Erstelung der Debug-Komponente aus Inline-Styles.
- *
- * Variablen-Index:
- * - .c-debug-box: Hauptcontainer der Debug-Ausgabe.
- * - .c-debug-box__title: Titelzeile des Debuggers.
- * - .c-debug-box__status: Status-Anzeige (Erfolg/Fehler).
- * - .c-debug-box__separator: Trennlinie (HR-Ersatz).
- * - .c-debug-box__preview: Container für die Bildvorschau.
  */
+
+// Variablen-Index:
+// - .c-debug-box: Hauptcontainer der Debug-Ausgabe.
+// - .c-debug-box__title: Titelzeile des Debuggers.
+// - .c-debug-box__status: Status-Anzeige (Erfolg/Fehler).
+// - .c-debug-box__separator: Trennlinie (HR-Ersatz).
+// - .c-debug-box__preview: Container für die Bildvorschau.
 
 .c-debug-box {
     padding: 15px;

@@ -1,13 +1,7 @@
-// SPDX-License-Identifier: CC BY-NC-SA 4.0
+/// Sidebar & Navigation Styles (v3.9 - The Spießer Edition)
 
 /**
- * Sidebar & Navigation Styles (v3.9 - The Spießer Edition)
- *
  * @file       resources/scss/layout/_sidebar.scss
- * @since      5.0.0
- * - fix(NEU): Border-Radius für 180°-Drehung korrigiert (Ecken jetzt rund).
- * - fix(Layout): Breite auf 175px mit border-box standardisiert.
- * - fix(Admin): Session-Timer und Image-Korrekturen wiederhergestellt.
  */
 
 @use '../abstracts/variables' as *;
