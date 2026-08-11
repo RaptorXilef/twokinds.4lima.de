@@ -86,18 +86,43 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
         <?php echo $asset->getImportMap('assets/js'); ?>
     </script>
 
-    <!-- FOUC FIX: Verhindert violettes Aufblitzen in Firefox bei schlechter Verbindung -->
+    <!-- FOUC FIX: Verhindert Firefox Lila-Screen durch sofortiges serverseitiges Styling -->
     <style>
+    /* Standard Fallback (Light Mode) */
     html,
     body {
         margin: 0;
         padding: 0;
-        background-color: #002b3c;
-    } /* #81dbfe */
-
-    body.theme-night {
-        background-color: #002b3c;
+        background-color: #81dbfe;
     }
+
+    <?php $themePref = $_COOKIE['themePref'] ?? null; ?><?php if ($themePref === '2'): ?>
+
+    /* Nutzer hat Dark-Mode erzwungen */
+    html,
+    body {
+        background-color: #002b3c !important;
+    }
+
+    <?php elseif ($themePref === '1'): ?>
+
+    /* Nutzer hat Light-Mode erzwungen */
+    html,
+    body {
+        background-color: #81dbfe !important;
+    }
+
+    <?php else: ?>
+    /* Kein Cookie gesetzt: Richte dich automatisch nach dem Betriebssystem */
+    @media (prefers-color-scheme: dark) {
+
+        html,
+        body {
+            background-color: #002b3c !important;
+        }
+    }
+
+    <?php endif; ?>
 
     </style>
 

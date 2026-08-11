@@ -29,19 +29,34 @@ use App\Contracts\System\AssetHelperInterface;
         <?php echo $asset->getImportMap('assets/js'); ?>
     </script>
 
-    <!-- FOUC FIX: Verhindert violettes Aufblitzen in Firefox bei schlechter Verbindung -->
+    <!-- FOUC FIX: Verhindert Firefox Lila-Screen durch sofortiges serverseitiges Styling -->
     <style>
     html,
     body {
         margin: 0;
         padding: 0;
-        background-color: #002b3c;
+        background-color: #81dbfe;
     }
 
-    /* #81dbfe */
-    body.theme-night {
-        background-color: #002b3c;
+    <?php $themePref = $_COOKIE['themePref'] ?? null; ?><?php if ($themePref === '2') { ?>html,
+    body {
+        background-color: #002b3c !important;
     }
+
+    <?php } elseif ($themePref === '1') { ?>html,
+    body {
+        background-color: #81dbfe !important;
+    }
+
+    <?php } else { ?>@media (prefers-color-scheme: dark) {
+
+        html,
+        body {
+            background-color: #002b3c !important;
+        }
+    }
+
+    <?php } ?>
 
     </style>
 

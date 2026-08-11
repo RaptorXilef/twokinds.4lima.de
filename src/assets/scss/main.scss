@@ -14,59 +14,49 @@
 /// @link      https://github.com/RaptorXilef/twokinds.4lima.de
 ///
 
-@use 'abstracts/info';
-
-// 1. Abstracts (Variables, Mixins)
+// 1. Abstracts (Variablen & Mixins)
 @use 'abstracts/variables';
-@use 'abstracts/functions';
 @use 'abstracts/mixins';
-@use 'abstracts/placeholders';
+@use 'abstracts/core';
 
-// 2. Vendors (Hier könnte Bootstrap, Normalize etc. stehen)
+// 2. Vendors (Externe Libs)
 @use 'vendors/normalize';
 @use 'vendors/summernote';
 
-// 3. Base (Reset, Typography)
-@use 'base/reset';
+// 3. Base (Grund-Styles & Typografie)
 @use 'base/fonts';
+@use 'base/basecore';
 @use 'base/typography';
 
-// 4. Layout (Main Layout, Header, Footer, Sidebar)
+// 4. Layout (Seiten-Struktur)
 @use 'layout/main-layout';
 @use 'layout/header';
 @use 'layout/sidebar';
 @use 'layout/footer';
 
-// 5. Components (Buttons, Navigation, Modals, Cookie Banner, Grids)
+// 5. Components (Wiederverwendbare Bausteine)
 @use 'components/buttons';
 @use 'components/navigation';
 @use 'components/modals';
 @use 'components/cookie-banner';
 @use 'components/thumbnail-grid';
 @use 'components/debug';
-@use 'components/report-modal';
 
-// 5a. Admin Components (NEU)
+// 6. Components - Admin
 @use 'components/admin/tables';
 @use 'components/admin/forms';
 @use 'components/admin/ui';
 @use 'components/admin/session-timeout';
 
-// 6. Pages (Comic, Archive, Characters, Admin)
+// 7. Pages (Seiten-Spezifisches)
 @use 'pages/comic';
 @use 'pages/archive';
-
-// @use 'pages/admin'; // DEPRECATED -> Ersetzt durch modulare Admin-Pages
 @use 'pages/characters';
-
-// 6a. Admin Pages (NEU)
-@use 'pages/admin/auth';
-@use 'pages/admin/editors';
-@use 'pages/admin/generators';
-
-// @use 'pages/fanart';
 @use 'pages/faq';
 @use 'pages/misc';
 
-// 7. Themes
-// @use 'themes/theme'; // Wird durch CSS Vars in _variables.scss gehandhabt
+// 8. Pages - Admin
+@use 'pages/admin/auth';
+@use 'pages/admin/editors';
+@use 'pages/admin/generators';
+@use 'pages/admin/setup';
