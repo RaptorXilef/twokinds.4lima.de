@@ -144,9 +144,15 @@ function optimizeTokens(content, fileExtension) {
     }
 
     // =========================================================================
-    // 2. KOMMENTARE ENTFERNEN (und DocBlocks verarbeiten)
+    // 2. KOMMENTARE ENTFERNEN & OPERATOR-PADDING
     // =========================================================================
-    if (isJsOrScss || isPhpOrPhtml) {
+    const operatorRegex = /(?<!<\?)\s*(===|!==|<=|>=|=>|==|!=|\+=|-=|=)\s*/g;
+
+    // Verhindert global, dass URLs (http://) in SCSS/JS als Kommentar gewertet werden
+    const singleLineCommentRegex = /(?<!https?:|ftp:|file:|\\)\/\/.*$/gim;
+
+    if (isJsOrScss) {
+        // SCSS / JS Logic (läuft global über die Datei)
         // Wenn aktiviert, behalte DocBlocks (/** ... */) die ein '@' enthalten
         if (globalKeepDocBlocks) {
             optimizedContent = optimizedContent.replace(/\/\*\*[\s\S]*?\*\//g, (match) => {
@@ -164,53 +170,51 @@ function optimizeTokens(content, fileExtension) {
 
         // Multi-line Kommentare /* ... */ (löscht alles was nicht im Tresor ist)
         optimizedContent = optimizedContent.replace(/\/\*[\s\S]*?\*\//g, '');
-
-        // Single-line Kommentare // ...
-        // FIX: (?<!\\) ignoriert Regex escaped slashes wie \/\/
-        optimizedContent = optimizedContent.replace(/(?<!\\)\/\/(?:(?!\?>).)*(?=\?>|$)/gm, '');
-
-        if (isPhpOrPhtml) {
-            // HTML-Kommentare sicher entfernen
-            optimizedContent = optimizedContent.replace(/<!--[\s\S]*?-->/g, '');
-
-            // SQL / CSS-ähnliche Kommentare (-- )
-            optimizedContent = optimizedContent.replace(/(?<!!)--\s.*$/gm, '');
-
-            // # Kommentare NUR in reinen .php Dateien löschen.
-            // In .phtml zerstören sie sonst CSS-IDs (z.B. <style> #id { ... } </style>)
-            if (ext === '.php') {
-                optimizedContent = optimizedContent.replace(
-                    /(^|[^"'])#(?!\[)(?:(?!\?>).)*(?=\?>|$)/gm,
-                    (_match, prefix) => {
-                        return prefix;
-                    }
-                );
-            }
-        }
-    }
-
-    // =========================================================================
-    // 3. OPERATOR-PADDING (Der "=" Fix für HTML-Attribute)
-    // =========================================================================
-    const operatorRegex = /(?<!<\?)\s*(===|!==|<=|>=|=>|==|!=|\+=|-=|=)\s*/g;
-
-    if (ext === '.js' || ext === '.scss') {
-        // JS und SCSS können global padded werden
+        optimizedContent = optimizedContent.replace(singleLineCommentRegex, '');
         optimizedContent = optimizedContent.replace(operatorRegex, ' $1 ');
-    } else if (ext === '.php' || ext === '.phtml') {
-        // In PHP/PHTML wird das Padding NUR NOCH innerhalb von <?php ... ?> angewendet!
-        // HTML Attribute (href=) bleiben somit zu 100% unangetastet.
-        // FIX: (\?>|$) ist jetzt eine Capturing Group, damit ?> nicht gelöscht wird!
+    } else if (isPhpOrPhtml) {
+        // HTML & SQL Kommentare (laufen sicher global über die Datei)
+        optimizedContent = optimizedContent.replace(/<!--[\s\S]*?-->/g, '');
+        optimizedContent = optimizedContent.replace(/(?<!!)--\s.*$/gm, '');
+
+        // FIX: PHP Kommentare STRIKT auf <?php ... ?> Blöcke begrenzen!
+        // HTML bleibt von // und /* unangetastet.
         optimizedContent = optimizedContent.replace(
             /(<\?[pP][hH][pP]|<\?=)([\s\S]*?)(\?>|$)/g,
             (_match, openTag, phpCode, closeTag) => {
-                return openTag + phpCode.replace(operatorRegex, ' $1 ') + closeTag;
+                // DocBlocks
+                if (globalKeepDocBlocks) {
+                    phpCode = phpCode.replace(/\/\*\*[\s\S]*?\*\//g, (match) => {
+                        if (match.includes('@')) {
+                            const id = `___BLOCK_PLACEHOLDER_${blockId++}___`;
+                            blockMap.set(id, `\n${match}\n`);
+                            return id;
+                        }
+                        return match;
+                    });
+                }
+
+                // PHP /* */
+                phpCode = phpCode.replace(/\/\*[\s\S]*?\*\//g, '');
+
+                // PHP //
+                phpCode = phpCode.replace(singleLineCommentRegex, '');
+
+                // PHP #
+                if (ext === '.php') {
+                    phpCode = phpCode.replace(/(^|[^"'])#(?!\[).*$/gm, (_m, prefix) => prefix);
+                }
+
+                // PHP Operatoren
+                phpCode = phpCode.replace(operatorRegex, ' $1 ');
+
+                return openTag + phpCode + closeTag;
             }
         );
     }
 
     // =========================================================================
-    // 4. ZEILEN & WHITESPACE MINIMIEREN
+    // 3. ZEILEN & WHITESPACE MINIMIEREN
     // =========================================================================
     const lines = optimizedContent.split(/\r?\n/);
     const optimizedLines = [];
@@ -264,7 +268,7 @@ function optimizeTokens(content, fileExtension) {
     let joinedResult = optimizedLines.join('\n');
 
     // =========================================================================
-    // 5. TRESOR WIEDERHERSTELLEN (Blöcke & Strings)
+    // 4. TRESOR WIEDERHERSTELLEN (Blöcke & Strings)
     // =========================================================================
     blockMap.forEach((originalBlock, placeholderKey) => {
         joinedResult = joinedResult.split(placeholderKey).join(originalBlock);
