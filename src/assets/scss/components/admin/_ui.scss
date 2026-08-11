@@ -9,28 +9,6 @@
  * @file       resources/scss/components/admin/_ui.scss
  */
 
-// Verwendete SCSS-Variablen:
-// (Keine spezifischen SCSS-Vars in diesem Block)
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --status-info-bg: Hintergrund für Info-Boxen
-// - --status-info-border: Rahmenfarbe für Info-Boxen
-// - --table-row-even: Hintergrund für Container/Listen
-// - --border-medium: Mittlere Rahmenfarbe
-// - --link-color: Primärfarbe (Progress Bar)
-// - --text-color: Standard Textfarbe
-// - --font-mono: Monospace Schriftart (Logs)
-// - --content-bg: Hintergrund für Collapsibles
-// - --sidebar-bg: Hintergrund im Dark Mode
-// - --border-light: Helle Rahmenfarbe
-// - --table-header-bg: Hintergrund für Header
-// - --text-color-medium: Mittlere Textfarbe (Icons)
-// - --table-row-hover: Hintergrund bei Hover
-// - --page-bg: Hintergrund für Transkript-Box
-// - --button-bg: Border-Color im Dark Mode
-// - --status-green-text: Farbe für Erfolg
-// - --status-red-text: Farbe für Fehler
-
 @use '../../abstracts/variables' as *;
 @use '../../abstracts/mixins' as *;
 
@@ -41,7 +19,6 @@
     margin-top: 5px;
 }
 
-/* --- Status & Source Markers (Binary System) --- */
 .source-marker,
 .status-icon {
     display: inline-block;
@@ -53,36 +30,29 @@
     color: #fff;
     text-transform: uppercase;
     cursor: help;
-
-    // --- GRUNDZUSTAND (FEHLT / NICHT VORHANDEN) ---
     background-color: #dc3545;
     border-radius: 10px;
     opacity: 0.3;
-
-    // filter: grayscale(1);
 }
 
-// --- AKTIVZUSTAND (VORHANDEN) ---
 .source-marker.source-marker,
 .source-marker.present,
 .status-icon.source-marker,
 .status-icon.present {
-    background-color: #07710c; // !important
+    background-color: #07710c;
     opacity: 1;
     filter: grayscale(0);
 }
 
-// --- LEGENDE ---
 .marker-legend .source-marker,
 .marker-legend .status-icon {
-    background-color: #07710c; // !important
-    opacity: 1; // !important
-    filter: none; // !important
+    background-color: #07710c;
+    opacity: 1;
+    filter: none;
 }
 
-/* --- Status Messages (Alerts) --- */
 .status-message {
-    display: none; // Per JS eingeblendet
+    display: none;
     padding: 10px;
     margin-bottom: 20px;
     font-weight: bold;
@@ -99,7 +69,6 @@
     display: block;
 }
 
-// Spezieller Container für Last-Run Messages
 #last-run-container .status-message {
     display: block;
 }
@@ -152,7 +121,6 @@ body.theme-night .status-message.status-orange {
     border-color: #5a4e1e;
 }
 
-// Notification Box (z.B. nach Upload)
 .notification-box {
     padding: 20px;
     margin-top: 30px;
@@ -194,7 +162,6 @@ body.theme-night .notification-box {
     text-decoration: none;
 }
 
-/* --- Progress Bar --- */
 .progress-wrapper {
     position: relative;
     height: 30px;
@@ -213,7 +180,7 @@ body.theme-night .progress-wrapper {
 .progress-bar {
     width: 0%;
     height: 100%;
-    background-color: var(--link-color); // Primärfarbe nutzen
+    background-color: var(--link-color);
     background-image: linear-gradient(
         45deg,
         rgb(255 255 255 / 0.15) 25%,
@@ -239,15 +206,14 @@ body.theme-night .progress-wrapper {
     height: 100%;
     font-size: 0.9em;
     font-weight: bold;
-    color: var(--text-color); // Automatisch dunkel/hell je nach Theme
-    text-shadow: 0 0 2px rgb(255 255 255 / 0.5); // Lesbarkeit erhöhen
+    color: var(--text-color);
+    text-shadow: 0 0 2px rgb(255 255 255 / 0.5);
 }
 
 body.theme-night .progress-text {
     text-shadow: 0 0 2px rgb(0 0 0 / 0.8);
 }
 
-/* --- Log Console --- */
 .log-console {
     height: 300px;
     padding: 15px;
@@ -256,7 +222,7 @@ body.theme-night .progress-text {
     font-family: var(--font-mono, monospace);
     font-size: 0.9em;
     color: #d4d4d4;
-    background-color: #1e1e1e; // Immer dunkel für Code-Look
+    background-color: #1e1e1e;
     border: 1px solid var(--border-medium);
     border-radius: 5px;
     box-shadow: inset 0 0 10px rgb(0 0 0 / 0.5);
@@ -296,21 +262,6 @@ body.theme-night .progress-text {
     color: #b5cea8;
 }
 
-/* --- Collapsibles --- */
-
-/* .collapsible-section {
-    // margin-bottom: 20px;
-    overflow: hidden;
-    background-color: var(--content-box-bg); //--content-bg
-    border: 1px solid var(--border-medium);
-    border-radius: 5px;
-}
-
-body.theme-night .collapsible-section {
-    background-color: var(--content-box-bg); // --sidebar-bg
-    border-color: var(--border-light);
-} */
-
 .collapsible-header {
     display: flex;
     align-items: center;
@@ -319,8 +270,8 @@ body.theme-night .collapsible-section {
     margin: 0;
     font-size: 1.2em;
     cursor: pointer;
-    background-color: var(--button-bg); // --table-header-bg --table-row-hover
-    border-bottom: 1px solid var(--border-medium); /// var(--border-light)
+    background-color: var(--button-bg);
+    border-bottom: 1px solid var(--border-medium);
     transition: background-color 0.2s;
 
     &:hover {
@@ -332,10 +283,6 @@ body.theme-night .collapsible-section {
         font-size: 1.8em;
     }
 }
-
-// .collapsible-header .arrow-left {
-// Siehe main-container .arrow-left in _ui.scss
-// }
 
 body.theme-night .collapsible-header {
     border-bottom-color: var(--border-light);
@@ -353,19 +300,17 @@ body.theme-night .collapsible-header {
     transition: transform 0.3s ease;
 }
 
-// Status: Ausgeklappt
 .collapsible-section.expanded .collapsible-header i {
     transform: rotate(180deg);
 }
 
-// Der Trigger-Status (Global)
 .collapsible-section.expanded .collapsible-content,
 .chapter.active .collapsible-content {
     display: block;
 }
 
 .collapsible-content {
-    display: none; // Standardmäßig zu (wird per JS/Klasse gesteuert)
+    display: none;
     padding: 1.5rem;
     border-left: 2px solid var(--border-medium);
 }
@@ -377,7 +322,6 @@ body.theme-night .collapsible-header {
     color: var(--text-color-light);
 }
 
-/* --- Misc Utilities --- */
 .transcript-display-box {
     max-height: 150px;
     padding: 10px;
@@ -407,15 +351,13 @@ body.theme-night .transcript-display-box {
 .status-list {
     padding: 5px 15px;
     margin-bottom: 15px;
-    background-color: var(--content-bg); // --table-row-even
+    background-color: var(--content-bg);
     border: 1px solid var(--border-medium);
     border-radius: 5px;
 }
 
 body.theme-night .status-list {
-    background-color: rgb(
-        0 0 0 / 0.2
-    ); // Leicht abgedunkelter Hintergrund im Dark Mode
+    background-color: rgb(0 0 0 / 0.2);
 }
 
 .status-item {
@@ -451,15 +393,11 @@ body.theme-night .status-list {
     font-size: 1.2rem;
 }
 
-// Status Modifiers (Flat)
-
-// OK (Grün)
 .status-item.status-ok .status-icon {
     color: var(--status-green-text);
     background-color: var(--status-green-bg);
 }
 
-// Missing (Rot)
 .status-item.status-missing {
     background-color: rgb(220 53 69 / 0.1);
 }
@@ -480,7 +418,6 @@ body.theme-night .status-item.status-missing {
     filter: grayscale(1);
 }
 
-// Animations
 @keyframes highlight-row {
     from {
         background-color: #d4edda;
@@ -509,19 +446,9 @@ body.theme-night .row-highlight {
     animation: highlight-row-dark 8s ease-out;
 }
 
-// Helper Classes
 .hidden-by-default {
     display: none;
 }
-
-/* #fixed-buttons-container {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 20px;
-} */
-
-/* --- Fixed Footer Actions --- */
 
 #fixed-buttons-container {
     position: sticky;
@@ -530,7 +457,7 @@ body.theme-night .row-highlight {
     padding: 15px;
     margin-top: 30px;
     text-align: center;
-    background-color: var(--content-bg); // --table-header-bg
+    background-color: var(--content-bg);
     border-top: 1px solid var(--border-medium);
 }
 
@@ -558,9 +485,6 @@ body.theme-night .row-highlight {
     margin-bottom: 15px;
 }
 
-/* ==========================================================================
-   UTILITY CLASSES (Für Layouts ohne Inline-Styles)
-   ========================================================================== */
 .d-flex {
     display: flex;
 }
@@ -641,7 +565,6 @@ body.theme-night .row-highlight {
     margin-bottom: 10px;
 }
 
-// .mb-15 existiert bereits weiter oben in der _ui.scss!
 .mb-20 {
     margin-bottom: 20px;
 }
@@ -666,24 +589,40 @@ body.theme-night .row-highlight {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
+
+    @include respond-to-mobile {
+        grid-template-columns: 1fr;
+    }
 }
 
 .grid-2-1-cols {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 15px;
+
+    @include respond-to-mobile {
+        grid-template-columns: 1fr;
+    }
 }
 
 .grid-1-2-cols {
     display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 15px;
+
+    @include respond-to-mobile {
+        grid-template-columns: 1fr;
+    }
 }
 
 .grid-4-custom {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1.5fr;
     gap: 15px;
+
+    @include respond-to-mobile {
+        grid-template-columns: 1fr;
+    }
 }
 
 .w-100 {
@@ -782,14 +721,6 @@ body.theme-night .row-highlight {
     justify-content: flex-end;
 }
 
-.text-center {
-    text-align: center;
-}
-
-.text-right {
-    text-align: right;
-}
-
 .pb-5 {
     padding-bottom: 5px;
 }
@@ -809,11 +740,14 @@ body.theme-night .row-highlight {
 .w-300 {
     flex: 0 0 300px;
     width: 300px;
+
+    @include respond-to-mobile {
+        flex: 1 1 100%;
+        width: 100%;
+        margin-bottom: 20px;
+    }
 }
 
-/* ==========================================================================
-   SPECIFIC ADMIN COMPONENTS (Groups & Media)
-   ========================================================================== */
 .remove-char-from-group {
     display: block;
     padding: 5px;
@@ -841,7 +775,6 @@ body.theme-night .row-highlight {
     color: var(--link-color);
 }
 
-/* Zusätzliche Utilities für die Benutzerverwaltung */
 .ml-10 {
     margin-left: 10px;
 }
@@ -875,7 +808,6 @@ body.theme-night .row-highlight {
     transform: scale(1.3);
 }
 
-/* Badges für Tabellen */
 .badge {
     padding: 2px 6px;
     font-size: 0.85em;
@@ -890,7 +822,6 @@ body.theme-night .row-highlight {
     border-radius: 3px;
 }
 
-/* Letzte Layout-Helfer für Admin-Grids & Inputs */
 .grid-auto-300 {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -921,7 +852,6 @@ body.theme-night .row-highlight {
     gap: 15px;
 }
 
-/* --- Sticky Save Button --- */
 .sticky-save-container {
     position: fixed;
     right: 30px;
@@ -969,9 +899,6 @@ body.theme-night .row-highlight {
     }
 }
 
-// =========================================
-// Modals & Overlays (Ergänzung)
-// =========================================
 .z-1050 {
     z-index: 1050;
 }

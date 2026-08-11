@@ -9,31 +9,9 @@
  * @file       resources/scss/pages/admin/_editors.scss
  */
 
-// Verwendete SCSS-Variablen:
-// (Keine spezifischen SCSS-Vars in diesem Block)
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --border-medium: Mittlere Rahmenfarbe
-// - --border-light: Helle Rahmenfarbe
-// - --table-row-even: Hintergrund für Vorschau-Boxen / Grid-Items
-// - --table-row-hover: Hintergrund bei Hover
-// - --table-header-bg: Hintergrund für Header / Infos
-// - --sidebar-bg: Hintergrund im Dark Mode
-// - --text-color: Standard Textfarbe
-// - --text-color-medium: Mittlere Textfarbe
-// - --text-color-light: Helle Textfarbe
-// - --content-bg: Hintergrund für Listen-Elemente
-// - --content-area-bg: Hintergrund für Editor-Bereiche
-// - --page-bg: Hintergrund für Bilder
-// - --button-bg: Hover-Hintergrund im Dark Mode
-// - --button-hover-bg: Hintergrund für Sortable Ghost
-// - --link-color: Akzentfarbe
-// - --characters-area-bg: Hintergrund für Charakter-Bilder
-// - --status-red-text: Fehlerfarbe
-
 @use '../../abstracts/variables' as *;
+@use '../../abstracts/mixins' as *;
 
-/* --- Comic Editor Image Preview --- */
 .image-preview-section {
     padding-top: 15px;
     margin-top: 15px;
@@ -77,7 +55,6 @@ body.theme-night .image-preview-box {
     box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
 }
 
-/* --- Modal Character Selection --- */
 #modal-charaktere-section {
     padding-top: 15px;
     margin-top: 20px;
@@ -144,12 +121,10 @@ body.theme-night .image-preview-box {
     border-color: #28a745;
 }
 
-/* --- Sitemap Editor --- */
 .add-row-container {
     margin-top: 15px;
 }
 
-/* --- Report Management --- */
 .report-meta-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -171,7 +146,6 @@ body.theme-night .diff-msg-error {
     color: #ff6b6b;
 }
 
-/* --- Character Editor (Main Page) --- */
 .char-editor-container {
     display: flex;
     flex-direction: column;
@@ -200,7 +174,7 @@ body.theme-night .diff-msg-error {
 }
 
 body.theme-night .master-char-entry {
-    background-color: rgb(0 0 0 / 0.2); // var(--sidebar-bg)
+    background-color: rgb(0 0 0 / 0.2);
     border-color: var(--border-light);
 }
 
@@ -239,7 +213,7 @@ body.theme-night .master-char-entry {
     display: flex;
     gap: 5px;
     justify-content: center;
-    margin-top: auto; // Drückt Buttons nach unten
+    margin-top: auto;
 }
 
 .character-group {
@@ -260,7 +234,7 @@ body.theme-night .character-group {
     align-items: center;
     justify-content: space-between;
     padding: 10px 15px;
-    cursor: move; // Zeigt an, dass die ganze Gruppe sortierbar ist
+    cursor: move;
     background-color: var(--table-header-bg);
     border-bottom: 1px solid var(--border-medium);
 }
@@ -281,7 +255,7 @@ body.theme-night .character-group-header {
     margin-right: 10px;
     font-size: 0.9em;
     color: var(--text-color-light);
-    content: '\2630'; // Hamburger Icon
+    content: '\2630';
 }
 
 .character-group-header .group-actions {
@@ -290,7 +264,7 @@ body.theme-night .character-group-header {
 }
 
 .character-list-container {
-    min-height: 50px; // Damit man auch in leere Gruppen droppen kann
+    min-height: 50px;
     padding: 0;
 }
 
@@ -300,7 +274,7 @@ body.theme-night .character-group-header {
     align-items: center;
     padding: 10px 15px;
     background-color: var(--content-bg);
-    border-bottom: 1px solid var(--border-medium); /// var(--border-light)
+    border-bottom: 1px solid var(--border-medium);
     transition: background-color 0.2s;
 }
 
@@ -351,7 +325,6 @@ body.theme-night .character-entry:hover {
     border-radius: 4px;
 }
 
-// SortableJS Ghost State
 .sortable-ghost {
     background-color: var(--button-hover-bg);
     border: 2px dashed var(--link-color);
@@ -363,6 +336,10 @@ body.theme-night .character-entry:hover {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 10px;
     padding: 5px;
+
+    @include respond-to-mobile {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
 }
 
 .char-selection-item {
@@ -407,6 +384,7 @@ body.theme-night .char-selection-item {
     font-size: 0.85em;
     line-height: 1.2;
     color: var(--text-color-medium);
+    overflow-wrap: break-word;
 }
 
 .char-selection-item.selected {
@@ -454,21 +432,20 @@ body.theme-night .char-selection-item.selected {
     box-shadow: 0 2px 5px rgb(0 0 0 / 0.2);
 }
 
-/* --- Image Comparison / Upload Editor --- */
 .image-comparison {
     display: flex;
-    flex-wrap: wrap; // Wichtig für Responsiveness
+    flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
-    width: 100%; // Container nimmt volle Breite des Modals
+    width: 100%;
     margin: 20px 0;
 }
 
 .image-box {
-    box-sizing: border-box; // Padding inkludieren
-    flex: 1 1 300px; // Basisbreite, darf wachsen und schrumpfen
-    min-width: 0; // CRITICAL FIX: Verhindert, dass Flex-Items überlaufen
-    max-width: 100%; // Sicherheitshalber
+    box-sizing: border-box;
+    flex: 1 1 300px;
+    min-width: 0;
+    max-width: 100%;
     padding: 15px;
     text-align: center;
     background-color: var(--content-area-bg);
@@ -490,15 +467,14 @@ body.theme-night .image-box {
     border-bottom: 1px solid var(--border-light);
 }
 
-// Gemeinsame Bild-Klasse nutzen
 .image-box img,
 .image-box .modal-preview-image {
     display: block;
-    width: 100%; // Bild passt sich der Box-Breite an
-    height: auto; // Höhe proportional skalieren
+    width: 100%;
+    height: auto;
     max-height: 100%;
     margin: 0 auto;
-    object-fit: contain; // Bildinhalt vollständig sichtbar halten
+    object-fit: contain;
     background-color: var(--page-bg);
     border: 1px solid var(--border-light);
 }
@@ -543,16 +519,12 @@ body.theme-night .image-box {
     justify-content: center;
 }
 
-// * --- Shared Admin Layout Elements (DRY) --- */
-
-// Gemeinsame Basis für Header-Container, Sektionen und Generator-Boxen
 #settings-and-actions-container,
 .collapsible-section,
 .generator-settings,
 .summary-details {
-    // padding: 20px;
     margin-bottom: 25px;
-    background-color: var(--content-box-bg); // --table-row-even
+    background-color: var(--content-box-bg);
     border: 1px solid var(--border-medium);
     border-radius: 5px;
 }
@@ -575,7 +547,7 @@ body.theme-night {
     .last-run-container,
     #last-run-container,
     .summary-details {
-        background-color: var(--content-box-bg); // --sidebar-bg
+        background-color: var(--content-box-bg);
         border-color: var(--border-light);
     }
 }

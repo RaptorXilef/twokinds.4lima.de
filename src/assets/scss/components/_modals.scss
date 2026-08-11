@@ -9,25 +9,6 @@
  * @file       resources/scss/components/_modals.scss
  */
 
-// Verwendete SCSS-Variablen:
-// - $font-mono: Monospace Schriftart für Code/Diffs
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --text-color: Standard Textfarbe
-// - --content-bg: Hintergrund für Modals/Inputs
-// - --border-dark: Dunkler Rahmen
-// - --border-light: Heller Rahmen
-// - --border-medium: Mittlerer Rahmen
-// - --sidebar-bg: Hintergrund im Dark Mode
-// - --page-bg: Seitenhintergrund (für Mix)
-// - --text-on-medium: Text auf Buttons/Headern
-// - --button-hover-bg: Hover-Hintergrund
-// - --button-bg: Button Hintergrund
-// - --content-area-bg: Hintergrund für Bild-Container
-// - --characters-area-bg: Hintergrund für Charaktere
-// - --text-color-light: Helle Textfarbe
-// - --link-color: Akzentfarbe
-
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
@@ -47,7 +28,7 @@
     background-color: rgb(0 0 0 / 0.6);
 
     @include media-tablet {
-        padding: 10px;
+        padding: 0;
     }
 }
 
@@ -65,41 +46,43 @@
     position: relative;
     z-index: 1002;
     display: flex;
-    flex-direction: column; // Wichtig für Sticky Footer
+    flex-direction: column;
     width: 100%;
-    max-width: 1045px; // Standardbreite für große Editor-Modals
+    max-width: 1045px;
     max-height: 90vh;
     margin: auto;
     font-size: 1.2em;
     color: var(--text-color);
-    background-color: var(--content-bg); // Default Light
+    background-color: var(--content-bg);
     border: 1px solid var(--border-dark);
     border-radius: 8px;
     box-shadow:
         0 4px 8px 0 rgb(0 0 0 / 0.2),
         0 6px 20px 0 rgb(0 0 0 / 0.19);
 
-    @include media-tablet {
-        max-height: 95vh;
+    @include respond-to-mobile {
+        justify-content: flex-start;
+        max-width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
         font-size: 1em;
+        border-radius: 0;
     }
 }
 
 body.theme-night .modal-content {
-    background-color: var(--sidebar-bg); // Dark Modal BG
+    background-color: var(--sidebar-bg);
     border-color: var(--border-light);
     box-shadow: 0 4px 15px rgb(0 0 0 / 0.5);
 }
 
-/* --- Advanced Modal Layout (Sticky Header/Footer) --- */
 .modal-advanced-layout {
-    overflow: hidden; // Verhindert doppelte Scrollbalken am Hauptcontainer
+    overflow: hidden;
 }
 
-// Entschachtelte Elemente von .modal-advanced-layout
 .modal-header-wrapper {
     display: flex;
-    flex-shrink: 0; // Darf nicht schrumpfen
+    flex-shrink: 0;
     align-items: center;
     justify-content: space-between;
     padding: 20px 25px;
@@ -112,8 +95,9 @@ body.theme-night .modal-content {
         font-size: 1.5em;
     }
 
-    @include media-tablet {
+    @include respond-to-mobile {
         padding: 15px;
+        border-radius: 0;
 
         h2 {
             font-size: 1.2em;
@@ -129,9 +113,9 @@ body.theme-night .modal-header-wrapper {
 .modal-scroll-content {
     flex-grow: 1;
     padding: 25px;
-    overflow-y: auto; // Hier findet das Scrollen statt
+    overflow-y: auto;
 
-    @include media-tablet {
+    @include respond-to-mobile {
         padding: 15px;
     }
 
@@ -185,21 +169,23 @@ body.theme-night .modal-scroll-content select {
         gap: 10px;
         justify-content: flex-end;
 
-        /* Leicht abgerundete Buttons exklusiv für Modals */
         .button {
             padding: 8px 16px;
             border-radius: 6px;
         }
     }
 
-    @include media-tablet {
+    @include respond-to-mobile {
         padding: 15px;
+        padding-bottom: max(15px, env(safe-area-inset-bottom));
+        border-radius: 0;
 
         .modal-buttons {
+            flex-wrap: wrap;
             width: 100%;
 
             button {
-                flex: 1;
+                flex: 1 1 100%;
             }
         }
     }
@@ -223,7 +209,7 @@ body.theme-night .modal-footer-actions {
     background: none;
     border: none;
 
-    @include media-tablet {
+    @include respond-to-mobile {
         top: 5px;
         right: 10px;
     }
@@ -246,7 +232,6 @@ body.theme-night {
     }
 }
 
-/* ... der Rest (diff-viewer, character-grids etc.) bleibt gleich ... */
 #modal-image-preview-section {
     padding-top: 15px;
     margin-top: 20px;
@@ -254,17 +239,6 @@ body.theme-night {
     border-top: 1px dashed var(--border-medium);
 }
 
-// TODO Erinnerung für Phase 3 -Konsolidierung (DRY - Don't Repeat Yourself)
-// .button-toggle-group und .report-images-container sind jetzt in admin/_forms.scss bzw. admin/_editors.scss oder globaler
-// Da diese hier noch benötigt werden für Frontend-Modals (z.B. Report),
-// sollten sie idealerweise importiert oder hier definiert werden.
-// Da sie im ursprünglichen File waren, lasse ich die Struktur für das Frontend hier
-// und referenziere auf die globale Definition (falls vorhanden) oder definiere neu.
-
-// ACHTUNG: Duplizierung vermeiden.
-// .report-images-container war vorher hier definiert.
-
-// Button Toggle Group (Wiederhergestellt und verflacht)
 .button-toggle-group {
     display: inline-flex;
     justify-content: center;
@@ -272,30 +246,30 @@ body.theme-night {
     overflow: hidden;
     border: 1px solid var(--border-medium);
     border-radius: 5px;
-}
 
-.button-toggle-group .button-toggle {
-    padding: 8px 15px;
-    margin: 0;
-    color: var(--text-color);
-    cursor: pointer;
-    background-color: var(--content-bg);
-    border: none;
-    border-right: 1px solid var(--border-medium);
-    border-radius: 0;
-}
+    .button-toggle {
+        padding: 8px 15px;
+        margin: 0;
+        color: var(--text-color);
+        cursor: pointer;
+        background-color: var(--content-bg);
+        border: none;
+        border-right: 1px solid var(--border-medium);
+        border-radius: 0;
+    }
 
-.button-toggle-group .button-toggle:last-child {
-    border-right: none;
-}
+    .button-toggle:last-child {
+        border-right: none;
+    }
 
-.button-toggle-group .button-toggle:hover {
-    background-color: var(--button-hover-bg);
-}
+    .button-toggle:hover {
+        background-color: var(--button-hover-bg);
+    }
 
-.button-toggle-group .button-toggle.active {
-    color: white;
-    background-color: #007bff;
+    .button-toggle.active {
+        color: white;
+        background-color: #007bff;
+    }
 }
 
 body.theme-night .button-toggle-group .button-toggle {
@@ -306,15 +280,12 @@ body.theme-night .button-toggle-group .button-toggle.active {
     background-color: #007bff;
 }
 
-/* --- Report Specific Details --- */
-
 .report-details-container {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-// Gemeinsame Box-Styles (Container & Viewer)
 .report-info-grid,
 .report-description-box,
 .diff-viewer {
@@ -334,26 +305,25 @@ body.theme-night .button-toggle-group .button-toggle.active {
     display: flex;
     flex-direction: column;
     gap: 4px;
-}
 
-.info-item .label {
-    font-size: 0.75em;
-    font-weight: bold;
-    color: var(--text-color-light);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
+    .label {
+        font-size: 0.75em;
+        font-weight: bold;
+        color: var(--text-color-light);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
 
-// Gemeinsame Monospace-Styles
-.info-item .value,
-.diff-viewer,
-.loading-text {
-    font-family: $font-mono;
-    font-size: 0.9em;
-}
+    .value,
+    .diff-viewer,
+    .loading-text {
+        font-family: $font-mono;
+        font-size: 0.9em;
+    }
 
-.info-item .value {
-    color: var(--text-color);
+    .value {
+        color: var(--text-color);
+    }
 }
 
 .report-description-box {
@@ -362,8 +332,6 @@ body.theme-night .button-toggle-group .button-toggle.active {
     background-color: var(--content-bg);
 }
 
-/* --- Diff Viewer & Logic --- */
-
 .diff-container {
     margin-top: 10px;
 }
@@ -371,7 +339,7 @@ body.theme-night .button-toggle-group .button-toggle.active {
 .diff-viewer {
     padding: 12px;
     white-space: pre-wrap;
-    background-color: #1e1e1e; // Fester dunkler Hintergrund für Code-Kontrast
+    background-color: #1e1e1e;
 }
 
 .diff-msg-empty,
@@ -394,24 +362,18 @@ body.theme-night .button-toggle-group .button-toggle.active {
     opacity: 0.7;
 }
 
-/* --- Images --- */
-
-// Unified Image Preview Layout
 .report-images-container,
 #modal-image-previews {
     display: flex;
     flex-flow: row nowrap;
     gap: 10px;
-
-    // justify-content: center;
-    // width: 100%;
     margin-top: 10px;
 }
 
 .report-images-container > div,
 .image-preview-box {
     display: flex;
-    flex: 1; // Beide Container wachsen gleichmäßig
+    flex: 1;
     flex-direction: column;
     width: 0;
     min-width: 0;
@@ -446,66 +408,62 @@ body.theme-night .image-preview-box img {
     border-color: var(--border-light);
 }
 
-/* --- Character Selection Grid --- */
 #modal-charaktere-section {
     padding-top: 15px;
     margin-top: 20px;
     border-top: 1px solid var(--border-medium);
-}
 
-#modal-charaktere-section .charakter-kategorie {
-    margin-bottom: 15px;
-}
+    .charakter-kategorie {
+        margin-bottom: 15px;
+    }
 
-#modal-charaktere-section h3 {
-    padding-bottom: 5px;
-    margin-bottom: 10px;
-    font-size: 1.1em;
-    border-bottom: 1px solid var(--border-medium);
+    h3 {
+        padding-bottom: 5px;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+        border-bottom: 1px solid var(--border-medium);
+    }
 }
 
 .charaktere-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+
+    .charakter-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 80px;
+        text-align: center;
+        cursor: pointer;
+
+        img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            background-color: var(--characters-area-bg);
+            border: 3px solid transparent;
+            border-radius: 50%;
+            filter: grayscale(100%);
+            transition:
+                border-color 0.3s,
+                filter 0.3s;
+        }
+
+        &.active img {
+            border-color: #007bff;
+            filter: grayscale(0%);
+        }
+
+        span {
+            margin-top: 5px;
+            font-size: 0.8em;
+            word-break: break-word;
+        }
+    }
 }
 
-.charaktere-grid .charakter-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 80px;
-    text-align: center;
-    cursor: pointer;
-}
-
-.charaktere-grid .charakter-item img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    background-color: var(--characters-area-bg);
-    border: 3px solid transparent;
-    border-radius: 50%;
-    filter: grayscale(100%);
-    transition:
-        border-color 0.3s,
-        filter 0.3s;
-}
-
-.charaktere-grid .charakter-item.active img {
-    border-color: #007bff;
-    filter: grayscale(0%);
-}
-
-.charaktere-grid .charakter-item span {
-    margin-top: 5px;
-    font-size: 0.8em;
-    word-break: break-word;
-}
-
-/* --- Report Detail & Diff View --- */
-
-// Container für Textblöcke im Modal
 .report-text-box {
     max-height: 30vh;
     padding: 15px;
@@ -525,63 +483,63 @@ body.theme-night .report-text-box {
     border-color: var(--border-light);
 }
 
-// Diff-Ansicht (Text-Vergleich)
 .diff-box {
     font-family: $font-mono;
-    white-space: pre-wrap; // Zeilenumbrüche erhalten
+    white-space: pre-wrap;
+
+    .loading-text {
+        font-style: italic;
+        color: var(--text-color-light);
+    }
+
+    ins {
+        padding: 0 2px;
+        color: #155724;
+        text-decoration: none;
+        background-color: rgb(40 167 69 / 0.2);
+        border-bottom: 2px solid #28a745;
+    }
+
+    del {
+        padding: 0 2px;
+        color: #721c24;
+        text-decoration: line-through;
+        background-color: rgb(220 53 69 / 0.2);
+    }
 }
 
-.diff-box .loading-text {
-    font-style: italic;
-    color: var(--text-color-light);
+body.theme-night .diff-box {
+    ins {
+        color: #a5d6a7;
+        background-color: rgb(40 167 69 / 0.3);
+        border-color: #2e7d32;
+    }
+
+    del {
+        color: #ef9a9a;
+        background-color: rgb(220 53 69 / 0.3);
+    }
 }
 
-.diff-box ins {
-    padding: 0 2px;
-    color: #155724;
-    text-decoration: none;
-    background-color: rgb(40 167 69 / 0.2);
-    border-bottom: 2px solid #28a745;
-}
-
-.diff-box del {
-    padding: 0 2px;
-    color: #721c24;
-    text-decoration: line-through;
-    background-color: rgb(220 53 69 / 0.2);
-}
-
-body.theme-night .diff-box ins {
-    color: #a5d6a7;
-    background-color: rgb(40 167 69 / 0.3);
-    border-color: #2e7d32;
-}
-
-body.theme-night .diff-box del {
-    color: #ef9a9a;
-    background-color: rgb(220 53 69 / 0.3);
-}
-
-// Code-Ansicht im Summernote-Style
 .summernote-code-look {
     box-sizing: border-box;
     display: block;
     width: 100%;
     min-height: 150px;
     padding: 10px;
-    font-family: $font-mono; // !important
-    font-size: 14px; // !important
+    font-family: $font-mono;
+    font-size: 14px;
     line-height: 1.4;
-    color: #d4d4d4; // !important
+    color: #d4d4d4;
     resize: vertical;
-    background-color: #1e1e1e; // !important
+    background-color: #1e1e1e;
     border: 1px solid #333;
     border-radius: 4px;
-}
 
-.summernote-code-look:focus {
-    outline: none;
-    border-color: var(--link-color);
+    &:focus {
+        outline: none;
+        border-color: var(--link-color);
+    }
 }
 
 body.theme-night .summernote-code-look {
@@ -589,7 +547,6 @@ body.theme-night .summernote-code-look {
     background-color: var(--page-bg);
 }
 
-/* --- Popup Dialog --- */
 .dialog {
     position: fixed;
     z-index: 200;
@@ -604,6 +561,11 @@ body.theme-night .summernote-code-look {
 
 body.theme-night .dialog {
     box-shadow: 0 0 5px 1px rgb(255 255 255 / 0.25);
+
+    .dialog-title {
+        color: var(--text-color);
+        background-color: var(--sidebar-bg);
+    }
 }
 
 .dialog .dialog-title {
@@ -612,31 +574,21 @@ body.theme-night .dialog {
     background-color: var(--button-hover-bg);
 }
 
-body.theme-night .dialog .dialog-title {
-    color: var(--text-color);
-    background-color: var(--sidebar-bg);
-}
-
 .dialog .dialog-body {
     padding: 10px;
 }
 
-/* Errgänzte Class */
-
 .original-transcript-box {
     margin-top: 25px;
     margin-bottom: 5px;
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
 }
 
-.original-transcript-box label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-/* ==========================================================================
-   MODAL SIZES & BEHAVIOR
-   ========================================================================== */
 .modal-content.modal-lg {
     max-width: 1080px;
 }
@@ -655,9 +607,6 @@ body.theme-night .dialog .dialog-title {
     max-height: 95vh;
 }
 
-/* ==========================================================================
-   IMAGE PREVIEW BOXES & CROPPER (aus PHTML extrahiert)
-   ========================================================================== */
 .preview-box {
     display: flex;
     flex-direction: column;

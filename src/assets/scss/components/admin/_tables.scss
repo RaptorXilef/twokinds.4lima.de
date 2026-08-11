@@ -8,28 +8,9 @@
  * @file       resources/scss/components/admin/_tables.scss
  */
 
-// Verwendete SCSS-Variablen:
-// (Keine spezifischen SCSS-Vars in diesem Block)
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --text-color: Standard Textfarbe
-// - --text-color-medium: Mittlere Textfarbe (z.B. für leere Tabellen)
-// - --text-color-light: Helle Textfarbe (für Infos)
-// - --border-medium: Mittlere Rahmenfarbe
-// - --border-light: Helle Rahmenfarbe
-// - --border-dark: Dunkle Rahmenfarbe (Dark Mode)
-// - --table-header-bg: Hintergrund für Tabellenköpfe
-// - --table-row-even: Hintergrund für gerade Zeilen (Zebra)
-// - --table-row-hover: Hintergrund bei Hover
-// - --button-bg: Button-Hintergrund (auch für Hover im Dark Mode)
-// - --button-hover-bg: Button-Hover-Hintergrund
-// - --content-bg: Hintergrund für Inputs/Pagination
-// - --link-color: Linkfarbe / Aktive Seite
-// - --page-bg: Seitenhintergrund (für Mix)
-
 @use '../../abstracts/variables' as *;
+@use '../../abstracts/mixins' as *;
 
-/* --- Table Controls --- */
 .table-controls {
     display: flex;
     flex-wrap: wrap;
@@ -37,21 +18,45 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 15px;
+
+    @include respond-to-mobile {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
 }
 
 .table-controls.actions-bar {
     gap: 15px;
     margin-bottom: 10px;
+
+    @include respond-to-mobile {
+        margin-bottom: 15px;
+    }
 }
 
 .table-controls .top-actions {
     display: flex;
     gap: 5px;
+
+    @include respond-to-mobile {
+        flex-direction: column;
+        width: 100%;
+
+        .button {
+            justify-content: center;
+            width: 100%;
+        }
+    }
 }
 
 .table-controls .marker-legend-group {
     flex-grow: 1;
     justify-content: flex-end;
+
+    @include respond-to-mobile {
+        justify-content: flex-start;
+    }
 }
 
 .marker-legend-group {
@@ -61,14 +66,12 @@
     font-size: 0.9em;
 }
 
-/* --- Data Tables --- */
 .sitemap-table-container {
     overflow-x: auto;
     border: 1px solid var(--border-medium);
     border-radius: 4px;
 }
 
-// ? BUGFIX: table-layout auf auto geändert, damit die Tabellen flexibel skalieren
 .admin-table {
     width: 100%;
     table-layout: auto;
@@ -94,12 +97,10 @@
     border-bottom: 2px solid var(--border-medium);
 }
 
-// Zebra-Striping
 .admin-table tbody tr:nth-child(even) {
     background-color: var(--table-row-even);
 }
 
-// Hover Effect
 .admin-table tbody tr:hover {
     background-color: var(--table-row-hover);
 }
@@ -117,7 +118,6 @@ body.theme-night .admin-table td {
     border-color: var(--border-dark);
 }
 
-/* Semantische Klassen für Spaltenbreiten (Ersetzt Inline-Styles) */
 .col-id {
     width: 80px;
     white-space: nowrap;
@@ -136,7 +136,8 @@ body.theme-night .admin-table td {
 .col-date {
     width: 150px;
     white-space: nowrap;
-} // BUGFIX: Verhindert das Stauchen des Datums!
+}
+
 .col-status {
     width: 100px;
     text-align: center;
@@ -183,7 +184,6 @@ body.theme-night .admin-table td {
     width: auto;
 }
 
-// Helper classes
 .comic-thumbnail {
     display: block;
     max-width: 100px;
@@ -314,7 +314,6 @@ body.theme-night .admin-table.sitemap-editor-table select:disabled {
     transition: background-color 0.2s;
 }
 
-// Transparentes Design im Dark Mode
 body.theme-night .pagination a,
 body.theme-night .pagination span {
     color: var(--text-color);
@@ -359,7 +358,6 @@ body.theme-night .pagination span:hover:not(.current-page) {
     color: var(--text-color-light);
 }
 
-/* --- Pagination --- */
 .pagination-wrapper {
     display: flex;
     flex-direction: column;
@@ -374,9 +372,6 @@ body.theme-night .pagination span:hover:not(.current-page) {
     color: var(--text-color-light);
 }
 
-// =========================================
-// Tables & Badges (Ergänzung)
-// =========================================
 .dt-per-page-select {
     padding: 6px 10px;
     color: var(--text-color);

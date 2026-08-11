@@ -1,3 +1,4 @@
+import { MobileMenu } from '../frontend/ui/MobileMenu.js';
 import { SessionTimer } from '../shared/modules/SessionTimer.js';
 import { ThemeManager } from '../shared/ui/ThemeManager.js';
 import { Api } from './core/Api.js';
@@ -55,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const globalUI = new GlobalUI(tracker);
 
     try {
+        new MobileMenu(); // FIX: Hamburger Menü Logik laden!
         new TabManager(api);
         new ThemeManager();
         new SessionTimer(api, 'admin-session-timer', { notifications });
@@ -109,27 +111,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     paginationContainerId: 'comic-pagination',
                 });
             }
+
             if (tab === 'section-reports' && reportManager) {
                 reportManager.initTableLogic();
             }
+
             if (tab === 'section-groups') {
                 if (!groupEditor) {
                     const { GroupEditor } = await import('./modules/GroupEditor.js');
                     groupEditor = new GroupEditor(api, notifications, tracker);
                 }
             }
+
             if (tab === 'section-upload') {
                 const { MassUploadManager } = await import('./modules/MassUploadManager.js');
                 new MassUploadManager(api, notifications, tracker);
             }
+
             if (tab === 'section-media') {
                 const { MediaGallery } = await import('./modules/MediaGallery.js');
                 new MediaGallery(api, modalManager, notifications, tracker);
             }
+
             if (tab === 'section-mails') {
                 const { MailManager } = await import('./modules/MailManager.js');
                 new MailManager(api, modalManager, notifications, tracker);
             }
+
             if (tab === 'section-backup') {
                 const { BackupManager } = await import('./modules/BackupManager.js');
                 new BackupManager(api, modalManager, notifications);
