@@ -110,6 +110,11 @@ export class ThemeManager {
                 localStorage.setItem('themeViewMode', viewMode);
                 applyViewMode(viewMode);
                 updateDesktopButton();
+
+                // FIX: Menü-Status & Backdrop hart zurücksetzen, wenn der Ansichts-Modus wechselt
+                this.body.classList.remove('menu-open');
+                const backdrop = document.getElementById('mobile-menu-backdrop');
+                if (backdrop) backdrop.classList.remove('is-active');
             });
 
             updateDesktopButton();
