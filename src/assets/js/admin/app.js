@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         new TabManager(api);
         new ThemeManager();
-        new SessionTimer(api, 'admin-session-timer', notifications);
+        new SessionTimer(api, 'admin-session-timer', { notifications });
     } catch (err) {
         console.error('[AdminApp] Fehler bei der Core-UI Initialisierung:', err);
     }

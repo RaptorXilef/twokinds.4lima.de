@@ -107,15 +107,18 @@ export class SessionTimer {
         const seconds = remaining % 60;
         const formatted = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-        let colorClass = '';
+        const isDark = document.body.classList.contains('theme-night');
+        let colorStyle = '';
+
         if (remaining <= this.warningThreshold) {
-            colorClass = 'color: var(--status-red-text); font-weight: bold;';
+            // Rot (Gefahr) - Helleres Rot für Night Theme
+            colorStyle = `color: ${isDark ? '#ff6b6b' : '#dc3545'} !important; font-weight: bold;`;
         } else if (remaining <= 300) {
-            // Unter 5 Minuten -> Orange
-            colorClass = 'color: var(--status-orange-text); font-weight: bold;';
+            // Orange (Warnung)
+            colorStyle = `color: ${isDark ? '#ffc107' : '#d39e00'} !important; font-weight: bold;`;
         }
 
-        this.timerElement.innerHTML = `<i class="fa-solid fa-clock"></i> <span style="${colorClass}">${formatted}</span>`;
+        this.timerElement.innerHTML = `<i class="fa-solid fa-clock" style="${colorStyle}"></i> <span style="${colorStyle}">${formatted}</span>`;
     }
 
     async resetTimer() {
@@ -161,8 +164,12 @@ export class SessionTimer {
         this.modalElement.style.display = 'none';
 
         const endpoint = this.isFrontend ? 'frontend_logout' : 'admin_logout';
-        // Wir warten den API Aufruf ab, ignorieren aber bewusst evtl. Fehler (z.B. wenn schon abgelaufen)
-        await this.api.post(endpoint);
+        try {
+            // Logout auslösen, aber absichtlich nicht auf Fehler prüfen
+            await this.api.post(endpoint);
+        } catch (_e) {
+            // Ignorieren, da wir die Seite gleich eh neu laden
+        }
 
         if (this.isFrontend) {
             window.location.reload();
