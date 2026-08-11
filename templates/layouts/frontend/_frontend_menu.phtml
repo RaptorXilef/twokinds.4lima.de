@@ -12,8 +12,9 @@ use App\Contracts\System\AssetHelperInterface;
  * @var string $currentUserRole
  */
 ?>
-
-<!-- Die Sidebar (Navigation) -->
+<!-- Das Backdrop rutscht nach innen, damit der Stacking-Context korrekt ist -->
+<div id="mobile-menu-backdrop"
+     class="mobile-backdrop"></div>
 <aside class="l-sidebar">
     <div class="l-sidebar__inner">
         <div class="social-icons-container">

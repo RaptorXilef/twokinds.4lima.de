@@ -1,7 +1,7 @@
 export class ThemeManager {
     constructor() {
         this.body = document.body;
-        this.html = document.documentElement; // FIX: Das HTML-Tag (Root)
+        this.html = document.documentElement; // Root Element <html>
         this.toggleBtn = document.querySelector('#toggle_lights');
         this.desktopToggleBtn = document.querySelector('#toggle_desktop_mode');
         this.init();
@@ -42,7 +42,7 @@ export class ThemeManager {
                 isDark = !this.body.classList.contains('theme-night');
                 try {
                     localStorage.setItem('themePref', isDark ? '2' : '1');
-                    // biome-ignore lint/suspicious/noDocumentCookie: CookieStore API lacks full cross-browser support (Firefox/Safari)
+                    // biome-ignore lint/suspicious/noDocumentCookie: CookieStore API lacks cross-browser support
                     document.cookie = `themePref=${isDark ? '2' : '1'}; max-age=31536000; path=/; SameSite=Lax`;
                 } catch (err) {
                     console.error('[ThemeManager] Konnte Theme-Einstellung nicht speichern:', err);
@@ -51,26 +51,20 @@ export class ThemeManager {
             });
         }
 
-        if (window.matchMedia) {
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                let currentPref = null;
-                try {
-                    currentPref = localStorage.getItem('themePref');
-                } catch (_err) {}
-                if (!currentPref) {
-                    this.applyTheme(e.matches, true);
-                }
-            });
-        }
+        // 2. Ansicht Toggle (Desktop/Mobile)
+        let viewMode = localStorage.getItem('themeViewMode') || 'auto';
 
-        // 2. Mobile/Desktop Toggle Logik
-        let forceDesktop = false;
-        try {
-            forceDesktop = localStorage.getItem('forceDesktop') === 'true';
-        } catch (_err) {}
+        // Alte Leichen im Cache aufräumen
+        localStorage.removeItem('forceDesktop');
 
-        // FIX: Die Klasse muss ans HTML gebunden werden, damit :root:not(.force-desktop) funktioniert
-        if (forceDesktop) this.html.classList.add('force-desktop');
+        const applyViewMode = (mode) => {
+            this.html.classList.remove('force-desktop', 'force-mobile');
+            if (mode === 'desktop') this.html.classList.add('force-desktop');
+            if (mode === 'mobile') this.html.classList.add('force-mobile');
+        };
+
+        // Aufruf bereits durch FOUC Script im Head passiert, hier nur Fallback
+        applyViewMode(viewMode);
 
         if (this.desktopToggleBtn) {
             this.desktopToggleBtn.style.flexFlow = 'row nowrap';
@@ -79,19 +73,44 @@ export class ThemeManager {
             this.desktopToggleBtn.style.gap = '8px';
             this.desktopToggleBtn.style.padding = '10px 0';
 
+            const updateDesktopButton = () => {
+                let isCurrentlyMobile = false;
+                if (this.html.classList.contains('force-mobile')) isCurrentlyMobile = true;
+                else if (this.html.classList.contains('force-desktop')) isCurrentlyMobile = false;
+                else isCurrentlyMobile = window.matchMedia('(max-width: 860px)').matches;
+
+                // Button bietet immer das GEGENTEIL der aktuellen Ansicht an
+                if (isCurrentlyMobile) {
+                    this.desktopToggleBtn.innerHTML =
+                        '<i class="fa-solid fa-desktop" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Desktop-Ansicht</span>';
+                } else {
+                    this.desktopToggleBtn.innerHTML =
+                        '<i class="fa-solid fa-mobile-screen" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Mobile-Ansicht</span>';
+                }
+            };
+
             this.desktopToggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                forceDesktop = !this.html.classList.contains('force-desktop');
-                if (forceDesktop) {
-                    this.html.classList.add('force-desktop');
-                    localStorage.setItem('forceDesktop', 'true');
-                } else {
-                    this.html.classList.remove('force-desktop');
-                    localStorage.setItem('forceDesktop', 'false');
-                }
-                this.updateDesktopButtonUI(forceDesktop);
+                let isCurrentlyMobile = false;
+
+                if (this.html.classList.contains('force-mobile')) isCurrentlyMobile = true;
+                else if (this.html.classList.contains('force-desktop')) isCurrentlyMobile = false;
+                else isCurrentlyMobile = window.matchMedia('(max-width: 860px)').matches;
+
+                // Toggle logic
+                viewMode = isCurrentlyMobile ? 'desktop' : 'mobile';
+
+                localStorage.setItem('themeViewMode', viewMode);
+                applyViewMode(viewMode);
+                updateDesktopButton();
             });
-            this.updateDesktopButtonUI(forceDesktop);
+
+            updateDesktopButton();
+
+            // Wenn das Fenster skaliert wird und der Modus auf Auto steht, Button updaten
+            window.matchMedia('(max-width: 860px)').addEventListener('change', () => {
+                if (viewMode === 'auto') updateDesktopButton();
+            });
         }
     }
 
@@ -99,40 +118,21 @@ export class ThemeManager {
         if (doTransition) this.body.classList.add('transitioning');
         if (isDark) {
             this.body.classList.add('theme-night');
-            this.updateButtonUI(true);
+            if (this.toggleBtn)
+                this.toggleBtn.innerHTML =
+                    '<i class="fa-solid fa-sun" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Light Mode</span>';
         } else {
             this.body.classList.remove('theme-night');
-            this.updateButtonUI(false);
+            if (this.toggleBtn)
+                this.toggleBtn.innerHTML =
+                    '<i class="fa-solid fa-moon" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Dark Mode</span>';
         }
         if (doTransition) {
             window.setTimeout(() => {
-                this.body.classList.remove('transitioning');
-                this.body.classList.remove('preload');
+                this.body.classList.remove('transitioning', 'preload');
             }, 300);
         } else {
             this.body.classList.remove('preload');
-        }
-    }
-
-    updateButtonUI(isDark) {
-        if (!this.toggleBtn) return;
-        if (isDark) {
-            this.toggleBtn.innerHTML =
-                '<i class="fa-solid fa-sun" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Light Mode</span>';
-        } else {
-            this.toggleBtn.innerHTML =
-                '<i class="fa-solid fa-moon" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Dark Mode</span>';
-        }
-    }
-
-    updateDesktopButtonUI(forceDesktop) {
-        if (!this.desktopToggleBtn) return;
-        if (forceDesktop) {
-            this.desktopToggleBtn.innerHTML =
-                '<i class="fa-solid fa-mobile-screen" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Mobile-Ansicht</span>';
-        } else {
-            this.desktopToggleBtn.innerHTML =
-                '<i class="fa-solid fa-desktop" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">PC-Ansicht erzwingen</span>';
         }
     }
 }

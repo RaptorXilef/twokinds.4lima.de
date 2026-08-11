@@ -14,23 +14,29 @@
 
 // Media Query für High-Res Mobile Devices
 @mixin media-retina-mobile {
-    @media only screen and (resolution >= 2dppx) and (width <= 640px) {
+    @media only screen and (resolution >=2dppx) and (width <=640px) {
         @content;
     }
 }
 
 @mixin media-tablet {
-    @media (width <= 768px) {
+    @media (width <=768px) {
         @content;
     }
 }
 
-// Responsives Mixin inkl. "Desktop erzwingen" Toggle (force-desktop)
+// Responsives Mixin mit bidirektionalem Toggle (.force-desktop & .force-mobile)
 @mixin respond-to-mobile {
-    @media (width <= 860px) {
+    // Reguläres Handy (Wenn NICHT Desktop erzwungen wird)
+    @media (max-width: 860px) {
         :root:not(.force-desktop) & {
             @content;
         }
+    }
+
+    // Erzwingt die Mobile-Ansicht am PC
+    :root.force-mobile & {
+        @content;
     }
 }
 

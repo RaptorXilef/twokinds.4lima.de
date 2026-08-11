@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 /**
  * @var string $adminUser
+ * @var array  $perms
+ * @var bool   $canManageUsers
+ * @var string $baseUrl
  */
 ?>
-
+<div id="mobile-menu-backdrop"
+     class="mobile-backdrop"></div>
 <aside class="l-sidebar">
     <div class="l-sidebar__inner">
         <div class="session-timer">
@@ -63,17 +67,14 @@ declare(strict_types=1);
             <span class="menu-label">Account</span>
             <a href="<?php echo $baseUrl ?? '/'; ?>/" target="_blank">Zur Webseite</a>
 
-            <!-- Session Timer -->
             <div id="admin-session-timer"
                  class="session-timer">
                 <i class="fa-solid fa-clock"></i> 30:00
             </div>
 
             <a href="#" id="admin-logout-btn" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Abmelden</a>
-            <a id="toggle_lights" class="theme" href="#" title="Design umschalten">
-                <!-- JS lädt hier sofort das richtige Icon rein -->
-            </a>
-
+            <a id="toggle_lights" class="theme" href="#" title="Design umschalten"></a>
+            <a id="toggle_desktop_mode" class="theme" href="#" title="Ansicht umschalten"></a>
         </nav>
     </div>
 </aside>

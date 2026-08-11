@@ -79,16 +79,12 @@ use App\Contracts\System\AssetHelperInterface;
         if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
         else document.body.classList.remove('theme-night');
 
-        // Desktop-Ansicht sofort setzen, um FOUC zu vermeiden
-        var fd = localStorage.getItem('forceDesktop');
-        if (fd === 'true') document.documentElement.classList.add('force-desktop');
+        var vm = localStorage.getItem('themeViewMode');
+        if (vm === 'desktop') document.documentElement.classList.add('force-desktop');
+        if (vm === 'mobile') document.documentElement.classList.add('force-mobile');
     })();
 
     </script>
-
-    <!-- Abdunklung für das mobile Hamburger Menü -->
-    <div id="mobile-menu-backdrop"
-         class="mobile-backdrop"></div>
 
     <div class="l-page-wrapper">
         <header class="l-header">
@@ -107,4 +103,3 @@ use App\Contracts\System\AssetHelperInterface;
         </header>
 
         <div class="l-main-content">
-            <!-- HINWEIS: .l-content-box wird im Admin-Bereich direkt in der dashboard.phtml oder login.phtml geöffnet! -->
