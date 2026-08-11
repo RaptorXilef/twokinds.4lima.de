@@ -124,6 +124,7 @@ final class SystemBootstrapper
             $appRoot . '/config/backup.php',
             $appRoot . '/config/storage.php',
             $appRoot . '/config/secrets.php',
+            // ! Nicht vergessen neue Configs in die .github/workflows/deploy.yml einzutragen!
             $appRoot . '/config/config.local.php',
         ];
 

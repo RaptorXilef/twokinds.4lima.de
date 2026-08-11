@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         safeInit('ProfileManager', () => new ProfileManager(api));
 
         // Initialisierung des Timers für das Frontend
-        safeInit('SessionTimer', () => new SessionTimer(api, 'frontend-session-timer'));
+        safeInit('SessionTimer', () => new SessionTimer(api, 'frontend-session-timer', { isFrontend: true }));
     }
 
     console.info('[Frontend] ES6 Core Architektur erfolgreich hochgefahren.');

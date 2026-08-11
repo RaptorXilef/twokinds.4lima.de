@@ -11,15 +11,15 @@ export class AuthManager {
             btnLogout.addEventListener('click', async (e) => {
                 e.preventDefault();
                 try {
-                    const json = await this.api.post('frontend_logout');
-                    if (json.success) {
-                        // Template Literal verwenden
-                        window.location.href = `${this.api.baseUrl}/`;
-                    } else {
-                        console.warn('[AuthManager] Logout vom Server abgelehnt:', json.error);
-                    }
+                    // Wir feuern den Logout an die API...
+                    await this.api.post('frontend_logout');
                 } catch (err) {
-                    console.error('[AuthManager] Unerwarteter Fehler beim Logout:', err);
+                    // Falls der Server meckert (z.B. Session schon tot), ignorieren wir das einfach.
+                    console.warn('[AuthManager] API-Fehler beim Logout ignoriert:', err);
+                } finally {
+                    // WICHTIG: Das hier MUSS immer ausgeführt werden, egal was der Server sagt!
+                    // Hard-Reload zwingt die Middleware dazu, uns aus dem System zu werfen.
+                    window.location.reload();
                 }
             });
         }

@@ -177,7 +177,8 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             try {
                 await api.post('admin_logout');
-                window.location.reload();
+                // Wir zwingen den Browser zur Login-Seite, EGAL was die API antwortet!
+                window.location.href = `${api.baseUrl}/admin/login`;
             } catch (err) {
                 console.error('[AdminApp] Logout fehlgeschlagen:', err);
                 notifications.show('Abmeldung fehlgeschlagen. Server nicht erreichbar.', 'error');
