@@ -43,12 +43,11 @@ jobs:
 
       - name: 📝 Config-Dateien zu .default.php umbenennen
         run: |
-          cd config
-          [ -f config.php ] && mv config.php config.default.php
-          [ -f email.php ] && mv email.php email.default.php
-          [ -f storage.php ] && mv storage.php storage.default.php
-          [ -f backup.php ] && mv backup.php backup.default.php
-          [ -f secrets.php ] && mv secrets.php secrets.default.php
+          if [ -f config/backup.php ]; then mv config/backup.php config/backup.default.php; fi
+          if [ -f config/config.php ]; then mv config/config.php config/config.default.php; fi
+          if [ -f config/email.php ]; then mv config/email.php config/email.default.php; fi
+          if [ -f config/secrets.php ]; then mv config/secrets.php config/secrets.default.php; fi
+          if [ -f config/storage.php ]; then mv config/storage.php config/storage.default.php; fi
 
       - name: 🌐 Dateien per FTP hochladen
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0

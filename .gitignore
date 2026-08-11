@@ -80,8 +80,8 @@ ToDo*.md
 .env.*.local
 !/.env.example
 config/secrets/*
-/config/secrets.php
-/config/_dev.local.php
+config/secrets.php
+config/_dev.local.php
 *.local*
 
 # ==============================================================================
