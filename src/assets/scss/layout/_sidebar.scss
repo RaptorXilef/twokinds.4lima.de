@@ -15,7 +15,7 @@
         position: fixed;
         top: 0;
         left: -300px;
-        z-index: 9999;
+        z-index: 10001; /* FIX: Höher als Backdrop (10000) */
         display: block;
         width: 280px;
         height: 100vh;
@@ -47,7 +47,6 @@
     }
 }
 
-/* FIX: Separat deklarieren, damit das Nesting mit dem :root Mixin nicht bricht! */
 body.menu-open .l-sidebar {
     @include respond-to-mobile {
         left: 0;
@@ -59,7 +58,7 @@ body.menu-open .l-sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 9998;
+    z-index: 10000; /* FIX: Liegt sicher unter der Sidebar */
     display: none;
     width: 100vw;
     height: 100vh;

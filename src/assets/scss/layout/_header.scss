@@ -14,8 +14,8 @@
 .l-header {
     &__mobile-bar {
         display: none;
-        justify-content: space-between; // Timer Links, Logo Mitte, Menü Rechts
         align-items: center;
+        justify-content: space-between;
         padding: 10px 15px;
         color: var(--text-color);
         background: var(--header-bg);
@@ -26,47 +26,48 @@
         }
 
         button {
+            width: 60px;
             font-size: 1.5em;
             color: var(--text-color);
+            text-align: left; /* FIX: Menü-Button linksbündig */
             cursor: pointer;
             background: transparent;
             border: none;
-            width: 60px;
-            text-align: right;
         }
 
         .mobile-logo {
+            flex: 1; /* FIX: Zentriert das Logo im restlichen Platz */
             font-size: 1.2em;
             font-weight: bold;
             text-align: center;
-            flex: 1;
         }
 
         .session-timer-mobile {
             width: 60px;
-            text-align: left;
+            text-align: right; /* FIX: Uhr rechtsbündig */
         }
     }
 
     &__banner {
         position: relative;
         z-index: 99;
-        width: 100%;
-        max-width: 1099px;
-        height: auto;
-        aspect-ratio: 1099 / 314;
+        width: 1099px;
+        height: 314px;
         padding-top: 10px;
         margin-left: -10px;
         overflow: hidden;
         text-indent: 105%;
         white-space: nowrap;
         background: transparent
-            url('../images/theme/banners/day.webp?c=20260804') center top
-            no-repeat;
-        background-size: cover;
+            url('../images/theme/banners/day.webp?c=20260804') 0 10px no-repeat;
 
         @include respond-to-mobile {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1099 / 314;
             margin-left: 0;
+            background-position: center top;
+            background-size: cover;
         }
 
         @at-root body.theme-night & {

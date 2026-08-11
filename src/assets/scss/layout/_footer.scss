@@ -59,18 +59,21 @@
         justify-content: center;
         width: 100%;
         margin-top: 5px;
-        overflow: hidden; // FIX: Verhindert Scrollen am Rand
+        overflow: hidden;
     }
 
     &__characters-inner {
         display: flex;
         align-items: flex-end;
         justify-content: center;
-        height: 89px;
         width: 100%;
+        height: 89px;
 
         @include respond-to-mobile {
-            height: 60px; // FIX: Etwas höher als vorher für bessere Sichtbarkeit
+            /* FIX: Fluide Skalierung auf dem Smartphone */
+            height: 13vw;
+            min-height: 40px;
+            max-height: 89px;
         }
 
         a {
@@ -78,20 +81,24 @@
             z-index: 1;
             display: block;
             height: 100%;
-            margin: 0 -1.5vw; // FIX: Fluide Überlappung, passt sich flexibel an Screen an
+
+            /* FIX: Desktop behält exakt seinen Original-Wert! */
+            margin: 0 -4.5px;
             transform-origin: bottom center;
             transition:
                 transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
                 filter 0.2s,
                 z-index 0.2s;
-            flex: 0 1 auto;
-            min-width: 0;
+
+            @include respond-to-mobile {
+                /* FIX: Proportionales Überlappen auf dem Handy */
+                margin: 0 -0.5vw;
+            }
 
             img {
                 display: block;
-                width: 100%;
+                width: auto;
                 height: 100%;
-                object-fit: contain; // FIX: Bild füllt den <a> Rahmen sauber aus ohne zu zerquetschen
                 filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.15));
             }
 

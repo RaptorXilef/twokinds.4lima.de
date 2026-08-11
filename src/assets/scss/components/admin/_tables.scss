@@ -21,8 +21,8 @@
 
     @include respond-to-mobile {
         flex-direction: column;
-        align-items: stretch;
         gap: 10px;
+        align-items: stretch;
     }
 }
 
@@ -44,8 +44,8 @@
         width: 100%;
 
         .button {
-            width: 100%;
             justify-content: center;
+            width: 100%;
         }
     }
 }
@@ -67,10 +67,10 @@
 }
 
 .sitemap-table-container {
+    width: 100%;
     overflow-x: auto;
     border: 1px solid var(--border-medium);
     border-radius: 4px;
-    width: 100%;
 }
 
 .admin-table {
@@ -362,10 +362,9 @@ body.theme-night .pagination span:hover:not(.current-page) {
 // FIX: Von Column auf Row, damit sich Pagination-Buttons nebeneinander stapeln!
 .pagination-wrapper {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-flow: row wrap;
     gap: 5px;
+    justify-content: center;
     margin: 15px 0;
 }
 
@@ -443,8 +442,8 @@ body.theme-night .pagination span:hover:not(.current-page) {
 
 .report-desc-preview {
     max-height: 2.5em;
-    font-size: 0.85em;
     overflow: auto;
+    font-size: 0.85em;
     scrollbar-width: thin;
     border: 1px solid var(--border-light);
     border-radius: 3px;

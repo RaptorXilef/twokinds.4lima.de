@@ -33,9 +33,9 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
 } elseif (isset($character) && \is_object($character)) {
     $metaType = 'profile';
     // Bevorzuge das große Hauptbild, falle sonst auf das kleine Avatar-Bild zurück
-    if (!empty($character->mainPic)) {
+    if (! empty($character->mainPic)) {
         $metaImage = "{$baseUrl}/assets/images/characters/portraits/" . $character->mainPic;
-    } elseif (!empty($character->picUrl)) {
+    } elseif (! empty($character->picUrl)) {
         $metaImage = "{$baseUrl}/assets/images/characters/profiles/" . $character->picUrl;
     }
 }
@@ -129,20 +129,22 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
 
     </script>
 
+    <div id="mobile-menu-backdrop"
+         class="mobile-backdrop"></div>
+
     <div class="l-page-wrapper">
         <header class="l-header">
-            <!-- Mobile Navigation Bar -->
             <div class="l-header__mobile-bar">
-                <div class="session-timer-mobile js-session-timer"
-                     style="font-family: monospace; font-weight: bold;">
-                    <!-- Timer wird durch SessionTimer.js eingefügt -->
-                </div>
-                <span class="mobile-logo">Twokinds auf Deutsch</span>
                 <button type="button"
                         id="mobile-menu-toggle"
                         aria-label="Menü">
                     <i class="fa-solid fa-bars"></i>
                 </button>
+                <span class="mobile-logo">Twokinds auf Deutsch</span>
+                <div class="session-timer-mobile js-session-timer"
+                     style="font-family: monospace; font-weight: bold;">
+                    <!-- Timer -->
+                </div>
             </div>
 
             <div class="l-header__banner"
