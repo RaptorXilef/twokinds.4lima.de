@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.18.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.18.1...v6.18.2) (2026-08-11)
+
+### 🐛 Bug Fixes
+
+* **core:** Refactor superadmin logic to support multiple dev accounts and config overrides ([b2f6e24](https://github.com/RaptorXilef/twokinds.4lima.de/commit/b2f6e2490ecf5f9d7b4fb6114a1efb978660ea30))
+* **core:** Relocate dynamic base_url resolution from config to Config implementation ([810b9fb](https://github.com/RaptorXilef/twokinds.4lima.de/commit/810b9fb95ebe35f02fa2fe382decbfe97d81ee04))
+
 ## [6.18.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.18.0...v6.18.1) (2026-08-11)
 
 ### 🐛 Bug Fixes
