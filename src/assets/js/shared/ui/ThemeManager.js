@@ -41,6 +41,7 @@ export class ThemeManager {
                 isDark = !this.body.classList.contains('theme-night');
                 try {
                     localStorage.setItem('themePref', isDark ? '2' : '1');
+                    // biome-ignore lint/suspicious/noDocumentCookie: CookieStore API lacks full cross-browser support (Firefox/Safari)
                     document.cookie = `themePref=${isDark ? '2' : '1'}; max-age=31536000; path=/; SameSite=Lax`;
                 } catch (err) {
                     console.error('[ThemeManager] Konnte Theme-Einstellung nicht speichern:', err);

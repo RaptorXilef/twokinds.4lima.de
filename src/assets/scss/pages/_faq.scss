@@ -10,24 +10,8 @@
  * @file       resources/scss/pages/_faq.scss
  */
 
-// Verwendete SCSS-Variablen:
-// (Keine spezifischen SCSS-Vars in diesem Block)
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --border-medium: Mittlere Rahmenfarbe
-// - --border-light: Helle Rahmenfarbe
-// - --text-color: Standard Textfarbe
-// - --text-color-light: Helle Textfarbe (für Pfeile)
-// - --table-row-hover: Hintergrund für Header (Light Mode)
-// - --table-row-even: Hintergrund für Header (Night Mode)
-// - --button-bg: Hintergrund für Hover (Night Mode)
-// - --button-hover-bg: Hintergrund für Hover (Light Mode)
-// - --text-on-medium: Kontrastfarbe für Text auf farbigen Hintergründen
-
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
-
-/* --- FAQ Page (Accordion) --- */
 
 .faq-container {
     max-width: 800px;
@@ -60,9 +44,9 @@ body.theme-night .faq-item {
         background-color: var(--button-hover-bg);
     }
 
-    @include media-retina-mobile {
-        padding: 18px 20px;
-        font-size: 1.2em;
+    @include respond-to-mobile {
+        padding: 18px 15px;
+        font-size: 1.1em;
     }
 }
 
@@ -74,42 +58,41 @@ body.theme-night .faq-question {
     }
 }
 
-// Pfeil-Icon (Rechtszeigendes Dreieck)
 .faq-question::after {
     display: inline-block;
     font-size: 0.8em;
     color: var(--text-color-light);
-    content: '\25B6'; // ▶
+    content: '\25B6';
     transition: transform 1.5s ease;
 }
 
-// Active State: Pfeil drehen (90 Grad nach unten)
 .faq-item.active .faq-question::after {
     transform: rotate(90deg);
 }
 
-// Der Grid-Container (Das Fenster)
 .faq-answer {
     display: grid;
-    grid-template-rows: 0fr; // Schließt das Grid auf exakt 0px
+    grid-template-rows: 0fr;
     overflow: hidden;
     color: var(--text-color);
     transition: grid-template-rows 1.5s ease-in-out;
 }
 
 .faq-item.active .faq-answer {
-    grid-template-rows: 1fr; // Öffnet das Grid auf Inhaltsgröße
+    grid-template-rows: 1fr;
 }
 
-// Der Inhalts-Wrapper
 .faq-answer-inner {
     box-sizing: border-box;
-    min-height: 0; // Wichtig für Grid-Kollaps
-    padding: 0 25px; // NUR horizontales Padding (löst keinen Grafikbug aus)
+    min-height: 0;
+    padding: 0 25px;
     border-left: 2px solid var(--border-medium);
+
+    @include respond-to-mobile {
+        padding: 0 15px;
+    }
 }
 
-// Abstände innerhalb der Antwort
 .faq-answer p {
     padding: 0;
     margin: 0 0 15px;
@@ -124,7 +107,6 @@ body.theme-night .faq-question {
     }
 }
 
-/* VORHANDENES BEIBEHALTEN, FOLGENDES HINZUFÜGEN: */
 .accordion-trigger {
     display: flex;
     align-items: center;
@@ -137,12 +119,20 @@ body.theme-night .faq-question {
     cursor: pointer;
     background: var(--table-row-even);
     border: none;
+
+    @include respond-to-mobile {
+        padding: 15px;
+    }
 }
 
 .accordion-content {
     display: none;
     padding: 20px;
     border-top: 1px solid var(--border-medium);
+
+    @include respond-to-mobile {
+        padding: 15px;
+    }
 }
 
 body.theme-night .accordion-content {
