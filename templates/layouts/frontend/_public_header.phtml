@@ -110,6 +110,10 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
         var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
         else document.body.classList.remove('theme-night');
+
+        // Desktop-Ansicht sofort setzen, um FOUC zu vermeiden
+        var fd = localStorage.getItem('forceDesktop');
+        if (fd === 'true') document.documentElement.classList.add('force-desktop');
     })();
 
     </script>

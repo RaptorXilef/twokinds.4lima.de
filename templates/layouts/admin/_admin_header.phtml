@@ -78,12 +78,30 @@ use App\Contracts\System\AssetHelperInterface;
         var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
         else document.body.classList.remove('theme-night');
+
+        // Desktop-Ansicht sofort setzen, um FOUC zu vermeiden
+        var fd = localStorage.getItem('forceDesktop');
+        if (fd === 'true') document.documentElement.classList.add('force-desktop');
     })();
 
     </script>
 
+    <!-- Abdunklung für das mobile Hamburger Menü -->
+    <div id="mobile-menu-backdrop"
+         class="mobile-backdrop"></div>
+
     <div class="l-page-wrapper">
         <header class="l-header">
+            <!-- Mobile Navigation Bar (Nur auf Handys sichtbar) -->
+            <div class="l-header__mobile-bar">
+                <button type="button"
+                        id="mobile-menu-toggle"
+                        aria-label="Menü">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <span class="mobile-logo">Twokinds Admin</span>
+            </div>
+
             <div class="l-header__banner"
                  id="banner-lights-off"></div>
         </header>

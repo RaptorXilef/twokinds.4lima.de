@@ -13,7 +13,7 @@
 @use '../abstracts/mixins' as *;
 
 // Verhindert horizontales Scrollen auf Smartphones, damit die Wischgeste sauber funktioniert!
-html,
+// FIX: Nur auf body angewendet, damit html (:root) nicht bricht
 body {
     @include respond-to-mobile {
         overflow-x: hidden;

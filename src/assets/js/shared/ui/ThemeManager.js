@@ -1,6 +1,7 @@
 export class ThemeManager {
     constructor() {
         this.body = document.body;
+        this.html = document.documentElement; // FIX: Das HTML-Tag (Root)
         this.toggleBtn = document.querySelector('#toggle_lights');
         this.desktopToggleBtn = document.querySelector('#toggle_desktop_mode');
         this.init();
@@ -68,7 +69,8 @@ export class ThemeManager {
             forceDesktop = localStorage.getItem('forceDesktop') === 'true';
         } catch (_err) {}
 
-        if (forceDesktop) this.body.classList.add('force-desktop');
+        // FIX: Die Klasse muss ans HTML gebunden werden, damit :root:not(.force-desktop) funktioniert
+        if (forceDesktop) this.html.classList.add('force-desktop');
 
         if (this.desktopToggleBtn) {
             this.desktopToggleBtn.style.flexFlow = 'row nowrap';
@@ -79,12 +81,12 @@ export class ThemeManager {
 
             this.desktopToggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                forceDesktop = !this.body.classList.contains('force-desktop');
+                forceDesktop = !this.html.classList.contains('force-desktop');
                 if (forceDesktop) {
-                    this.body.classList.add('force-desktop');
+                    this.html.classList.add('force-desktop');
                     localStorage.setItem('forceDesktop', 'true');
                 } else {
-                    this.body.classList.remove('force-desktop');
+                    this.html.classList.remove('force-desktop');
                     localStorage.setItem('forceDesktop', 'false');
                 }
                 this.updateDesktopButtonUI(forceDesktop);

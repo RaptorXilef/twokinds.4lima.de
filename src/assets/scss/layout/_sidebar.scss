@@ -23,11 +23,6 @@
         overflow-y: auto;
         background: var(--sidebar-bg);
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-        body.menu-open & {
-            left: 0;
-            box-shadow: 2px 0 15px rgb(0 0 0 / 0.5);
-        }
     }
 
     &__inner {
@@ -52,7 +47,14 @@
     }
 }
 
-/* NEU: Das verdunkelte Overlay, wenn das Mobile-Menü offen ist */
+/* FIX: Separat deklarieren, damit das Nesting mit dem :root Mixin nicht bricht! */
+body.menu-open .l-sidebar {
+    @include respond-to-mobile {
+        left: 0;
+        box-shadow: 2px 0 15px rgb(0 0 0 / 0.5);
+    }
+}
+
 .mobile-backdrop {
     position: fixed;
     top: 0;
