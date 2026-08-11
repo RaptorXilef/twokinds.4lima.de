@@ -16,10 +16,10 @@ jobs:
 
     steps:
       - name: 🚚 Code vom Repository holen
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
 
       - name: 🐘 PHP einrichten
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@2.37.2
         with:
           php-version: '8.3'
 
@@ -27,12 +27,14 @@ jobs:
         run: composer install --no-dev --optimize-autoloader
 
       - name: 🌐 Dateien per FTP hochladen
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: / # Anpassen, falls LimaCity die Dateien in z.B. /htdocs/ erwartet
+          protocol: ${{ vars.FTP_PROTOCOL }}
+          port: ${{ vars.FTP_PORT }}
+          server-dir: ${{ vars.FTP_SERVER_DIR }}
           exclude: |
             **/.git*
             **/.git*/**
@@ -102,4 +104,4 @@ jobs:
             vitest.config.ts
 
       - name: 🔄 System-Update anstoßen (Cache & DB)
-        run: curl -sS "${{ secrets.WEBHOOK_URL }}?token=${{ secrets.WEBHOOK_TOKEN }}"
+        run: curl -sS "${{ vars.WEBHOOK_URL }}?token=${{ secrets.WEBHOOK_TOKEN }}"
