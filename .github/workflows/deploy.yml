@@ -26,6 +26,20 @@ jobs:
       - name: 📦 Composer Abhängigkeiten installieren
         run: composer install --no-dev --optimize-autoloader
 
+      - name: ⚙️ Node.js einrichten
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: '22' # Nutzt eine aktuelle, sichere Node-Version
+          cache: 'npm'       # Beschleunigt zukünftige Durchläufe
+
+      - name: 📦 NPM Abhängigkeiten installieren
+        run: npm ci # 'ci' ist besser als 'install' für Server, da es strikt die package-lock.json nutzt
+
+      - name: 🛠️ Frontend Assets kompilieren & minifizieren (CSS & JS)
+        run: |
+          npm run legacy:css:build
+          npm run legacy:js:build
+
       - name: 🌐 Dateien per FTP hochladen
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
@@ -44,6 +58,7 @@ jobs:
             .github/**
             .husky/**
             .vscode/**
+            node_modules/**
             config/config.local.php
             config/dev_admin.php
             config/secrets.php
