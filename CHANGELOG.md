@@ -1,5 +1,28 @@
 # Changelog
 
+## [6.18.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.17.0...v6.18.0) (2026-08-11)
+
+### 🚀 Features
+
+* **api:** Add SystemUpdateAction for secure CI/CD webhook deployments ([6acfaf1](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6acfaf1c4729dee2b6c3d8db3687e37a8faa9736)), references [#113](https://github.com/RaptorXilef/twokinds.4lima.de/issues/113)
+* **ci:** Prevent overwriting live config files via .default.php fallback ([e7cad1a](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e7cad1a7beba4e6bcf475add4612e0d54a840208)), closes [#115](https://github.com/RaptorXilef/twokinds.4lima.de/issues/115), references [#116](https://github.com/RaptorXilef/twokinds.4lima.de/issues/116)
+* **database:** Implement robust SQL migration system for structural updates ([8fe3281](https://github.com/RaptorXilef/twokinds.4lima.de/commit/8fe328124ccfcd4a18be8e04e4b03b8c35da73ad)), references [#115](https://github.com/RaptorXilef/twokinds.4lima.de/issues/115)
+
+### 🐛 Bug Fixes
+
+* **ci:** Resolve NPM sync and Node version issues in deployment workflow ([00bd620](https://github.com/RaptorXilef/twokinds.4lima.de/commit/00bd62074c6815ae08990ccb48bc60dcd9dcd7de)), references [#113](https://github.com/RaptorXilef/twokinds.4lima.de/issues/113)
+* **core:** Resolve PHP version mismatch in Composer platform config ([fccad46](https://github.com/RaptorXilef/twokinds.4lima.de/commit/fccad468b155caeadb5a406ac92de06a6b1a6bbf)), references [#113](https://github.com/RaptorXilef/twokinds.4lima.de/issues/113)
+* **security:** Enforce reliable logout redirection and implement session warning modal ([1acc1b9](https://github.com/RaptorXilef/twokinds.4lima.de/commit/1acc1b94054f8cb63aa02fb2163ef6df6e695707)), closes [#116](https://github.com/RaptorXilef/twokinds.4lima.de/issues/116) [#117](https://github.com/RaptorXilef/twokinds.4lima.de/issues/117)
+* **ui:** Correct session timer text colors and fix unapplied javascript refactorings ([33573ec](https://github.com/RaptorXilef/twokinds.4lima.de/commit/33573ec76acde1d03041ddc65b61dae5ce76e4fd))
+
+### 👷 CI/CD Configuration
+
+* **github:** Add GitHub Actions workflow for automated FTP deployment ([893ffec](https://github.com/RaptorXilef/twokinds.4lima.de/commit/893ffece0c2b20db2909160e0587919119382a8b)), references [#113](https://github.com/RaptorXilef/twokinds.4lima.de/issues/113)
+* **github:** Add glob pattern to exclude source map files from deployment ([375785d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/375785de899c0a37f41ffbc6c29e777b064d2f1c)), references [#113](https://github.com/RaptorXilef/twokinds.4lima.de/issues/113)
+* **github:** Add Node.js build steps for CSS and JS assets ([f9cef2c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f9cef2cefaf25086abb66624640047d0cd0e0931)), references [#113](https://github.com/RaptorXilef/twokinds.4lima.de/issues/113)
+* **github:** Refactor deployment workflow to use GitHub Variables ([3946f3f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/3946f3fb239ad4ececf8d8a556b1ee7dc6e1e2fc)), references [#113](https://github.com/RaptorXilef/twokinds.4lima.de/issues/113)
+* update deploy.yml ([85061c4](https://github.com/RaptorXilef/twokinds.4lima.de/commit/85061c4f03afedb8af870026d75d2ffa3d231b99)), references [#113](https://github.com/RaptorXilef/twokinds.4lima.de/issues/113)
+
 ## [6.17.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.5...v6.17.0) (2026-08-10)
 
 ### 🚀 Features
