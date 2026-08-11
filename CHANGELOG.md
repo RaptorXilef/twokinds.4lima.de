@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.19.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.0...v6.19.1) (2026-08-11)
+
+### 🐛 Bug Fixes
+
+* **admin:** Hide character pool on mobile devices in group editor ([d4a85d3](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d4a85d3965f9efbec22854a12d0e4e2f41febc22)), references [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **admin:** Initialize MobileMenu in admin app and implement responsive admin layout ([c7b7c54](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c7b7c54269b1f52a6a52eca73950f42ee5deac0b)), closes [#118](https://github.com/RaptorXilef/twokinds.4lima.de/issues/118), references [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **admin:** Restore fluid flex-width for main content and optimize admin flex-containers for mobile ([588900d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/588900dda0b91f125bcfb171f1d9d595bfb76ff1)), references [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+
 ## [6.19.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.18.2...v6.19.0) (2026-08-11)
 
 ### 🚀 Features
