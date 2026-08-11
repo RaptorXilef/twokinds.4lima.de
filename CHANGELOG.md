@@ -1,5 +1,28 @@
 # Changelog
 
+## [6.19.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.18.2...v6.19.0) (2026-08-11)
+
+### 🚀 Features
+
+* **frontend:** Implement mobile responsive comic navigation and character views ([723a78e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/723a78e241b2f260cd69fd829a9f6c4574f3dd25)), references [#118](https://github.com/RaptorXilef/twokinds.4lima.de/issues/118) [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **frontend:** Implement Mobile-First responsive navigation and fix layout bugs ([67b192c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/67b192c070d85cda56eb16d56ef9695002c136cc)), references [#118](https://github.com/RaptorXilef/twokinds.4lima.de/issues/118) [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+
+### 🐛 Bug Fixes
+
+* **frontend:** Auto-close mobile menu and backdrop when toggling view mode ([b76f692](https://github.com/RaptorXilef/twokinds.4lima.de/commit/b76f69293bf40de051ac381379a7b21e113b2c7c)), references [#118](https://github.com/RaptorXilef/twokinds.4lima.de/issues/118) [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **frontend:** Optimize forms, thumbnail grids, and profile views for mobile ([7db9bdc](https://github.com/RaptorXilef/twokinds.4lima.de/commit/7db9bdc0e20bad36a27e880544908c1729ab672b)), references [#118](https://github.com/RaptorXilef/twokinds.4lima.de/issues/118) [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **frontend:** Polish mobile comic navigation buttons and styling ([1544366](https://github.com/RaptorXilef/twokinds.4lima.de/commit/1544366fe24a4e8ad4c7163cf2e52cd1fb4ecf9a)), references [#5d7b5d](https://github.com/RaptorXilef/twokinds.4lima.de/issues/5d7b5d) [#2a6177](https://github.com/RaptorXilef/twokinds.4lima.de/issues/2a6177) [#118](https://github.com/RaptorXilef/twokinds.4lima.de/issues/118) [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **frontend:** Resolve mobile menu backdrop blocking and desktop override toggle ([43b1627](https://github.com/RaptorXilef/twokinds.4lima.de/commit/43b162772759841f734e18e43fee44f9873f0d11)), references [#118](https://github.com/RaptorXilef/twokinds.4lima.de/issues/118) [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **frontend:** Resolve mobile menu backdrop stacking and desktop toggle logic ([42ba06d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/42ba06d40fe86bb2f4f0da1d90695b80a2db0352)), references [#118](https://github.com/RaptorXilef/twokinds.4lima.de/issues/118) [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **frontend:** Resolve mobile menu backdrop stacking and desktop toggle logic ([6fc772e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6fc772eed8163490dc2b9a852bb7ff3b870bd546)), references [#118](https://github.com/RaptorXilef/twokinds.4lima.de/issues/118) [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **frontend:** Silence Biome linter warning for document.cookie and update FAQ styles ([73a8274](https://github.com/RaptorXilef/twokinds.4lima.de/commit/73a82744c3064bce90743fc12d847c1752706e98)), references [#118](https://github.com/RaptorXilef/twokinds.4lima.de/issues/118) [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **infrastructure:** Update htaccess hotlink protection for test server and fix leftover config ([8e6bc2e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/8e6bc2ede4c5d4f0685d97761defd23121d85506))
+* **parser:** scope all PHP comment stripping to prevent HTML destruction ([bbefa11](https://github.com/RaptorXilef/twokinds.4lima.de/commit/bbefa115da33ac384ec0bb1dfb9e84c9163327d1))
+
+### 🧹 Chore / Maintenance
+
+* **styles:** Implement BEM layout foundation and Mobile-First responsive CSS ([4ab88ab](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4ab88ab8c66851c68dfa69361f52b864f58a466e)), references [#118](https://github.com/RaptorXilef/twokinds.4lima.de/issues/118) [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+
 ## [6.18.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.18.1...v6.18.2) (2026-08-11)
 
 ### 🐛 Bug Fixes
