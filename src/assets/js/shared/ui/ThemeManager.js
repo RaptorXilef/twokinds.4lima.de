@@ -2,20 +2,19 @@ export class ThemeManager {
     constructor() {
         this.body = document.body;
         this.toggleBtn = document.querySelector('#toggle_lights');
+        this.desktopToggleBtn = document.querySelector('#toggle_desktop_mode');
         this.init();
     }
 
     init() {
-        // Fix: Keine Rückgabe im forEach
+        // Fallback entfernen
         document.querySelectorAll('.jsdep').forEach((el) => {
             el.classList.remove('jsdep');
         });
 
-        // Initialen Status ermitteln ('2' = Dark, alles andere = Light)
+        // 1. Dark/Light Theme Logik
         let isDark = false;
         let pref = null;
-
-        // Storage-Zugriff absichern!
         try {
             pref = localStorage.getItem('themePref');
         } catch (err) {
@@ -27,63 +26,74 @@ export class ThemeManager {
         } else if (pref === '1') {
             isDark = false;
         } else {
-            // Fallback: System-Einstellung des Betriebssystems
             isDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false;
         }
-
-        // Initiale UI setzen (ohne weichen Übergang)
         this.applyTheme(isDark, false);
 
-        // Klick-Event für den Button
         if (this.toggleBtn) {
-            // Wir überschreiben das alte CSS (flex-column) für eine schöne horizontale Icon-Darstellung
             this.toggleBtn.style.flexFlow = 'row nowrap';
             this.toggleBtn.style.alignItems = 'center';
             this.toggleBtn.style.justifyContent = 'center';
             this.toggleBtn.style.gap = '8px';
             this.toggleBtn.style.padding = '10px 0';
-
             this.toggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                // Zustand umkehren
                 isDark = !this.body.classList.contains('theme-night');
-
                 try {
-                    // Speichern (1 = Light, 2 = Dark)
                     localStorage.setItem('themePref', isDark ? '2' : '1');
-
-                    // MAGIE: Wir setzen zusätzlich das Cookie, damit PHP das ab sofort direkt lesen kann!
-                    // biome-ignore lint/suspicious/noDocumentCookie: PHP benötigt dieses Cookie für SSR Theme-Fallback
                     document.cookie = `themePref=${isDark ? '2' : '1'}; max-age=31536000; path=/; SameSite=Lax`;
                 } catch (err) {
                     console.error('[ThemeManager] Konnte Theme-Einstellung nicht speichern:', err);
                 }
-
-                // Theme mit Animation anwenden
                 this.applyTheme(isDark, true);
             });
         }
 
-        // Auf System-Änderungen reagieren (nur wenn der Nutzer noch keine harte Wahl getroffen hat)
         if (window.matchMedia) {
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
                 let currentPref = null;
                 try {
                     currentPref = localStorage.getItem('themePref');
-                } catch (_err) {
-                    // Ignorieren, da wir oben schon warnen
-                }
-
+                } catch (_err) {}
                 if (!currentPref) {
                     this.applyTheme(e.matches, true);
                 }
             });
         }
+
+        // 2. Mobile/Desktop Toggle Logik
+        let forceDesktop = false;
+        try {
+            forceDesktop = localStorage.getItem('forceDesktop') === 'true';
+        } catch (_err) {}
+
+        if (forceDesktop) this.body.classList.add('force-desktop');
+
+        if (this.desktopToggleBtn) {
+            this.desktopToggleBtn.style.flexFlow = 'row nowrap';
+            this.desktopToggleBtn.style.alignItems = 'center';
+            this.desktopToggleBtn.style.justifyContent = 'center';
+            this.desktopToggleBtn.style.gap = '8px';
+            this.desktopToggleBtn.style.padding = '10px 0';
+
+            this.desktopToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                forceDesktop = !this.body.classList.contains('force-desktop');
+                if (forceDesktop) {
+                    this.body.classList.add('force-desktop');
+                    localStorage.setItem('forceDesktop', 'true');
+                } else {
+                    this.body.classList.remove('force-desktop');
+                    localStorage.setItem('forceDesktop', 'false');
+                }
+                this.updateDesktopButtonUI(forceDesktop);
+            });
+            this.updateDesktopButtonUI(forceDesktop);
+        }
     }
 
     applyTheme(isDark, doTransition) {
         if (doTransition) this.body.classList.add('transitioning');
-
         if (isDark) {
             this.body.classList.add('theme-night');
             this.updateButtonUI(true);
@@ -91,7 +101,6 @@ export class ThemeManager {
             this.body.classList.remove('theme-night');
             this.updateButtonUI(false);
         }
-
         if (doTransition) {
             window.setTimeout(() => {
                 this.body.classList.remove('transitioning');
@@ -104,14 +113,23 @@ export class ThemeManager {
 
     updateButtonUI(isDark) {
         if (!this.toggleBtn) return;
-
-        // Wenn dunkel -> Zeige Sonne (Option für Hell). Wenn hell -> Zeige Mond (Option für Dunkel).
         if (isDark) {
             this.toggleBtn.innerHTML =
                 '<i class="fa-solid fa-sun" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Light Mode</span>';
         } else {
             this.toggleBtn.innerHTML =
                 '<i class="fa-solid fa-moon" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Dark Mode</span>';
+        }
+    }
+
+    updateDesktopButtonUI(forceDesktop) {
+        if (!this.desktopToggleBtn) return;
+        if (forceDesktop) {
+            this.desktopToggleBtn.innerHTML =
+                '<i class="fa-solid fa-mobile-screen" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Mobile-Ansicht</span>';
+        } else {
+            this.desktopToggleBtn.innerHTML =
+                '<i class="fa-solid fa-desktop" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">PC-Ansicht erzwingen</span>';
         }
     }
 }

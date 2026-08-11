@@ -18,21 +18,21 @@ use App\Contracts\System\AssetHelperInterface;
     <div class="l-sidebar__inner">
         <div class="social-icons-container">
             <!-- Patreon Link -->
-            <?php if (! empty($settings['social_patreon'])) { ?>
+            <?php if (!empty($settings['social_patreon'])) { ?>
                 <a href="<?php echo \htmlspecialchars($settings['social_patreon']); ?>" target="_blank" rel="noopener noreferrer" title="Patreon">
                     <i class="fa-brands fa-patreon social-icon icon-patreon"></i>
                 </a>
             <?php } ?>
 
             <!-- GitHub Link -->
-            <?php if (! empty($settings['social_github'])) { ?>
+            <?php if (!empty($settings['social_github'])) { ?>
                 <a href="<?php echo \htmlspecialchars($settings['social_github']); ?>" target="_blank" rel="noopener noreferrer" title="GitHub Repository">
                     <i class="fa-brands fa-github social-icon icon-github"></i>
                 </a>
             <?php } ?>
 
             <!-- PayPal Link -->
-            <?php if (! empty($settings['social_paypal'])) { ?>
+            <?php if (!empty($settings['social_paypal'])) { ?>
                 <a href="<?php echo \htmlspecialchars($settings['social_paypal']); ?>" target="_blank" rel="noopener noreferrer" title="Mein Paypal">
                     <i class="fa-brands fa-paypal social-icon icon-paypal"></i>
                 </a>
@@ -45,14 +45,14 @@ use App\Contracts\System\AssetHelperInterface;
             </a>
 
             <!-- InkBunny Link (Als Bild) -->
-            <?php if (! empty($settings['social_inkbunny'])) { ?>
+            <?php if (!empty($settings['social_inkbunny'])) { ?>
                 <a href="<?php echo \htmlspecialchars($settings['social_inkbunny']); ?>" target="_blank" rel="noopener noreferrer" title="Mein InkBunny">
                     <img class="social-icon" src="<?php echo $baseUrl; ?>/assets/images/theme/icons/inkbunny.png" alt="InkBunny" width="26" height="26">
                 </a>
             <?php } ?>
 
             <!-- TwoKinds Original Link -->
-            <?php if (! empty($settings['social_twokinds'])) { ?>
+            <?php if (!empty($settings['social_twokinds'])) { ?>
                 <a href="<?php echo \htmlspecialchars($settings['social_twokinds']); ?>" target="_blank" rel="noopener noreferrer" title="Original TwoKinds Comic">
                     <img class="social-icon" src="<?php echo $baseUrl; ?>/assets/images/theme/icons/twokinds.png" alt="TwoKinds Original" width="26" height="26" style="border-radius: 4px;">
                 </a>
@@ -100,6 +100,8 @@ use App\Contracts\System\AssetHelperInterface;
             <a id="toggle_lights" class="theme" href="#" title="Design umschalten">
                 <!-- JS lädt hier sofort das richtige Icon rein -->
             </a>
+            <!-- Desktop-Ansicht Toggle -->
+            <a id="toggle_desktop_mode" class="theme" href="#" title="Ansicht umschalten"></a>
         </nav>
     </div>
 </aside>

@@ -5,25 +5,24 @@ declare(strict_types=1);
 use App\Core\Entity\ComicPage;
 
 /**
- * @var string         $baseUrl
- * @var array          $settings
- * @var ComicPage      $comic
+ * @var string $baseUrl
+ * @var array $settings
+ * @var ComicPage $comic
  * @var ComicPage|null $prev
  * @var ComicPage|null $next
- * @var ComicPage      $first
- * @var ComicPage      $latest
- * @var bool           $isLatest
- * @var string         $pageTitle
- * @var string         $displayDate
- * @var bool           $canUseCloudSync
- * @var string         $appRoot
+ * @var ComicPage $first
+ * @var ComicPage $latest
+ * @var bool $isLatest
+ * @var string $pageTitle
+ * @var string $displayDate
+ * @var bool $canUseCloudSync
+ * @var string $appRoot
  */
 $baseUrl = \rtrim($settings['base_url'], '/');
-
 $comicId = $comic->id->value;
-$cb      = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
 
-$baseImgDir  = "{$appRoot}/public/assets/images/comics";
+$cb = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+$baseImgDir = "{$appRoot}/public/assets/images/comics";
 $fallbackDir = "{$baseUrl}/assets/images/system";
 
 // Bilder-Pfade
@@ -41,7 +40,7 @@ $canonicalUrl = "{$baseUrl}/comic/{$comicId}";
 
 // Fallback-Verarbeitung für Sketches aus alten DB-Einträgen
 $sketchLink = $comic->sketchUrl;
-if ($sketchLink !== '' && ! \str_starts_with($sketchLink, 'http')) {
+if ($sketchLink !== '' && !\str_starts_with($sketchLink, 'http')) {
     $sketchLink = 'https://twokindscomic.com/images/' . $sketchLink;
 }
 
@@ -72,21 +71,32 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml';
 
         <!-- TOP NAVIGATION -->
         <nav class="comicnav topnav">
-            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $first->id->value; ?>" class="navarrow navbegin <?php echo ! $prev ? 'disabled' : ''; ?>" title="Erste Seite">
-                <span class="nav-wrapper">Erste</span>
+            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $first->id->value; ?>"
+               class="navarrow navbegin <?php echo !$prev ? 'disabled' : ''; ?>"
+               title="Erste Seite">
+                <span class="nav-wrapper"><span class="nav-text">Erste</span></span>
             </a>
-            <a href="<?php echo $prev ? $baseUrl . '/comic/' . $prev->id->value : '#'; ?>" class="navarrow navprev <?php echo ! $prev ? 'disabled' : ''; ?>" title="Vorherige Seite">
-                <span class="nav-wrapper">Zurück</span>
+            <a href="<?php echo $prev ? $baseUrl . '/comic/' . $prev->id->value : '#'; ?>"
+               class="navarrow navprev <?php echo !$prev ? 'disabled' : ''; ?>"
+               title="Vorherige Seite">
+                <span class="nav-wrapper"><span class="nav-text">Zurück</span></span>
             </a>
-            <a href="<?php echo $baseUrl; ?>/archiv" class="navarchive" title="Zum Archiv">Archiv</a>
-            <a href="<?php echo $next ? $baseUrl . '/comic/' . $next->id->value : '#'; ?>" class="navarrow navnext <?php echo ! $next ? 'disabled' : ''; ?>" title="Nächste Seite">
-                <span class="nav-wrapper">Weiter</span>
+            <a href="<?php echo $baseUrl; ?>/archiv"
+               class="navarchive"
+               title="Zum Archiv">
+                <i class="fa-solid fa-box-archive nav-icon-only"></i> <span class="nav-text">Archiv</span>
             </a>
-            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $latest->id->value; ?>" class="navarrow navend <?php echo ! $next ? 'disabled' : ''; ?>" title="Neueste Seite">
-                <span class="nav-wrapper">Neueste</span>
+            <a href="<?php echo $next ? $baseUrl . '/comic/' . $next->id->value : '#'; ?>"
+               class="navarrow navnext <?php echo !$next ? 'disabled' : ''; ?>"
+               title="Nächste Seite">
+                <span class="nav-wrapper"><span class="nav-text">Weiter</span></span>
+            </a>
+            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $latest->id->value; ?>"
+               class="navarrow navend <?php echo !$next ? 'disabled' : ''; ?>"
+               title="Neueste Seite">
+                <span class="nav-wrapper"><span class="nav-text">Neueste</span></span>
             </a>
 
-            <!-- Lesezeichen -->
             <button type="button"
                     id="add-bookmark"
                     class="bookmark"
@@ -116,18 +126,30 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml';
 
         <!-- BOTTOM NAVIGATION -->
         <nav class="comicnav bottomnav">
-            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $first->id->value; ?>" class="navarrow navbegin <?php echo ! $prev ? 'disabled' : ''; ?>" title="Erste Seite">
-                <span class="nav-wrapper">Erste</span>
+            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $first->id->value; ?>"
+               class="navarrow navbegin <?php echo !$prev ? 'disabled' : ''; ?>"
+               title="Erste Seite">
+                <span class="nav-wrapper"><span class="nav-text">Erste</span></span>
             </a>
-            <a href="<?php echo $prev ? $baseUrl . '/comic/' . $prev->id->value : '#'; ?>" class="navarrow navprev <?php echo ! $prev ? 'disabled' : ''; ?>" title="Vorherige Seite">
-                <span class="nav-wrapper">Zurück</span>
+            <a href="<?php echo $prev ? $baseUrl . '/comic/' . $prev->id->value : '#'; ?>"
+               class="navarrow navprev <?php echo !$prev ? 'disabled' : ''; ?>"
+               title="Vorherige Seite">
+                <span class="nav-wrapper"><span class="nav-text">Zurück</span></span>
             </a>
-            <a href="<?php echo $baseUrl; ?>/archiv" class="navarchive" title="Zum Archiv">Archiv</a>
-            <a href="<?php echo $next ? $baseUrl . '/comic/' . $next->id->value : '#'; ?>" class="navarrow navnext <?php echo ! $next ? 'disabled' : ''; ?>" title="Nächste Seite">
-                <span class="nav-wrapper">Weiter</span>
+            <a href="<?php echo $baseUrl; ?>/archiv"
+               class="navarchive"
+               title="Zum Archiv">
+                <i class="fa-solid fa-box-archive nav-icon-only"></i> <span class="nav-text">Archiv</span>
             </a>
-            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $latest->id->value; ?>" class="navarrow navend <?php echo ! $next ? 'disabled' : ''; ?>" title="Neueste Seite">
-                <span class="nav-wrapper">Neueste</span>
+            <a href="<?php echo $next ? $baseUrl . '/comic/' . $next->id->value : '#'; ?>"
+               class="navarrow navnext <?php echo !$next ? 'disabled' : ''; ?>"
+               title="Nächste Seite">
+                <span class="nav-wrapper"><span class="nav-text">Weiter</span></span>
+            </a>
+            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $latest->id->value; ?>"
+               class="navarrow navend <?php echo !$next ? 'disabled' : ''; ?>"
+               title="Neueste Seite">
+                <span class="nav-wrapper"><span class="nav-text">Neueste</span></span>
             </a>
 
             <!-- Sprache wechseln -->
