@@ -51,6 +51,8 @@ jobs:
           port: ${{ vars.FTP_PORT }}
           server-dir: ${{ vars.FTP_SERVER_DIR }}
           exclude: |
+            **/*.map
+            **/*.zip
             **/.git*
             **/.git*/**
             .build/**
