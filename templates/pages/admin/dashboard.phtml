@@ -8,20 +8,20 @@ use App\Core\Entity\ComicPage;
 use App\Core\Entity\Report;
 
 /**
- * @var array                $settings
- * @var string               $pageTitle
- * @var string               $adminUser
- * @var ComicPage[]          $comics
- * @var Character[]          $characters
- * @var array                $groups
- * @var array                $assignedIds
- * @var Report[]             $openReports
- * @var array                $existingRanks
- * @var array                $existingChapters
- * @var array                $availableImages
+ * @var array $settings
+ * @var string $pageTitle
+ * @var string $adminUser
+ * @var ComicPage[] $comics
+ * @var Character[] $characters
+ * @var array $groups
+ * @var array $assignedIds
+ * @var Report[] $openReports
+ * @var array $existingRanks
+ * @var array $existingChapters
+ * @var array $availableImages
  * @var AssetHelperInterface $asset
- * @var array                $perms
- * @var bool                 $canManageUsers
+ * @var array $perms
+ * @var bool $canManageUsers
  */
 $baseUrl = \rtrim($settings['base_url'], '/');
 
@@ -30,11 +30,14 @@ include __DIR__ . '/../../layouts/admin/_admin_header.phtml';
 // Lagert die komplette Sidebar (Menü) aus
 include __DIR__ . '/../../layouts/admin/_admin_menu.phtml';
 ?>
-<div class="p-20">
+
+<!-- FIX: Hier muss zwingend .l-content-box stehen, damit Flexbox den Platz auf 100% streckt! -->
+<div class="l-content-box">
     <h1 class="page-header">
         <!--<i class="fa-solid fa-gauge">-->
         <i class="fa-solid fa-gauge"></i> <?php echo \htmlspecialchars($pageTitle); ?>
     </h1>
+
     <div id="global-status-message"
          class="status-message"></div>
 

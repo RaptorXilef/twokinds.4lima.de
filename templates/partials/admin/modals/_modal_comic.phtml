@@ -7,18 +7,14 @@ use App\Core\Entity\CharacterGroup;
 use App\Core\Entity\User;
 
 /**
- * @var string           $baseUrl
- * @var Character[]      $characters
+ * @var string $baseUrl
+ * @var Character[] $characters
  * @var CharacterGroup[] $groups
- * @var string[]         $existingChapters
- * @var User[]           $allUsers
- * @var array            $perms
+ * @var string[] $existingChapters
+ * @var User[] $allUsers
+ * @var array $perms
  */
 ?>
-
-<!-- ======================================================================= -->
-<!-- COMIC MODAL -->
-<!-- ======================================================================= -->
 <div id="comic-modal"
      class="modal">
     <div class="modal-overlay btn-close-comic-modal"></div>
@@ -192,7 +188,8 @@ use App\Core\Entity\User;
 
                 <!-- Charakter-Auswahl -->
                 <div class="form-group mt-15">
-                    <div class="d-flex justify-between align-center mb-10">
+                    <!-- FIX: flex-wrap und gap-10 hinzugefügt, damit das Label nicht gequetscht wird -->
+                    <div class="d-flex justify-between align-center flex-wrap gap-10 mb-10">
                         <label class="mb-0">Auf der Seite vorkommende Charaktere</label>
                         <button type="button"
                                 class="button"
@@ -220,7 +217,7 @@ use App\Core\Entity\User;
                             \usort($alphaChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
 
                             foreach ($alphaChars as $char) {
-                                $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/60x60?text=N/A'; ?>
+                                $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/60x60?text=N/A';?>
                                 <div class="char-selection-item"
                                      data-char-id="<?php echo \htmlspecialchars($char->id->value); ?>">
                                     <img src="<?php echo \htmlspecialchars($pic); ?>"
@@ -231,7 +228,6 @@ use App\Core\Entity\User;
                             <?php } ?>
                         </div>
 
-                        <!-- Ansicht 2: Gruppiert -->
                         <div id="view-chars-grouped"
                              class="hidden scroll-y max-h-250">
                             <?php foreach ($groups as $group) { ?>
@@ -246,7 +242,7 @@ use App\Core\Entity\User;
                                                 break;
                                             }
                                         }
-                                        if (! $char) {
+                                        if (!$char) {
                                             continue;
                                         }
                                         $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/60x60?text=N/A'; ?>
@@ -264,7 +260,6 @@ use App\Core\Entity\User;
 
                     </div>
                     <!-- HELFER / User AUSWAHL -->
-                    <!-- GEÄNDERT: helper -> user -->
                     <div class="d-flex justify-between align-center mb-10 mt-20 border-top-dashed pt-10">
                         <label class="mb-0">Mitwirkende Nutzer (Übersetzung, Lektorat etc.)</label>
                     </div>
@@ -282,11 +277,12 @@ use App\Core\Entity\User;
                         <div id="view-users"
                              class="char-selection-grid scroll-y max-h-250">
                             <?php
-                                                    $alphaUsers = $allUsers ?? [];
-                            \usort($alphaUsers, fn ($a, $b) => \strcasecmp($a->username->value, $b->username->value));
-                            foreach ($alphaUsers as $u) {
-                                $pic = $u->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$u->avatarUrl}" : 'https://placehold.co/60x60?text=N/A';
-                                ?>
+                            $alphaUsers = $allUsers ?? [];
+\usort($alphaUsers, fn ($a, $b) => \strcasecmp($a->username->value, $b->username->value));
+
+foreach ($alphaUsers as $u) {
+    $pic = $u->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$u->avatarUrl}" : 'https://placehold.co/60x60?text=N/A';
+    ?>
                                 <div class="char-selection-item user-selection-item"
                                      data-user-id="<?php echo \htmlspecialchars($u->id); ?>">
                                     <img src="<?php echo \htmlspecialchars($pic); ?>"

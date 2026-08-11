@@ -6,16 +6,13 @@ use App\Core\Entity\Character;
 use App\Core\Entity\CharacterGroup;
 
 /**
- * @var string           $baseUrl
- * @var Character[]      $characters
+ * @var string $baseUrl
+ * @var Character[] $characters
  * @var CharacterGroup[] $groups
- * @var array            $assignedIds
+ * @var array $assignedIds
  */
 ?>
 
-<!-- ========================================== -->
-<!-- SECTION: GRUPPEN (DRAG & DROP)             -->
-<!-- ========================================== -->
 <div class="table-controls actions-bar">
     <div class="top-actions">
         <button type="button"
@@ -31,7 +28,8 @@ use App\Core\Entity\CharacterGroup;
     </div>
 </div>
 
-<div class="d-flex gap-20 align-start">
+<!-- FIX: flex-wrap hinzugefügt, damit der Pool auf Mobile nach oben rutscht und nicht zerquetscht wird -->
+<div class="d-flex flex-wrap gap-20 align-start">
     <div class="character-group bg-even w-300">
         <div class="character-group-header flex-column align-start cursor-default">
             <h3>Charakter-Pool</h3>
@@ -43,7 +41,7 @@ use App\Core\Entity\CharacterGroup;
         <div id="char-pool"
              class="character-list-container sortable-pool p-10 min-h-200">
             <?php foreach ($characters as $char) {
-                $pic        = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/40x40?text=N/A';
+                $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/40x40?text=N/A';
                 $isAssigned = \in_array($char->id->value, $assignedIds, true); ?>
 
                 <!-- Wichtig: is-assigned Klasse für den Filter -->
@@ -91,7 +89,7 @@ use App\Core\Entity\CharacterGroup;
                 <!-- Wir merken uns den Sort-Status im data-Attribut für JS -->
                 <div class="character-list-container sortable-group p-10"
                      data-manual="<?php echo $group->manualSort ? 'true' : 'false'; ?>">
-                    <!-- Wenn manuell aus ist, sortieren wir die Liste für die Anzeige alphabetisch -->
+                     <!-- Wenn manuell aus ist, sortieren wir die Liste für die Anzeige alphabetisch -->
                     <?php $renderChars = [];
             foreach ($group->characterIds as $cidObj) {
                 foreach ($characters as $c) {
@@ -105,6 +103,7 @@ use App\Core\Entity\CharacterGroup;
             if (! $group->manualSort) {
                 \usort($renderChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
             }
+
             foreach ($renderChars as $char) {
                 $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/40x40?text=N/A'; ?>
                         <div class="character-entry d-flex justify-between align-center"
@@ -146,7 +145,7 @@ use App\Core\Entity\CharacterGroup;
             </div>
             <div id="group-modal-char-grid"
                  class="char-selection-grid">
-                <!-- Dynamically populated via JS -->
+                <!-- Ajax Content / Dynamically populated via JS -->
             </div>
         </div>
         <div class="modal-footer-actions">
@@ -162,8 +161,11 @@ use App\Core\Entity\CharacterGroup;
 </div>
 
 <!-- Pulsierender Sticky-Save-Button -->
-<div id="sticky-save-container" class="sticky-save-container">
-    <button type="button" class="button edit" id="btn-save-groups-sticky">
+<div id="sticky-save-container"
+     class="sticky-save-container">
+    <button type="button"
+            class="button edit"
+            id="btn-save-groups-sticky">
         <i class="fa-solid fa-save"></i> Änderungen speichern
     </button>
 </div>

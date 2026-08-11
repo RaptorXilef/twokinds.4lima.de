@@ -8,12 +8,13 @@ use App\Core\Entity\User;
 /**
  * @var User[] $users
  * @var Role[] $roles
- * @var array  $permissionsTree
- * @var bool   $canManageUsers
- * @var bool   $canManageRoles
+ * @var array $permissionsTree
+ * @var bool $canManageUsers
+ * @var bool $canManageRoles
  * @var string $currentUserId
  */
 ?>
+
 <div class="d-flex gap-10 mb-20 pb-15 border-bottom-2">
     <button class="button media-tab-btn active"
             data-type="user-list-view">Benutzer</button>
@@ -21,7 +22,7 @@ use App\Core\Entity\User;
             data-type="role-list-view">Rollen & Rechte</button>
 </div>
 
-<!-- ANSICHT 1: BENUTZER -->
+<!-- View: Users -->
 <div id="media-view-user-list-view"
      class="media-view">
     <div class="table-controls actions-bar">
@@ -30,13 +31,15 @@ use App\Core\Entity\User;
                 <button type="button"
                         class="button add"
                         id="btn-add-user">
-                    <i class="fa-solid fa-user-plus"></i> Neuen Benutzer anlegen </button>
+                    <i class="fa-solid fa-user-plus"></i> Neuen Benutzer anlegen
+                </button>
             </div>
         <?php } else { ?>
             <div class="status-message status-orange visible"><i class="fa-solid fa-lock"></i> Dir fehlt die
                 Berechtigung, Benutzer zu verwalten.</div>
         <?php } ?>
     </div>
+
     <div class="sitemap-table-container">
         <table class="admin-table">
             <thead>
@@ -57,10 +60,10 @@ use App\Core\Entity\User;
                 <?php } else { ?>
                     <?php foreach ($users as $u) {
                         $userData = \json_encode([
-                            'id'       => $u->id,
+                            'id' => $u->id,
                             'username' => $u->username->value,
-                            'email'    => $u->email->value,
-                            'role_id'  => $u->roleId,
+                            'email' => $u->email->value,
+                            'role_id' => $u->roleId,
                         ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
                         ?>
                         <tr>
@@ -71,8 +74,8 @@ use App\Core\Entity\User;
                             <td><?php echo \htmlspecialchars($u->email->value); ?></td>
                             <td>
                                 <span class="badge bg-even border-medium">
-<?php echo \htmlspecialchars($roles[$u->roleId]->name ?? $u->roleId); ?>
-</span>
+                                    <?php echo \htmlspecialchars($roles[$u->roleId]->name ?? $u->roleId); ?>
+                                </span>
                             </td>
                             <td><?php echo $u->createdAt->format('d.m.Y H:i'); ?></td>
                             <td class="actions-cell">
@@ -99,7 +102,7 @@ use App\Core\Entity\User;
     </div>
 </div>
 
-<!-- ANSICHT 2: ROLLEN -->
+<!-- View: Roles -->
 <div id="media-view-role-list-view"
      class="media-view hidden">
     <div class="table-controls actions-bar">
@@ -108,13 +111,15 @@ use App\Core\Entity\User;
                 <button type="button"
                         class="button add"
                         id="btn-add-role">
-                    <i class="fa-solid fa-shield-plus"></i> Neue Rolle erstellen </button>
+                    <i class="fa-solid fa-shield-plus"></i> Neue Rolle erstellen
+                </button>
             </div>
         <?php } else { ?>
             <div class="status-message status-orange visible"><i class="fa-solid fa-lock"></i> Dir fehlt die
                 Berechtigung, Rollen zu verwalten.</div>
         <?php } ?>
     </div>
+
     <div class="sitemap-table-container">
         <table class="admin-table">
             <thead>
@@ -127,9 +132,9 @@ use App\Core\Entity\User;
             <tbody>
                 <?php foreach ($roles as $role) {
                     $isSystemRole = \in_array($role->id, ['admin', 'user', 'pending'], true);
-                    $roleData     = \json_encode([
-                        'id'          => $role->id,
-                        'name'        => $role->name,
+                    $roleData = \json_encode([
+                        'id' => $role->id,
+                        'name' => $role->name,
                         'permissions' => $role->permissions,
                     ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
                     ?>
@@ -148,7 +153,7 @@ use App\Core\Entity\User;
                                             class="button edit btn-edit-role"
                                             data-payload='<?php echo $roleData; ?>'
                                             title="Rechte anpassen"><i class="fa-solid fa-sliders"></i></button>
-                                    <?php if (! $isSystemRole) { ?>
+                                    <?php if (!$isSystemRole) { ?>
                                         <button type="button"
                                                 class="button delete btn-delete-role"
                                                 data-id="<?php echo \htmlspecialchars($role->id); ?>"
@@ -164,7 +169,7 @@ use App\Core\Entity\User;
     </div>
 </div>
 
-<!-- MODALS FÜR BENUTZER UND ROLLEN -->
+<!-- Modal: User Edit -->
 <div id="user-modal"
      class="modal">
     <div class="modal-overlay btn-close-user-modal"></div>
@@ -180,6 +185,7 @@ use App\Core\Entity\User;
                        id="user_id"
                        name="user_id"
                        value="">
+
                 <div class="form-group">
                     <label>Benutzername</label>
                     <input type="text"
@@ -194,6 +200,7 @@ use App\Core\Entity\User;
                            name="email"
                            required>
                 </div>
+
                 <div class="form-group">
                     <label>Passwort <small class="font-normal text-faded">(Leer lassen, um aktuelles zu
                             behalten)</small></label>
@@ -202,6 +209,7 @@ use App\Core\Entity\User;
                            name="password"
                            minlength="8">
                 </div>
+
                 <div class="form-group">
                     <label>Passwort wiederholen</label>
                     <input type="password"
@@ -209,6 +217,7 @@ use App\Core\Entity\User;
                            name="password_confirm"
                            minlength="8">
                 </div>
+
                 <div class="form-group">
                     <label>Zugewiesene Rolle</label>
                     <select id="user_role"
@@ -232,6 +241,7 @@ use App\Core\Entity\User;
     </div>
 </div>
 
+<!-- Modal: Role Edit -->
 <div id="role-modal"
      class="modal">
     <div class="modal-overlay btn-close-role-modal"></div>
@@ -259,8 +269,10 @@ use App\Core\Entity\User;
                                required>
                     </div>
                 </div>
+
                 <div class="bg-even border-medium border-radius-6 p-20">
-                    <h3 class="mt-0 mb-15 d-flex justify-between align-center">
+                    <!-- FIX: flex-wrap hinzugefügt! -->
+                    <h3 class="mt-0 mb-15 d-flex justify-between align-center flex-wrap gap-10">
                         <span><i class="fa-solid fa-sitemap"></i> Berechtigungs-Baum</span>
                         <label class="font-small font-normal cursor-pointer d-flex align-center gap-5">
                             <input type="checkbox"
@@ -268,9 +280,12 @@ use App\Core\Entity\User;
                                    value="*"> <strong>Vollzugriff (Gott-Modus)</strong>
                         </label>
                     </h3>
-                    <p class="font-small text-faded mb-20"> Wenn du ein Hauptrecht aktivierst (z.B. "Comic-Verwaltung"),
-                        erbt die Gruppe automatisch alle darunterliegenden Rechte. Du kannst jedoch spezielle
-                        Unterrechte explizit durch Abwählen entziehen. </p>
+                    <p class="font-small text-faded mb-20">
+                        Wenn du ein Hauptrecht aktivierst (z.B. "Comic-Verwaltung"), erbt die Gruppe automatisch alle
+                        darunterliegenden Rechte. Du kannst jedoch spezielle Unterrechte explizit durch Abwählen
+                        entziehen.
+                    </p>
+
                     <div id="permissions-tree-container"
                          class="d-flex flex-column gap-15">
                         <?php foreach ($permissionsTree as $groupKey => $groupNode) { ?>
@@ -283,6 +298,7 @@ use App\Core\Entity\User;
                                     <strong><?php echo \htmlspecialchars($groupNode['label']); ?></strong>
                                     <span class="font-small text-faded mono"><?php echo \htmlspecialchars($groupNode['key']); ?></span>
                                 </label>
+
                                 <?php if (isset($groupNode['children'])) { ?>
                                     <div class="perm-children d-flex flex-column gap-8 ml-30">
                                         <?php foreach ($groupNode['children'] as $childKey => $childNode) { ?>
