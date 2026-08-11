@@ -70,6 +70,7 @@ jobs:
             .husky/**
             .vscode/**
             node_modules/**
+            database/migrations/000_add_user_test_column.md
             config/backup.php
             config/config.local.php
             config/config.php
@@ -77,6 +78,7 @@ jobs:
             config/email.php
             config/secrets.php
             config/storage.php
+            config/neue_config.md
             docs/**
             logs/**
             public/assets/images/avatars/**

@@ -81,8 +81,8 @@
     flex: 0 0 auto;
     width: 27px;
     height: 36px;
-    background: url('#{$base-url}/assets/images/theme/icons/bookmark.png?c=20260804')
-        0 0 no-repeat;
+    background: url('../images/theme/icons/bookmark.png?c=20260804') 0 0
+        no-repeat;
     background-size: contain;
 }
 
@@ -553,7 +553,7 @@ body.theme-night .comic-characters-container {
 #toggle-char-view {
     padding: 5px 12px;
     font-size: 0.8em;
-    background-color: var(--button-bg); //
+    background-color: var(--button-bg);
     border: 1px solid var(--border-medium);
 
     &:hover {

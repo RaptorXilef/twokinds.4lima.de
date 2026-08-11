@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: CC BY-NC-SA 4.0
-
 ///
 /// Header & Banner
 ///
@@ -9,21 +7,6 @@
 /*!
  * @file      resources/scss/layout/_header.scss
  */
-/// @link      twokinds.4lima.de
-///
-/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
-/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
-///
-/// @author    Felix Maywald (@RaptorXilef)
-/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
-///
-
-///
-/// @since    5.0.0
-/// - Dark Mode Bilder per Parent Selector.
-/// - fix(CSS): Fehlender Mixin-Import ergänzt.
-/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
-///
 
 // Verwendete SCSS-Variablen:
 // - $base-url: Basis-URL für Assets
@@ -45,14 +28,13 @@
     overflow: hidden;
     text-indent: 105%;
     white-space: nowrap;
-    background: transparent
-        url('#{$base-url}/assets/images/theme/banners/day.webp?c=20260804') 0
+    background: transparent url('../images/theme/banners/day.webp?c=20260804') 0
         10px no-repeat;
 }
 
 // Dark Mode Banner Override
 body.theme-night .banner {
-    background-image: url('#{$base-url}/assets/images/theme/banners/night.webp?c=20260804');
+    background-image: url('../images/theme/banners/night.webp?c=20260804');
 }
 
 // Spezieller Banner Mode (Preloader für Night-Mode Image)
@@ -66,7 +48,7 @@ body.theme-night .banner {
 }
 
 body.theme-night #banner-lights-off {
-    background-image: url('#{$base-url}/assets/images/theme/banners/night.webp?c=20260804');
+    background-image: url('../images/theme/banners/night.webp?c=20260804');
 }
 
 // Maintenance Banner

@@ -110,8 +110,7 @@
     display: inline-block;
     width: 1em;
     height: 0.6em;
-    background: transparent
-        url('#{$base-url}/assets/images/theme/icons/dropdown.svg?c=20251024')
+    background: transparent url('../images/theme/icons/dropdown.svg?c=20251024')
         50% 50% no-repeat;
     background-size: contain;
 
@@ -128,7 +127,7 @@
 // ! Der Dropdown-Pfeil hat aktuell noch harte Images. Idealerweise löse ich das in Zukunft über SVG-Masken/CSS, aber für den Moment belassen wir es beim Dark-Mode Bild-Swap.
 body.theme-night .main-container .arrow-down,
 body.theme-night .main-container .arrow-left {
-    background-image: url('#{$base-url}/assets/images/theme/icons/dropdown-dark.svg?c=20251024');
+    background-image: url('../images/theme/icons/dropdown-dark.svg?c=20251024');
 }
 
 // Spezifische Button-Klassen (Admin / Reports)
@@ -151,12 +150,10 @@ body.theme-night .button-green {
     }
 }
 
-/* --- Ergänzung für den Pause-Button (Generator) --- */
+// Nutzt das kräftigere Orange des Rahmens
 .button-orange {
     color: #000;
-    background-color: var(
-        --status-orange-border
-    ); // Nutzt das kräftigere Orange des Rahmens
+    background-color: var(--status-orange-border);
 
     &:hover {
         color: #fff;
