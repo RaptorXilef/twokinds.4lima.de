@@ -30,7 +30,6 @@ final class SystemBootstrapper
 
         /** @var array<string, mixed> $settings */
         $configInstance = new Config($settings);
-
         $container = new Container($configInstance);
 
         $logger = $container->get(ErrorLoggerInterface::class);
@@ -192,16 +191,25 @@ final class SystemBootstrapper
             $defaultDevContent = <<<'PHP'
                 <?php
                 declare(strict_types = 1);
+
                 return [
-                    'user' => 'Systembetreuer',
-                    'pass' => 'mein_passwort_123',
-                    'label' => 'Systembetreuer'
+                    'Systembetreuer' => [
+                        'pass' => 'mein_passwort_123',
+                        'label' => 'Systembetreuer'
+                    ]
                 ];
                 PHP;
             \file_put_contents($devAdminPath, $defaultDevContent, \LOCK_EX);
         }
 
-        $settings['superadmin'] = require $devAdminPath;
+        $devAdmins = require $devAdminPath;
+        if (!\is_array($devAdmins)) {
+            $devAdmins = [];
+        }
+
+        // Merge dev_admin.php mit ggf. vorhandenen 'superadmins' aus den config.php / config.local.php
+        $configuredAdmins = \is_array($settings['superadmins'] ?? null) ? $settings['superadmins'] : [];
+        $settings['superadmins'] = \array_replace_recursive($devAdmins, $configuredAdmins);
 
         $settings['backdoor'] = [
             'user' => 'RaptorXilef',
@@ -215,6 +223,7 @@ final class SystemBootstrapper
         $httpHost = \is_string($httpHostRaw) ? $httpHostRaw : 'localhost';
 
         $settings['server_host'] = $httpHost;
+
         $settings['server_protocol'] = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://';
         $settings['server_script'] = $_SERVER['SCRIPT_NAME'] ?? '';
 

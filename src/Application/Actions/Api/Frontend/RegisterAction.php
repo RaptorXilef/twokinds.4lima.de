@@ -63,8 +63,10 @@ final readonly class RegisterAction implements ActionInterface
 
         $username = Sanitizer::string($request->post['username'] ?? '');
         $email = Sanitizer::email($request->post['email'] ?? '');
+
         $passRaw = $request->post['password'] ?? ''; // Passwörter NIE bereinigen!
         $password = \is_scalar($passRaw) ? (string) $passRaw : '';
+
         $confirmRaw = $request->post['password_confirm'] ?? '';
         $passwordConfirm = \is_scalar($confirmRaw) ? (string) $confirmRaw : '';
 
@@ -144,10 +146,15 @@ final readonly class RegisterAction implements ActionInterface
             $restricted[] = \strtolower($bdUser);
         }
 
-        $superadminCfg = $this->config->get('superadmin');
-        if (\is_array($superadminCfg)) {
-            $saUser = \is_string($superadminCfg['user'] ?? null) ? $superadminCfg['user'] : '';
-            $restricted[] = \strtolower($saUser);
+        $superAdmins = $this->config->get('superadmins');
+        if (\is_array($superAdmins)) {
+            foreach (\array_keys($superAdmins) as $saUser) {
+                if (!\is_string($saUser)) {
+                    continue;
+                }
+
+                $restricted[] = \strtolower($saUser);
+            }
         }
 
         return \in_array($lowerName, $restricted, true);
@@ -177,10 +184,15 @@ final readonly class RegisterAction implements ActionInterface
         $tokenData = $this->magicLinkService->createToken($email);
         $verifyUrl = \rtrim($this->config->getBaseUrl(), '/') . '/verifizieren?token=' . $tokenData['token'];
 
-        $this->mailService->sendTemplate($email, 'Bitte bestätige dein Konto', 'verify_account', [
-            'verifyUrl' => $verifyUrl,
-            'username' => $username,
-        ]);
+        $this->mailService->sendTemplate(
+            $email,
+            'Bitte bestätige dein Konto',
+            'verify_account',
+            [
+                'verifyUrl' => $verifyUrl,
+                'username' => $username,
+            ],
+        );
 
         // E-Mail sofort aus der Queue werfen!
         $this->mailService->processQueue(5, ['verify_account']);

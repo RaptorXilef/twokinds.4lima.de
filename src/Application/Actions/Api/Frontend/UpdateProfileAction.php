@@ -40,6 +40,7 @@ final readonly class UpdateProfileAction implements ActionInterface
         }
 
         $userId = $this->sessionManager->getUserId();
+
         if (\str_starts_with($userId, 'sys_')) {
             return JsonResponse::error('System-Accounts können hier nicht bearbeitet werden.', 403);
         }
@@ -89,6 +90,7 @@ final readonly class UpdateProfileAction implements ActionInterface
             $wantsTrans,
             $wantsRep,
         );
+
         $this->userRepository->save($updated);
 
         return JsonResponse::success(['message' => 'Benachrichtigungs-Einstellungen aktualisiert!']);
@@ -98,6 +100,7 @@ final readonly class UpdateProfileAction implements ActionInterface
     private function handleUsername(ServerRequest $request, User $user): JsonResponse
     {
         $newName = Sanitizer::string($request->post['new_username'] ?? '');
+
         if (\strlen($newName) < 3) {
             return JsonResponse::error('Der Name muss mindestens 3 Zeichen lang sein.', 400);
         }
@@ -121,6 +124,7 @@ final readonly class UpdateProfileAction implements ActionInterface
             $user->wantsNewsletterTranscript,
             $user->wantsNotificationReport,
         );
+
         $this->userRepository->save($updated);
         $this->sessionManager->updateAdminUsername($newName);
 
@@ -142,14 +146,17 @@ final readonly class UpdateProfileAction implements ActionInterface
         if (!\password_verify($oldPass, $user->passwordHash)) {
             return JsonResponse::error('Das alte Passwort ist nicht korrekt.', 400);
         }
+
         if ($newPass !== $newPassConfirm) {
             return JsonResponse::error('Die neuen Passwörter stimmen nicht überein.', 400);
         }
+
         if (\strlen($newPass) < 8) {
             return JsonResponse::error('Das neue Passwort muss mindestens 8 Zeichen lang sein.', 400);
         }
 
         $newHash = \password_hash($newPass, \PASSWORD_DEFAULT);
+
         $updated = new User(
             $user->id,
             $user->username,
@@ -161,6 +168,7 @@ final readonly class UpdateProfileAction implements ActionInterface
             $user->wantsNewsletterTranscript,
             $user->wantsNotificationReport,
         );
+
         $this->userRepository->save($updated);
 
         // Session mit neuem Hash versehen, sonst fliegt man beim nächsten Klick raus
@@ -173,12 +181,15 @@ final readonly class UpdateProfileAction implements ActionInterface
     private function handleEmail(ServerRequest $request, User $user): JsonResponse
     {
         $newEmailStr = Sanitizer::email($request->post['new_email'] ?? '');
+
         if ($newEmailStr === '') {
             return JsonResponse::error('Bitte eine gültige E-Mail-Adresse eingeben.', 400);
         }
+
         if ($newEmailStr === $user->email->value) {
             return JsonResponse::error('Das ist bereits deine aktuelle E-Mail-Adresse.', 400);
         }
+
         if ($this->userRepository->findByEmail($newEmailStr) instanceof User) {
             return JsonResponse::error('Diese E-Mail-Adresse wird bereits verwendet.', 400);
         }
@@ -186,10 +197,16 @@ final readonly class UpdateProfileAction implements ActionInterface
         $tokenData = $this->magicLinkService->createToken($newEmailStr);
         $verifyUrl = \rtrim($this->config->getBaseUrl(), '/') . '/email-bestaetigen?token=' . $tokenData['token'];
 
-        $this->mailService->sendTemplate($newEmailStr, 'Neue E-Mail-Adresse bestätigen', 'verify_new_email', [
-            'verifyUrl' => $verifyUrl,
-            'username' => $user->username->value,
-        ]);
+        $this->mailService->sendTemplate(
+            $newEmailStr,
+            'Neue E-Mail-Adresse bestätigen',
+            'verify_new_email',
+            [
+                'verifyUrl' => $verifyUrl,
+                'username' => $user->username->value,
+            ],
+        );
+
         $this->mailService->processQueue(5, ['verify_new_email']);
 
         return JsonResponse::success([
@@ -203,6 +220,7 @@ final readonly class UpdateProfileAction implements ActionInterface
 
         // Social Links verarbeiten (max 5)
         $socialLinksRaw = $request->post['social_links'] ?? [];
+
         $socialLinks = [];
 
         if (\is_array($socialLinksRaw)) {
@@ -247,6 +265,7 @@ final readonly class UpdateProfileAction implements ActionInterface
             $socialLinks,
             $publicBookmarks,
         );
+
         $this->userRepository->save($updated);
 
         return JsonResponse::success(['message' => 'Profil-Details erfolgreich aktualisiert!']);
@@ -263,10 +282,15 @@ final readonly class UpdateProfileAction implements ActionInterface
             $restricted[] = \strtolower($bdUser);
         }
 
-        $superadminCfg = $this->config->get('superadmin');
-        if (\is_array($superadminCfg)) {
-            $saUser = \is_string($superadminCfg['user'] ?? null) ? $superadminCfg['user'] : '';
-            $restricted[] = \strtolower($saUser);
+        $superAdmins = $this->config->get('superadmins');
+        if (\is_array($superAdmins)) {
+            foreach (\array_keys($superAdmins) as $saUser) {
+                if (!\is_string($saUser)) {
+                    continue;
+                }
+
+                $restricted[] = \strtolower($saUser);
+            }
         }
 
         return \in_array($lowerName, $restricted, true);

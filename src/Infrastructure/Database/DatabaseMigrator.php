@@ -39,9 +39,11 @@ final readonly class DatabaseMigrator implements DatabaseMigratorInterface
 
         $sqlFiles = [];
         foreach ($files as $file) {
-            if (\str_ends_with($file, '.sql')) {
-                $sqlFiles[] = $file;
+            if (!\str_ends_with($file, '.sql')) {
+                continue;
             }
+
+            $sqlFiles[] = $file;
         }
 
         \sort($sqlFiles);
@@ -56,8 +58,10 @@ final readonly class DatabaseMigrator implements DatabaseMigratorInterface
 
             $filePath = $migrationDir . '/' . $file;
             $sql = \file_get_contents($filePath);
-
-            if ($sql === false || \trim($sql) === '') {
+            if ($sql === false) {
+                continue;
+            }
+            if (\trim($sql) === '') {
                 continue;
             }
 
@@ -66,7 +70,7 @@ final readonly class DatabaseMigrator implements DatabaseMigratorInterface
             try {
                 $this->pdo->exec($sql);
 
-                $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::MIGRATIONS . '` (`version`, `applied_at`) VALUES (?, ?)');
+                $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::MIGRATIONS . '` (`version`, `applied_at`) VALUES (?, ?)'); // phpcs:ignore Generic.Files.LineLength.TooLong
                 $stmtInsert->execute([$file, $this->clock->nowAsString()]);
 
                 $this->pdo->commit();
@@ -104,9 +108,11 @@ final readonly class DatabaseMigrator implements DatabaseMigratorInterface
         $validApplied = [];
         if (\is_array($applied)) {
             foreach ($applied as $version) {
-                if (\is_string($version)) {
-                    $validApplied[] = $version;
+                if (!\is_string($version)) {
+                    continue;
                 }
+
+                $validApplied[] = $version;
             }
         }
 

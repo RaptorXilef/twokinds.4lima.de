@@ -51,6 +51,7 @@ final readonly class AuthService
 
             $this->setupSession($user->id, $user->roleId, $user->username->value, $user->passwordHash);
             $this->refreshSessionPermissions($user->roleId);
+
             $this->rateLimiter->clearAttempts($ip);
 
             return true;
@@ -188,17 +189,29 @@ final readonly class AuthService
             return false;
         }
 
-        $superCfg = $this->config->get('superadmin');
+        $superAdmins = $this->config->get('superadmins');
 
-        if (!\is_array($superCfg)) {
+        if (!\is_array($superAdmins)) {
             return false;
         }
 
-        $saUser = \is_string($superCfg['user'] ?? null) ? $superCfg['user'] : '';
-        $saPass = \is_string($superCfg['pass'] ?? null) ? $superCfg['pass'] : '';
-        $saLabel = \is_string($superCfg['label'] ?? null) ? $superCfg['label'] : 'Systembetreuer';
+        foreach ($superAdmins as $saUser => $adminCfg) {
+            if (!\is_string($saUser)) {
+                continue;
+            }
+            if (!\is_array($adminCfg)) {
+                continue;
+            }
+            if ($identifier !== $saUser) {
+                continue;
+            }
+            if ($saUser === '') {
+                continue;
+            }
 
-        if ($identifier === $saUser && $saUser !== '') {
+            $saPass = \is_string($adminCfg['pass'] ?? null) ? $adminCfg['pass'] : '';
+            $saLabel = \is_string($adminCfg['label'] ?? null) ? $adminCfg['label'] : 'Systembetreuer';
+
             if ($password === $saPass || \password_verify($password, $saPass)) {
                 $this->setupSession('sys_superadmin', 'admin', $saLabel);
                 $this->rateLimiter->clearAttempts($ip);

@@ -56,7 +56,6 @@ final readonly class SystemUpdateAction implements ActionInterface
                 'message' => 'System-Update erfolgreich! Cache geleert & DB-Schema geprüft.',
                 'migrations_applied' => $migrationsCount,
             ]);
-
         } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim System-Update: ' . $e->getMessage(), 500);
         }
