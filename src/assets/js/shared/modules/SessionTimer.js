@@ -6,6 +6,7 @@ export class SessionTimer {
         this.warningThreshold = options.warningThreshold || 120; // 2 Minuten vor Ablauf
         this.isFrontend = options.isFrontend || false;
 
+        this.lastActivity = Date.now();
         this.idleSeconds = 0;
         this.isWarningVisible = false;
         this.modalElement = null;
@@ -19,6 +20,14 @@ export class SessionTimer {
 
     init() {
         this.createModal();
+
+        const storedActivity = parseInt(localStorage.getItem('tk_last_activity') || '0', 10);
+        if (storedActivity > this.lastActivity) {
+            this.lastActivity = storedActivity;
+        } else {
+            localStorage.setItem('tk_last_activity', this.lastActivity.toString());
+        }
+
         // UI jede Sekunde aktualisieren
         this.intervalId = setInterval(() => this.tick(), 1000);
 
@@ -30,6 +39,18 @@ export class SessionTimer {
         const activityEvents = ['click', 'keydown', 'touchstart', 'scroll'];
         activityEvents.forEach((event) => {
             document.addEventListener(event, this.throttledReset, { passive: true });
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                this.syncWithStorage();
+            }
+        });
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'tk_last_activity') {
+                this.syncWithStorage();
+            }
         });
 
         this.updateUI();
@@ -77,11 +98,26 @@ export class SessionTimer {
         });
     }
 
+    syncWithStorage() {
+        const stored = parseInt(localStorage.getItem('tk_last_activity') || '0', 10);
+        if (stored > this.lastActivity) {
+            this.lastActivity = stored;
+
+            if (this.isWarningVisible) {
+                this.isWarningVisible = false;
+                if (this.modalElement) this.modalElement.style.display = 'none';
+            }
+        }
+        this.tick();
+    }
+
     tick() {
-        this.idleSeconds++;
+        const now = Date.now();
+        this.idleSeconds = Math.floor((now - this.lastActivity) / 1000);
+
         const remaining = this.maxIdleSeconds - this.idleSeconds;
 
-        if (remaining === this.warningThreshold && !this.isWarningVisible) {
+        if (remaining <= this.warningThreshold && !this.isWarningVisible && remaining > 0) {
             this.showWarning();
         }
 
@@ -130,6 +166,8 @@ export class SessionTimer {
         // Wenn das Warn-Modal offen ist, wird die Mausbewegung ignoriert (erzwingt Button-Klick)
         if (this.isWarningVisible) return;
 
+        this.lastActivity = Date.now();
+        localStorage.setItem('tk_last_activity', this.lastActivity.toString());
         this.idleSeconds = 0;
         this.updateUI();
 
@@ -143,6 +181,9 @@ export class SessionTimer {
     async extendSession() {
         this.modalElement.style.display = 'none';
         this.isWarningVisible = false;
+
+        this.lastActivity = Date.now();
+        localStorage.setItem('tk_last_activity', this.lastActivity.toString());
         this.idleSeconds = 0;
         this.updateUI();
 
@@ -166,6 +207,7 @@ export class SessionTimer {
         this.modalElement.style.display = 'none';
 
         const endpoint = this.isFrontend ? 'frontend_logout' : 'admin_logout';
+
         try {
             // Logout auslösen, aber absichtlich nicht auf Fehler prüfen
             await this.api.post(endpoint);
