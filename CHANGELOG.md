@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.19.5](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.4...v6.19.5) (2026-08-12)
+
+### 🐛 Bug Fixes
+
+* **core:** Resolve PHPStan, PHPMD, and PHPCS warnings across all layers ([b31b1f7](https://github.com/RaptorXilef/twokinds.4lima.de/commit/b31b1f77a07301e15cd767c0e03f37d31c6f5a62))
+* **database:** Add IF NOT EXISTS safeguard to column migrations ([f555fab](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f555fab1b64b0e17f928e1fc2c03b5016c37b49c))
+* **infrastructure:** Resolve PHPMD ShortVariable warning in FileRouteCache ([660fb78](https://github.com/RaptorXilef/twokinds.4lima.de/commit/660fb7821272ca62b118411b4c5710832830ac35))
+
 ## [6.19.4](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.3...v6.19.4) (2026-08-12)
 
 ### 🐛 Bug Fixes
