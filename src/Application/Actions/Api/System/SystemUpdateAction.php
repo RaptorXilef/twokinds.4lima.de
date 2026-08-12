@@ -11,7 +11,6 @@ use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\DatabaseMigratorInterface;
 use App\Contracts\System\RouteCacheInterface;
-use PDO;
 use Throwable;
 
 #[Route('GET', '/api/system_update')]
@@ -20,7 +19,6 @@ final readonly class SystemUpdateAction implements ActionInterface
     public function __construct(
         private ConfigInterface $config,
         private RouteCacheInterface $routeCache,
-        private PDO $pdo,
         private DatabaseMigratorInterface $migrator,
     ) {
     }
@@ -38,18 +36,12 @@ final readonly class SystemUpdateAction implements ActionInterface
         }
 
         try {
-            // 1. Routing-Cache leeren, damit neue Routen sofort aktiv werden
-            $this->routeCache->clearOld();
-            $cacheFile = $this->config->getStoragePath('cache/routes_v2.php');
-            if (\file_exists($cacheFile)) {
-                \unlink($cacheFile);
-            }
+            // 1. Routing-Cache restlos leeren (via Interface statt nativ)
+            $this->routeCache->clearAll();
 
-            // 2. PDO wurde durch Dependency Injection bereits geladen.
-            // Das triggert intern PdoFactory::verifyAndRepairSchema() für neue Tabellen.
-            $this->pdo->query('SELECT 1');
-
-            // 3. Ausstehende SQL-Migrationen (ALTER TABLE etc.) ausführen
+            // 2. Migrationen triggern. Da DatabaseMigrator Interface aus dem DI Container
+            // geladen wird, zwingt uns das ohnehin PDO einmal zu instanziieren und
+            // die Check/Repair Schema Routine auszulösen!
             $migrationsCount = $this->migrator->migrate();
 
             return JsonResponse::success([

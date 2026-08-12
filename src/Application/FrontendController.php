@@ -167,7 +167,7 @@ final readonly class FrontendController
             $pipeline->add(new AuthMiddleware($this->sessionManager, $this->config));
         }
 
-        return $pipeline->process($request, function (ServerRequest $req) use ($className): mixed {
+        $response = $pipeline->process($request, function (ServerRequest $req) use ($className): mixed {
             $action = $this->actionFactory->create($className);
             if ($action instanceof ActionInterface) {
                 return $action->execute($req);
@@ -180,5 +180,11 @@ final readonly class FrontendController
 
             return new HtmlResponse('404 Not Found', 404);
         });
+
+        if ($response instanceof ResponseInterface) {
+            return $response;
+        }
+
+        return null;
     }
 }

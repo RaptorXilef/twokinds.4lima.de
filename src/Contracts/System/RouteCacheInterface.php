@@ -19,4 +19,6 @@ interface RouteCacheInterface
     // phpcs:enable Generic.Files.LineLength.TooLong
 
     public function clearOld(): void;
+
+    public function clearAll(): void;
 }

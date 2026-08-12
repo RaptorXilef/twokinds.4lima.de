@@ -66,36 +66,53 @@ final readonly class DatabaseMigrator implements DatabaseMigratorInterface
                 continue;
             }
 
-            $this->pdo->beginTransaction();
-
-            try {
-                $this->pdo->exec($sql);
-
-                $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::MIGRATIONS . '` (`version`, `applied_at`) VALUES (?, ?)'); // phpcs:ignore Generic.Files.LineLength.TooLong
-                $stmtInsert->execute([$file, $this->clock->nowAsString()]);
-                if ($this->pdo->inTransaction()) {
-                    try {
-                        $this->pdo->commit();
-                    } catch (PDOException $e) {
-                        if (!\str_contains($e->getMessage(), 'active transaction')) {
-                            throw $e;
-                        }
-                    }
-                }
-                ++$count;
-            } catch (Throwable $e) {
-                if ($this->pdo->inTransaction()) {
-                    try {
-                        $this->pdo->rollBack();
-                    } catch (PDOException) {
-                    }
-                }
-
-                throw new RuntimeException("Migration fehlgeschlagen bei Datei {$file}: " . $e->getMessage(), 0, $e);
-            }
+            $this->applyMigration($file, $sql);
+            ++$count;
         }
 
         return $count;
+    }
+
+    private function applyMigration(string $file, string $sql): void
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            $this->pdo->exec($sql);
+
+            $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::MIGRATIONS . '` (`version`, `applied_at`) VALUES (?, ?)'); // phpcs:ignore Generic.Files.LineLength.TooLong
+            $stmtInsert->execute([$file, $this->clock->nowAsString()]);
+
+            if ($this->pdo->inTransaction()) {
+                try {
+                    $this->pdo->commit();
+                } catch (PDOException $e) {
+                    if (!\str_contains($e->getMessage(), 'active transaction')) {
+                        throw $e;
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            $this->safeRollback();
+
+            throw new RuntimeException("Migration fehlgeschlagen bei Datei {$file}: " . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * @SuppressWarnings("PHPMD.EmptyCatchBlock")
+     */
+    private function safeRollback(): void
+    {
+        if (!$this->pdo->inTransaction()) {
+            return;
+        }
+
+        try {
+            $this->pdo->rollBack();
+        } catch (PDOException) {
+            // Notfall-Rollback bewusst ignorieren, falls Transaktion implizit beendet wurde.
+        }
     }
 
     private function ensureMigrationsTableExists(): void

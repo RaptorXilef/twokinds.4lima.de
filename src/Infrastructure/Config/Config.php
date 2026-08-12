@@ -60,6 +60,7 @@ final readonly class Config implements ConfigInterface
         }
 
         // 2. CLI-Modus (Kommandozeile/Cronjobs) erkennen
+        // @phpstan-ignore-next-line
         $isCli = \php_sapi_name() === 'cli' || !isset($_SERVER['HTTP_HOST']);
         if ($isCli) {
             $fallbackRaw = $this->get('cli_fallback_url', 'http://localhost');
@@ -69,11 +70,13 @@ final readonly class Config implements ConfigInterface
         }
 
         // 3. Regulärer Web-Aufruf: Protokoll und Host dynamisch auslesen
+        // @phpstan-ignore-next-line
         $isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
-            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https'); // phpcs:ignore Generic.Files.LineLength.TooLong
 
         $protocol = $isSecure ? 'https' : 'http';
 
+        // @phpstan-ignore-next-line
         $hostRaw = $_SERVER['HTTP_HOST'] ?? 'localhost';
         $host = \is_string($hostRaw) ? $hostRaw : 'localhost';
 

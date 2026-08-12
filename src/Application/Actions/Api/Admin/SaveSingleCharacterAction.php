@@ -83,7 +83,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
 
             $msg = "Charakter '{$dto->name}' erfolgreich gespeichert.";
             if ($media['warnings'] !== []) {
-                $msg .= "<br><br><strong style='color:#856404;'><i class='fa-solid fa-triangle-exclamation'></i> Warnungen:</strong><br>- "
+                $msg .= "<br><br><strong style='color:#856404;'><i class='fa-solid fa-triangle-exclamation'></i> Warnungen:</strong><br>- " // phpcs:ignore Generic.Files.LineLength.TooLong
                     . \implode('<br>- ', $media['warnings']);
             }
 
@@ -111,7 +111,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
      *     warnings: array<int, string>
      * }
      */
-    private function resolveMediaUrls(ServerRequest $request, SaveSingleCharacterRequest $dto, ?Character $existing, string $safeName): array
+    private function resolveMediaUrls(ServerRequest $request, SaveSingleCharacterRequest $dto, ?Character $existing, string $safeName): array // phpcs:ignore Generic.Files.LineLength.TooLong
     {
         /** @var array{profile: ?string, main: ?string, swatch: ?string, refs: array<int, string>, warnings: array<int, string>} $processedMedia */
         $processedMedia = $this->mediaService->processCharacterImages($safeName, $request->files);

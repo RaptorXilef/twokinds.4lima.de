@@ -48,7 +48,7 @@ use DateTimeImmutable;
 })->covers(Chapter::class);
 
 \it('Character initializes full', function (): void {
-    $char = new Character(new CharacterId('char_0001'), 'Trace', 'trace.webp', 'Templar', 'Trace Legacy', 'Master', 'Male', '24', 'Mage', 'Human', null, 'English', 'main.webp', 'swatch.webp', ['ref1.webp']);
+    $char = new Character(new CharacterId('char_0001'), 'Trace', 'trace.webp', 'Templar', 'Trace Legacy', 'Master', 'Male', '24', 'Mage', 'Human', null, 'English', null, null, null, 'main.webp', 'swatch.webp', ['ref1.webp']);
     \expect($char->name)->toBe('Trace')->and($char->refSheets)->toHaveCount(1)->and($char->gender)->toBe('Male');
 })->covers(Character::class);
 

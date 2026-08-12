@@ -102,49 +102,28 @@ final readonly class CharacterListAction implements ActionInterface
      */
     private function appendCommaSeparatedFilters(array &$filterData, Character $char): void
     {
-        if ($char->rank !== null && $char->rank !== '') {
-            foreach (\array_map(trim(...), \explode(',', $char->rank)) as $rank) {
-                if ($rank === '') {
-                    continue;
-                }
+        $this->extractCommaItems($filterData['rank'], $char->rank);
+        $this->extractCommaItems($filterData['languages'], $char->languages);
+        $this->extractCommaItems($filterData['hairColor'], $char->hairColor);
+        $this->extractCommaItems($filterData['eyeColor'], $char->eyeColor);
+        $this->extractCommaItems($filterData['furColor'], $char->furColor);
+    }
 
-                $filterData['rank'][$rank] = true;
-            }
-        }
-
-        if ($char->languages !== null && $char->languages !== '') {
-            foreach (\array_map(trim(...), \explode(',', $char->languages)) as $lang) {
-                if ($lang === '') {
-                    continue;
-                }
-                $filterData['languages'][$lang] = true;
-            }
-        }
-        if ($char->hairColor !== null && $char->hairColor !== '') {
-            foreach (\array_map(trim(...), \explode(',', $char->hairColor)) as $hair) {
-                if ($hair === '') {
-                    continue;
-                }
-                $filterData['hairColor'][$hair] = true;
-            }
-        }
-        if ($char->eyeColor !== null && $char->eyeColor !== '') {
-            foreach (\array_map(trim(...), \explode(',', $char->eyeColor)) as $eye) {
-                if ($eye === '') {
-                    continue;
-                }
-                $filterData['eyeColor'][$eye] = true;
-            }
-        }
-        if ($char->furColor === null || $char->furColor === '') {
+    /**
+     * @param array<string, bool> &$targetArray
+     */
+    private function extractCommaItems(array &$targetArray, ?string $value): void
+    {
+        if ($value === null || $value === '') {
             return;
         }
 
-        foreach (\array_map(trim(...), \explode(',', $char->furColor)) as $fur) {
-            if ($fur === '') {
+        foreach (\array_map(trim(...), \explode(',', $value)) as $item) {
+            if ($item === '') {
                 continue;
             }
-            $filterData['furColor'][$fur] = true;
+
+            $targetArray[$item] = true;
         }
     }
 }

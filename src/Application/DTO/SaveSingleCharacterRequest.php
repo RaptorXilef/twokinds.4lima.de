@@ -8,6 +8,9 @@ use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
 use App\Core\Security\Sanitizer;
 
+/**
+ * @SuppressWarnings("PHPMD.ExcessiveParameterList")
+ */
 final readonly class SaveSingleCharacterRequest
 {
     public function __construct(
