@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Database;
 
-/**
- * ! mysql schema
- * ! sql schema
- * ! myphp Datenbank
- */
 final class SchemaRegistry
 {
     /**
@@ -112,6 +107,9 @@ final class SchemaRegistry
                 `species` VARCHAR(100),
                 `subspecies` VARCHAR(100),
                 `languages` VARCHAR(255),
+                `hair_color` VARCHAR(255),
+                `eye_color` VARCHAR(255),
+                `fur_color` VARCHAR(255),
                 `main_pic` VARCHAR(255),
                 `swatch_pic` VARCHAR(255),
                 `ref_sheets` JSON

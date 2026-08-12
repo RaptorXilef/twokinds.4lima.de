@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * @var array  $perms
+ * @var array $perms
  * @var string $baseUrl
  */
 ?>
@@ -92,37 +92,65 @@ declare(strict_types=1);
                                 <input type="text"
                                        id="char_rank"
                                        name="rank"
-                                       list="dl-ranks"
+                                       data-datalist="dl-ranks"
                                        placeholder="z.B. Magier, Templer"
-                                       class="bg-content">
+                                       class="bg-content js-append-input">
                             </div>
                             <div class="form-group mb-0">
                                 <label for="species">Spezies</label>
                                 <input type="text"
                                        id="species"
                                        name="species"
-                                       list="dl-species"
+                                       data-datalist="dl-species"
                                        placeholder="z.B. Keidran, Mensch"
-                                       class="bg-content">
+                                       class="bg-content js-append-input">
                             </div>
                             <div class="form-group mb-0">
                                 <label for="subspecies">Subspezies</label>
                                 <input type="text"
                                        id="subspecies"
                                        name="subspecies"
-                                       list="dl-subspecies"
+                                       data-datalist="dl-subspecies"
                                        placeholder="z.B. Tiger, Wolf"
-                                       class="bg-content">
+                                       class="bg-content js-append-input">
                             </div>
                             <div class="form-group mb-0"
-                                 style="grid-column: span 2;">
+                                 style="grid-column: span 1;">
                                 <label for="languages">Sprachen (Kommagetrennt)</label>
                                 <input type="text"
                                        id="languages"
                                        name="languages"
-                                       list="dl-languages"
+                                       data-datalist="dl-languages"
                                        placeholder="z.B. Keidran, Mensch"
-                                       class="bg-content">
+                                       class="bg-content js-append-input">
+                            </div>
+
+                            <div class="form-group mb-0">
+                                <label for="hair_color">Haarfarbe</label>
+                                <input type="text"
+                                       id="hair_color"
+                                       name="hair_color"
+                                       data-datalist="dl-haircolor"
+                                       placeholder="z.B. Braun, Blond"
+                                       class="bg-content js-append-input">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="eye_color">Augenfarbe</label>
+                                <input type="text"
+                                       id="eye_color"
+                                       name="eye_color"
+                                       data-datalist="dl-eyecolor"
+                                       placeholder="z.B. Blau, Grün"
+                                       class="bg-content js-append-input">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="fur_color">Fellfarbe</label>
+                                <input type="text"
+                                       id="fur_color"
+                                       name="fur_color"
+                                       data-datalist="dl-furcolor"
+                                       placeholder="z.B. Weiß, Schwarz"
+                                       class="bg-content js-append-input">
                             </div>
                         </div>
 

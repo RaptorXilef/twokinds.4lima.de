@@ -55,6 +55,9 @@ export class CharacterFilter {
             subspecies: document.getElementById('char-filter-subspecies'),
             rank: document.getElementById('char-filter-rank'),
             languages: document.getElementById('char-filter-languages'),
+            haircolor: document.getElementById('char-filter-haircolor'),
+            eyecolor: document.getElementById('char-filter-eyecolor'),
+            furcolor: document.getElementById('char-filter-furcolor'),
         };
 
         // Debounce mit 250ms Verzögerung!
@@ -82,7 +85,9 @@ export class CharacterFilter {
         const subVal = this.filters.subspecies?.value || '';
         const rVal = this.filters.rank?.value || '';
         const lVal = this.filters.languages?.value || '';
-
+        const hcVal = this.filters.haircolor?.value || '';
+        const ecVal = this.filters.eyecolor?.value || '';
+        const fcVal = this.filters.furcolor?.value || '';
         let globalMatchCount = 0;
 
         document.querySelectorAll('.character-item').forEach((item) => {
@@ -95,7 +100,9 @@ export class CharacterFilter {
             if (subVal && item.dataset.subspecies !== subVal) isMatch = false;
             if (rVal && !item.dataset.rank.includes(rVal)) isMatch = false;
             if (lVal && !item.dataset.languages.includes(lVal)) isMatch = false;
-
+            if (hcVal && !item.dataset.haircolor.includes(hcVal)) isMatch = false;
+            if (ecVal && !item.dataset.eyecolor.includes(ecVal)) isMatch = false;
+            if (fcVal && !item.dataset.furcolor.includes(fcVal)) isMatch = false;
             item.style.display = isMatch ? '' : 'none';
             if (isMatch) globalMatchCount++;
         });

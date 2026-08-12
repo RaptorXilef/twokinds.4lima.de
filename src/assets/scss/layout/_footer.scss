@@ -31,8 +31,8 @@
     &__info-box {
         display: flex;
         flex-flow: row nowrap;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
         width: 100%;
         max-width: 1039px;
         padding: 8px;
@@ -67,8 +67,8 @@
 
         /* Verhindert, dass das globale max-width den Text nach links schiebt */
         p {
-            margin-left: auto;
             margin-right: auto;
+            margin-left: auto;
         }
     }
 

@@ -6,12 +6,12 @@ use App\Core\Entity\Character;
 
 /**
  * @var Character $character
- * @var array     $characterComics
- * @var string    $pageTitle
- * @var array     $settings
- * @var string    $appRoot
+ * @var array $characterComics
+ * @var string $pageTitle
+ * @var array $settings
+ * @var string $appRoot
  */
-$baseUrl         = \rtrim($settings['base_url'], '/');
+$baseUrl = \rtrim($settings['base_url'], '/');
 $placeholderPath = "{$baseUrl}/assets/images/system/placeholder.webp";
 
 // Das kleine Profilbild für den Header
@@ -59,7 +59,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                     </h3>
                 <?php } ?>
                 <!-- Biografische Daten (Ohne Kasten, elegant als Liste) -->
-                <?php if ($character->altNames || $character->gender || $character->age || $character->rank || $character->species || $character->languages) { ?>
+                <?php if ($character->altNames || $character->gender || $character->age || $character->rank || $character->species || $character->languages || $character->hairColor || $character->eyeColor || $character->furColor) { ?>
                     <ul class="list-none p-0 m-0"
                         style="line-height: 1.8;">
                         <?php if ($character->altNames) { ?>
@@ -73,7 +73,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                             // Keidran Alter-Magie!
                             $isKeidran = \stripos($character->species ?? '', 'k') !== false || \stripos($character->subspecies ?? '', 'k') !== false;
                             if ($isKeidran && \preg_match('/(\d+)/', $character->age, $matches)) {
-                                $rawAge   = (int) $matches[1];
+                                $rawAge = (int) $matches[1];
                                 $humanAge = \round($rawAge * 2.36); // Multiplikator für Keidran
                                 $displayAge .= " (~{$humanAge} äquivalent)";
                             } ?>
@@ -83,13 +83,22 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                             <li><strong>Klasse/Rang:</strong> <?php echo \htmlspecialchars($character->rank); ?></li>
                         <?php } ?>
                         <?php if ($character->species || $character->subspecies) {
-                            $sp             = $character->species ?: '';
-                            $sub            = $character->subspecies ?: '';
+                            $sp = $character->species ?: '';
+                            $sub = $character->subspecies ?: '';
                             $displaySpecies = \trim($sub . ' ' . $sp); ?>
                             <li><strong>Spezies:</strong> <?php echo \htmlspecialchars($displaySpecies); ?></li>
                         <?php } ?>
                         <?php if ($character->languages) { ?>
                             <li><strong>Sprachen:</strong> <?php echo \htmlspecialchars($character->languages); ?></li>
+                        <?php } ?>
+                        <?php if ($character->hairColor) { ?>
+                            <li><strong>Haarfarbe:</strong> <?php echo \htmlspecialchars($character->hairColor); ?></li>
+                        <?php } ?>
+                        <?php if ($character->eyeColor) { ?>
+                            <li><strong>Augenfarbe:</strong> <?php echo \htmlspecialchars($character->eyeColor); ?></li>
+                        <?php } ?>
+                        <?php if ($character->furColor) { ?>
+                            <li><strong>Fellfarbe:</strong> <?php echo \htmlspecialchars($character->furColor); ?></li>
                         <?php } ?>
                     </ul>
                 <?php } ?>
@@ -107,7 +116,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
             </div>
 
             <!-- Ref Sheets: Fließen elegant als Masonry-Grid (ohne Lücken) -->
-            <?php if (! empty($character->refSheets)) { ?>
+            <?php if (!empty($character->refSheets)) { ?>
                 <div class="masonry-grid-140">
                     <?php foreach ($character->refSheets as $sheet) { ?>
                         <a href="<?php echo $baseUrl; ?>/assets/images/characters/refsheets/<?php echo \htmlspecialchars($sheet); ?>" target="_blank" title="Reference Sheet (Vollbild)" class="masonry-item">
@@ -133,20 +142,20 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
             <?php } else { ?>
                 <div class="chapter-links tag-page-links">
                     <?php foreach ($characterComics as $comic) {
-                        $comicId   = $comic->id->value;
-                        $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+                        $comicId = $comic->id->value;
+                        $cb = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
                         $thumbDisk = "{$appRoot}/public/assets/images/comics/thumbnails/{$comicId}.webp";
                         $thumbPath = \file_exists($thumbDisk)
                             ? "{$baseUrl}/assets/images/comics/thumbnails/{$comicId}.webp{$cb}"
                             : "{$baseUrl}/assets/images/system/in-translation.webp";
-                        $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', \substr($comicId, 0, 8));
+                        $dateObj = \DateTimeImmutable::createFromFormat('Ymd', \substr($comicId, 0, 8));
                         $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $comicId;
-                        $pageName    = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
-                        $pageLink    = "{$baseUrl}/comic/{$comicId}"; ?>
+                        $pageName = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
+                        $pageLink = "{$baseUrl}/comic/{$comicId}"; ?>
                         <a href="<?php echo $pageLink; ?>" title="<?php echo \htmlspecialchars($pageName); ?>" class="loaded">
-<span><?php echo \htmlspecialchars($pageName); ?></span>
-<img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
-</a>
+                        <span><?php echo \htmlspecialchars($pageName); ?></span>
+                        <img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
+                        </a>
                     <?php } ?>
                 </div>
             <?php } ?>

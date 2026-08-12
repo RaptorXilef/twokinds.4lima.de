@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 /**
  * Erwartete Variablen:
- * @var array      $characters (Alle Charaktere aus der DB)
- * @var array      $groups (Alle Gruppen aus der DB)
+ * @var array $characters (Alle Charaktere aus der DB)
+ * @var array $groups (Alle Gruppen aus der DB)
  * @var array|null $limitToIds (Array aus IDs, falls nur bestimmte gezeigt werden sollen, sonst null)
- * @var string     $baseUrl
+ * @var string $baseUrl
  */
 $limitToIds ??= null;
 $placeholderPath = "{$baseUrl}/assets/images/system/placeholder.webp";
 
 // 1. Filtern und Mappen
-$charMap       = [];
+$charMap = [];
 $filteredChars = [];
 foreach ($characters as $char) {
-    if ($limitToIds !== null && ! \in_array($char->id->value, $limitToIds, true)) {
+    if ($limitToIds !== null && !\in_array($char->id->value, $limitToIds, true)) {
         continue; // Charakter ist auf dieser Comic-Seite nicht vorhanden
     }
     $charMap[$char->id->value] = $char;
-    $filteredChars[]           = $char;
+    $filteredChars[] = $char;
 }
 
 // Wenn nach dem Filtern nichts übrig ist (z.B. Filler-Seite), Modul gar nicht erst anzeigen
@@ -43,7 +43,7 @@ $alphaChars = $filteredChars;
 \usort($alphaChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
 
 $isFilteredView = $limitToIds !== null;
-$headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charaktere';
+$headerText = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charaktere';
 ?>
 
 <div class="comic-characters-container interactive"
@@ -89,7 +89,7 @@ $headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charak
                     <div class="character-group-list">
                         <?php foreach ($charsInThisGroup as $character) {
                             $picUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
-                            $link   = "{$baseUrl}/charaktere/" . \urlencode($character->id->value);
+                            $link = "{$baseUrl}/charaktere/" . \urlencode($character->id->value);
                             // Such-String generieren
                             $searchStr = \strtolower($character->name . ' ' . ($character->fullName ?? '') . ' ' . ($character->altNames ?? '') . ' ' . \strip_tags($character->description ?? ''));
                             ?>
@@ -100,13 +100,16 @@ $headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charak
                                  data-rank="<?php echo \htmlspecialchars($character->rank ?? ''); ?>"
                                  data-species="<?php echo \htmlspecialchars($character->species ?? ''); ?>"
                                  data-subspecies="<?php echo \htmlspecialchars($character->subspecies ?? ''); ?>"
-                                 data-languages="<?php echo \htmlspecialchars($character->languages ?? ''); ?>">
+                                 data-languages="<?php echo \htmlspecialchars($character->languages ?? ''); ?>"
+                                 data-haircolor="<?php echo \htmlspecialchars($character->hairColor ?? ''); ?>"
+                                 data-eyecolor="<?php echo \htmlspecialchars($character->eyeColor ?? ''); ?>"
+                                 data-furcolor="<?php echo \htmlspecialchars($character->furColor ?? ''); ?>">
                                 <a href = "<?php echo $link; ?>">
-<div class = "character-avatar-container">
-<img src = "<?php echo \htmlspecialchars($picUrl); ?>" alt = "<?php echo \htmlspecialchars($character->name); ?>" loading = "lazy">
-</div>
-<p class = "character-name"><?php echo \htmlspecialchars($character->name); ?></p>
-</a>
+                                <div class = "character-avatar-container">
+                                <img src = "<?php echo \htmlspecialchars($picUrl); ?>" alt = "<?php echo \htmlspecialchars($character->name); ?>" loading = "lazy">
+                                </div>
+                                <p class = "character-name"><?php echo \htmlspecialchars($character->name); ?></p>
+                                </a>
                             </div>
                         <?php } ?>
                     </div>
@@ -121,8 +124,8 @@ $headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charak
             <h4>A - Z</h4>
             <div class="character-group-list">
                 <?php foreach ($alphaChars as $character) {
-                    $picUrl    = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
-                    $link      = "{$baseUrl}/charaktere/" . \urlencode($character->id->value);
+                    $picUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
+                    $link = "{$baseUrl}/charaktere/" . \urlencode($character->id->value);
                     $searchStr = \strtolower($character->name . ' ' . ($character->fullName ?? '') . ' ' . ($character->altNames ?? '') . ' ' . \strip_tags($character->description ?? ''));
                     ?>
                     <div class="character-item"
@@ -132,21 +135,24 @@ $headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charak
                          data-rank="<?php echo \htmlspecialchars($character->rank ?? ''); ?>"
                          data-species="<?php echo \htmlspecialchars($character->species ?? ''); ?>"
                          data-subspecies="<?php echo \htmlspecialchars($character->subspecies ?? ''); ?>"
-                         data-languages="<?php echo \htmlspecialchars($character->languages ?? ''); ?>">
+                         data-languages="<?php echo \htmlspecialchars($character->languages ?? ''); ?>"
+                         data-haircolor="<?php echo \htmlspecialchars($character->hairColor ?? ''); ?>"
+                         data-eyecolor="<?php echo \htmlspecialchars($character->eyeColor ?? ''); ?>"
+                         data-furcolor="<?php echo \htmlspecialchars($character->furColor ?? ''); ?>">
                         <a href = "<?php echo $link; ?>">
-                    <div class = "character-avatar-container">
-                    <img src = "<?php echo \htmlspecialchars($picUrl); ?>" alt = "<?php echo \htmlspecialchars($character->name); ?>" loading = "lazy">
-                    </div>
-                    <p class = "character-name"><?php echo \htmlspecialchars($character->name); ?></p>
+                        <div class = "character-avatar-container">
+                        <img src = "<?php echo \htmlspecialchars($picUrl); ?>" alt = "<?php echo \htmlspecialchars($character->name); ?>" loading = "lazy">
+                        </div>
+                        <p class = "character-name"><?php echo \htmlspecialchars($character->name); ?></p>
 
-                    <div class = "character-tags">
-                    <?php if (isset($tagsMap[$character->id->value])) {
-                        foreach ($tagsMap[$character->id->value] as $tag) { ?>
-                    <span class = "char-tag"><?php echo \htmlspecialchars($tag); ?></span>
-                    <?php }
-                        } ?>
-                    </div>
-                    </a>
+                        <div class = "character-tags">
+                        <?php if (isset($tagsMap[$character->id->value])) {
+                            foreach ($tagsMap[$character->id->value] as $tag) { ?>
+                        <span class = "char-tag"><?php echo \htmlspecialchars($tag); ?></span>
+                        <?php }
+                            } ?>
+                        </div>
+                        </a>
                     </div>
                 <?php } ?>
             </div>

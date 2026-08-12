@@ -28,16 +28,18 @@ final readonly class CharacterListAction implements ActionInterface
 
         $characters = $this->charRepo->findAll();
         $groups = $this->groupRepo->findAll();
-
         $filterData = $this->buildFilterData($characters);
 
-        return $this->renderer->render('pages/frontend/character_list', [
-            'characters' => $characters,
-            'groups' => $groups,
-            'filterData' => $filterData,
-            'pageTitle' => 'Charaktere',
-            'siteDescription' => 'Lerne die Hauptcharaktere von TwoKinds kennen.',
-        ]);
+        return $this->renderer->render(
+            'pages/frontend/character_list',
+            [
+                'characters' => $characters,
+                'groups' => $groups,
+                'filterData' => $filterData,
+                'pageTitle' => 'Charaktere',
+                'siteDescription' => 'Lerne die Charaktere von TwoKinds kennen.',
+            ],
+        );
     }
 
     /**
@@ -54,6 +56,9 @@ final readonly class CharacterListAction implements ActionInterface
             'species' => [],
             'subspecies' => [],
             'languages' => [],
+            'hairColor' => [],
+            'eyeColor' => [],
+            'furColor' => [],
         ];
 
         foreach ($characters as $char) {
@@ -107,16 +112,39 @@ final readonly class CharacterListAction implements ActionInterface
             }
         }
 
-        if ($char->languages === null || $char->languages === '') {
+        if ($char->languages !== null && $char->languages !== '') {
+            foreach (\array_map(trim(...), \explode(',', $char->languages)) as $lang) {
+                if ($lang === '') {
+                    continue;
+                }
+                $filterData['languages'][$lang] = true;
+            }
+        }
+        if ($char->hairColor !== null && $char->hairColor !== '') {
+            foreach (\array_map(trim(...), \explode(',', $char->hairColor)) as $hair) {
+                if ($hair === '') {
+                    continue;
+                }
+                $filterData['hairColor'][$hair] = true;
+            }
+        }
+        if ($char->eyeColor !== null && $char->eyeColor !== '') {
+            foreach (\array_map(trim(...), \explode(',', $char->eyeColor)) as $eye) {
+                if ($eye === '') {
+                    continue;
+                }
+                $filterData['eyeColor'][$eye] = true;
+            }
+        }
+        if ($char->furColor === null || $char->furColor === '') {
             return;
         }
 
-        foreach (\array_map(trim(...), \explode(',', $char->languages)) as $lang) {
-            if ($lang === '') {
+        foreach (\array_map(trim(...), \explode(',', $char->furColor)) as $fur) {
+            if ($fur === '') {
                 continue;
             }
-
-            $filterData['languages'][$lang] = true;
+            $filterData['furColor'][$fur] = true;
         }
     }
 }

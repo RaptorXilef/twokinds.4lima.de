@@ -82,6 +82,33 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                         } ?>
                     </select>
                 </div>
+                <div>
+                    <label class="d-block font-small font-bold mb-5 text-faded">Haarfarbe</label>
+                    <select id="char-filter-haircolor">
+                        <option value="">Alle</option>
+                        <?php foreach ($filterData['hairColor'] as $v) {
+                            echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                        } ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="d-block font-small font-bold mb-5 text-faded">Augenfarbe</label>
+                    <select id="char-filter-eyecolor">
+                        <option value="">Alle</option>
+                        <?php foreach ($filterData['eyeColor'] as $v) {
+                            echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                        } ?>
+                    </select>
+                </div>
+                <div>
+                    <label class="d-block font-small font-bold mb-5 text-faded">Fellfarbe</label>
+                    <select id="char-filter-furcolor">
+                        <option value="">Alle</option>
+                        <?php foreach ($filterData['furColor'] as $v) {
+                            echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                        } ?>
+                    </select>
+                </div>
             </div>
             <div class="text-right mt-15">
                 <button type="button"

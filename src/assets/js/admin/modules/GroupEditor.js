@@ -103,7 +103,7 @@ export class GroupEditor {
             if (btnUp) {
                 e.preventDefault();
                 const group = btnUp.closest('.character-group');
-                if (group && group.previousElementSibling) {
+                if (group?.previousElementSibling) {
                     group.parentNode.insertBefore(group, group.previousElementSibling);
                     this.markDirty();
                 }
@@ -112,7 +112,7 @@ export class GroupEditor {
             if (btnDown) {
                 e.preventDefault();
                 const group = btnDown.closest('.character-group');
-                if (group && group.nextElementSibling) {
+                if (group?.nextElementSibling) {
                     group.parentNode.insertBefore(group.nextElementSibling, group);
                     this.markDirty();
                 }

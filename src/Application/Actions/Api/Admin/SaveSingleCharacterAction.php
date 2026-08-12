@@ -71,6 +71,9 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
                 species: $dto->species,
                 subspecies: $dto->subspecies,
                 languages: $dto->languages,
+                hairColor: $dto->hairColor,
+                eyeColor: $dto->eyeColor,
+                furColor: $dto->furColor,
                 mainPic: $media['mainPic'],
                 swatchPic: $media['swatchPic'],
                 refSheets: $media['refSheets'],
@@ -80,7 +83,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
 
             $msg = "Charakter '{$dto->name}' erfolgreich gespeichert.";
             if ($media['warnings'] !== []) {
-                $msg .= "<br><br><strong style='color:#856404;'><i class='fa-solid fa-triangle-exclamation'></i> Warnungen:</strong><br>- " // phpcs:ignore Generic.Files.LineLength.TooLong
+                $msg .= "<br><br><strong style='color:#856404;'><i class='fa-solid fa-triangle-exclamation'></i> Warnungen:</strong><br>- "
                     . \implode('<br>- ', $media['warnings']);
             }
 
@@ -108,7 +111,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
      *     warnings: array<int, string>
      * }
      */
-    private function resolveMediaUrls(ServerRequest $request, SaveSingleCharacterRequest $dto, ?Character $existing, string $safeName): array // phpcs:ignore Generic.Files.LineLength.TooLong
+    private function resolveMediaUrls(ServerRequest $request, SaveSingleCharacterRequest $dto, ?Character $existing, string $safeName): array
     {
         /** @var array{profile: ?string, main: ?string, swatch: ?string, refs: array<int, string>, warnings: array<int, string>} $processedMedia */
         $processedMedia = $this->mediaService->processCharacterImages($safeName, $request->files);
@@ -127,7 +130,6 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
         if ($processedProfile !== null) {
             return $processedProfile;
         }
-
         if ($dtoPicUrl === null || $dtoPicUrl === '') {
             return null;
         }

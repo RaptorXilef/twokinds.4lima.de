@@ -15,7 +15,9 @@ $allSpecies = [];
 $allSubspecies = [];
 $allLanguages = [];
 $allRanks = [];
-
+$allHairColors = [];
+$allEyeColors = [];
+$allFurColors = [];
 foreach ($characters as $c) {
     if ($c->gender) {
         $allGenders[$c->gender] = true;
@@ -43,35 +45,63 @@ foreach ($characters as $c) {
             }
         }
     }
+    if ($c->hairColor) {
+        foreach (\explode(',', $c->hairColor) as $h) {
+            if (\trim($h) !== '') {
+                $allHairColors[\trim($h)] = true;
+            }
+        }
+    }
+    if ($c->eyeColor) {
+        foreach (\explode(',', $c->eyeColor) as $e) {
+            if (\trim($e) !== '') {
+                $allEyeColors[\trim($e)] = true;
+            }
+        }
+    }
+    if ($c->furColor) {
+        foreach (\explode(',', $c->furColor) as $f) {
+            if (\trim($f) !== '') {
+                $allFurColors[\trim($f)] = true;
+            }
+        }
+    }
 }
-
 \ksort($allGenders);
 \ksort($allAges);
 \ksort($allSpecies);
 \ksort($allSubspecies);
 \ksort($allLanguages);
 \ksort($allRanks);
-
-?>
-
+\ksort($allHairColors);
+\ksort($allEyeColors);
+\ksort($allFurColors); ?>
 <datalist id="dl-species"><?php foreach (\array_keys($allSpecies) as $v) {
-    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
-} ?></datalist>
+                                echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+                            } ?></datalist>
 <datalist id="dl-subspecies"><?php foreach (\array_keys($allSubspecies) as $v) {
-    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
-} ?></datalist>
+                                    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+                                } ?></datalist>
 <datalist id="dl-languages"><?php foreach (\array_keys($allLanguages) as $v) {
-    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
-} ?></datalist>
+                                echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+                            } ?></datalist>
 <datalist id="dl-ranks"><?php foreach (\array_keys($allRanks) as $v) {
-    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
-} ?></datalist>
-
-<!-- ... ab hier dein normales HTML ... -->
+                            echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+                        } ?></datalist>
+<datalist id="dl-haircolor"><?php foreach (\array_keys($allHairColors) as $v) {
+                                echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+                            } ?></datalist>
+<datalist id="dl-eyecolor"><?php foreach (\array_keys($allEyeColors) as $v) {
+                                echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+                            } ?></datalist>
+<datalist id="dl-furcolor"><?php foreach (\array_keys($allFurColors) as $v) {
+                                echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+                            } ?></datalist>
 
 <!-- ========================================== -->
 <!-- SECTION: CHARAKTERE                        -->
 <!-- ========================================== -->
+
 <div class="table-controls actions-bar">
     <div class="top-actions">
         <?php if ($perms['char_edit']) { ?>
@@ -148,6 +178,33 @@ foreach ($characters as $c) {
             </select>
         </div>
         <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Haarfarbe</label>
+            <select id="char-filter-haircolor">
+                <option value="">Alle</option>
+                <?php foreach (\array_keys($allHairColors) as $v) {
+                    echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                } ?>
+            </select>
+        </div>
+        <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Augenfarbe</label>
+            <select id="char-filter-eyecolor">
+                <option value="">Alle</option>
+                <?php foreach (\array_keys($allEyeColors) as $v) {
+                    echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                } ?>
+            </select>
+        </div>
+        <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Fellfarbe</label>
+            <select id="char-filter-furcolor">
+                <option value="">Alle</option>
+                <?php foreach (\array_keys($allFurColors) as $v) {
+                    echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
+                } ?>
+            </select>
+        </div>
+        <div>
             <label class="d-block font-small font-bold mb-5 text-faded">Pro Seite</label>
             <select id="char-per-page">
                 <option value="15"
@@ -164,9 +221,7 @@ foreach ($characters as $c) {
                 class="button edit p-10 font-small"><i class="fa-solid fa-rotate-left"></i> Filter zurücksetzen</button>
     </div>
 </div>
-
 <div class="pagination-wrapper character-pagination"></div>
-
 <div class="sitemap-table-container">
     <table class="admin-table"
            id="characters-table">
@@ -185,11 +240,9 @@ foreach ($characters as $c) {
                         class="empty-table-message">Keine Charaktere angelegt.</td>
                 </tr>
             <?php } else { ?>
-                <?php
-                foreach ($characters as $char) {
+                <?php foreach ($characters as $char) {
                     $cId = $char->id->value;
                     $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/100x100?text=N/A';
-
                     $charData = \json_encode([
                         'id' => $cId,
                         'name' => $char->name,
@@ -203,21 +256,24 @@ foreach ($characters as $c) {
                         'species' => $char->species ?? '',
                         'subspecies' => $char->subspecies ?? '',
                         'languages' => $char->languages ?? '',
+                        'hairColor' => $char->hairColor ?? '',
+                        'eyeColor' => $char->eyeColor ?? '',
+                        'furColor' => $char->furColor ?? '',
                         'mainPic' => $char->mainPic ?? '',
                         'swatchPic' => $char->swatchPic ?? '',
-                        'refSheets' => $char->refSheets ?? [],
+                        'refSheets' => $char->refSheets ?? []
                     ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
-
-                    $searchStr = \strtolower($cId . ' ' . $char->name . ' ' . ($char->fullName ?? '') . ' ' . ($char->altNames ?? '') . ' ' . \strip_tags($char->description ?? ''));
-                    ?>
+                    $searchStr = \strtolower($cId . ' ' . $char->name . ' ' . ($char->fullName ?? '') . ' ' . ($char->altNames ?? '') . ' ' . \strip_tags($char->description ?? '')); ?>
                     <tr data-search="<?php echo \htmlspecialchars($searchStr); ?>"
                         data-gender="<?php echo \htmlspecialchars($char->gender ?? ''); ?>"
                         data-age="<?php echo \htmlspecialchars($char->age ?? ''); ?>"
                         data-rank="<?php echo \htmlspecialchars($char->rank ?? ''); ?>"
                         data-species="<?php echo \htmlspecialchars($char->species ?? ''); ?>"
                         data-subspecies="<?php echo \htmlspecialchars($char->subspecies ?? ''); ?>"
-                        data-languages="<?php echo \htmlspecialchars($char->languages ?? ''); ?>">
-
+                        data-languages="<?php echo \htmlspecialchars($char->languages ?? ''); ?>"
+                        data-haircolor="<?php echo \htmlspecialchars($char->hairColor ?? ''); ?>"
+                        data-eyecolor="<?php echo \htmlspecialchars($char->eyeColor ?? ''); ?>"
+                        data-furcolor="<?php echo \htmlspecialchars($char->furColor ?? ''); ?>">
                         <td class="mono"><?php echo \htmlspecialchars($cId); ?></td>
                         <td>
                             <img src="<?php echo \htmlspecialchars($pic); ?>"

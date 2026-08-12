@@ -23,6 +23,9 @@ final readonly class SaveSingleCharacterRequest
         public ?string $species,
         public ?string $subspecies,
         public ?string $languages,
+        public ?string $hairColor,
+        public ?string $eyeColor,
+        public ?string $furColor,
     ) {
     }
 
@@ -43,7 +46,7 @@ final readonly class SaveSingleCharacterRequest
             id: Sanitizer::string($data['id'] ?? 'new'),
             name: $name,
             picUrl: isset($data['pic_url']) && $data['pic_url'] !== '' ? Sanitizer::string($data['pic_url']) : null,
-            description: isset($data['description']) && $data['description'] !== '' ? Sanitizer::html($data['description']) : null, // HTML erlaubt
+            description: isset($data['description']) && $data['description'] !== '' ? Sanitizer::html($data['description']) : null,
             fullName: isset($data['full_name']) && $data['full_name'] !== '' ? Sanitizer::string($data['full_name']) : null,
             altNames: isset($data['alt_names']) && $data['alt_names'] !== '' ? Sanitizer::string($data['alt_names']) : null,
             gender: isset($data['gender']) && $data['gender'] !== '' ? Sanitizer::string($data['gender']) : null,
@@ -52,6 +55,9 @@ final readonly class SaveSingleCharacterRequest
             species: isset($data['species']) && $data['species'] !== '' ? Sanitizer::string($data['species']) : null,
             subspecies: isset($data['subspecies']) && $data['subspecies'] !== '' ? Sanitizer::string($data['subspecies']) : null,
             languages: isset($data['languages']) && $data['languages'] !== '' ? Sanitizer::string($data['languages']) : null,
+            hairColor: isset($data['hair_color']) && $data['hair_color'] !== '' ? Sanitizer::string($data['hair_color']) : null,
+            eyeColor: isset($data['eye_color']) && $data['eye_color'] !== '' ? Sanitizer::string($data['eye_color']) : null,
+            furColor: isset($data['fur_color']) && $data['fur_color'] !== '' ? Sanitizer::string($data['fur_color']) : null,
         );
         // phpcs:enable Generic.Files.LineLength.TooLong
     }

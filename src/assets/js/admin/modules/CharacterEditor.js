@@ -59,6 +59,7 @@ export class CharacterEditor {
             this.bindImageSelection();
             this.bindDropZones();
             this.bindLiveStateInputs();
+            this.initMultiSelect();
         }
 
         // WICHTIG: Warte bis der Tab per AJAX geladen wurde,
@@ -69,7 +70,51 @@ export class CharacterEditor {
             }
         });
     }
-
+    initMultiSelect() {
+        document.querySelectorAll('.js-append-input').forEach((input) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'multi-dropdown-wrapper';
+            wrapper.style.position = 'relative';
+            input.parentNode.insertBefore(wrapper, input);
+            wrapper.appendChild(input);
+            const dropdown = document.createElement('div');
+            dropdown.className = 'multi-dropdown-list hidden';
+            wrapper.appendChild(dropdown);
+            const datalistId = input.dataset.datalist;
+            input.addEventListener('focus', () => {
+                const datalist = document.getElementById(datalistId);
+                if (!datalist) return;
+                const options = Array.from(datalist.options)
+                    .map((opt) => opt.value)
+                    .filter(Boolean);
+                if (options.length === 0) return;
+                dropdown.innerHTML = '';
+                options.forEach((opt) => {
+                    const div = document.createElement('div');
+                    div.className = 'dropdown-item';
+                    div.textContent = opt;
+                    div.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        const currentVals = input.value
+                            .split(',')
+                            .map((s) => s.trim())
+                            .filter(Boolean);
+                        if (!currentVals.includes(opt)) {
+                            currentVals.push(opt);
+                            input.value = currentVals.join(', ');
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    });
+                    dropdown.appendChild(div);
+                });
+                dropdown.classList.remove('hidden');
+            });
+            input.addEventListener('blur', () => {
+                dropdown.classList.add('hidden');
+            });
+        });
+    }
     initTableLogic() {
         this.tableBody = document.querySelector('#characters-table tbody');
         this.paginationContainers = document.querySelectorAll('.character-pagination');
@@ -88,6 +133,9 @@ export class CharacterEditor {
             subspecies: document.getElementById('char-filter-subspecies'),
             rank: document.getElementById('char-filter-rank'),
             languages: document.getElementById('char-filter-languages'),
+            haircolor: document.getElementById('char-filter-haircolor'),
+            eyecolor: document.getElementById('char-filter-eyecolor'),
+            furcolor: document.getElementById('char-filter-furcolor'),
             perPage: document.getElementById('char-per-page'),
         };
 
@@ -142,6 +190,9 @@ export class CharacterEditor {
                 subspecies: this.filters.subspecies?.value || '',
                 rank: this.filters.rank?.value || '',
                 languages: this.filters.languages?.value || '',
+                haircolor: this.filters.haircolor?.value || '',
+                eyecolor: this.filters.eyecolor?.value || '',
+                furcolor: this.filters.furcolor?.value || '',
             };
             sessionStorage.setItem(this.stateKey, JSON.stringify(state));
         } catch (err) {
@@ -164,6 +215,9 @@ export class CharacterEditor {
                 if (this.filters.subspecies) this.filters.subspecies.value = s.subspecies || '';
                 if (this.filters.rank) this.filters.rank.value = s.rank || '';
                 if (this.filters.languages) this.filters.languages.value = s.languages || '';
+                if (this.filters.haircolor) this.filters.haircolor.value = s.haircolor || '';
+                if (this.filters.eyecolor) this.filters.eyecolor.value = s.eyecolor || '';
+                if (this.filters.furcolor) this.filters.furcolor.value = s.furcolor || '';
             }
         } catch (err) {
             console.warn('[CharacterEditor] Konnte Filter-Status nicht wiederherstellen:', err);
@@ -180,7 +234,9 @@ export class CharacterEditor {
         const subVal = this.filters.subspecies?.value || '';
         const rVal = this.filters.rank?.value || '';
         const lVal = this.filters.languages?.value || '';
-
+        const hcVal = this.filters.haircolor?.value || '';
+        const ecVal = this.filters.eyecolor?.value || '';
+        const fcVal = this.filters.furcolor?.value || '';
         const filteredRows = this.allRows.filter((row) => {
             let isMatch = true;
             if (sVal && !row.dataset.search.includes(sVal)) isMatch = false;
@@ -190,6 +246,9 @@ export class CharacterEditor {
             if (subVal && row.dataset.subspecies !== subVal) isMatch = false;
             if (rVal && !row.dataset.rank.includes(rVal)) isMatch = false;
             if (lVal && !row.dataset.languages.includes(lVal)) isMatch = false;
+            if (hcVal && !row.dataset.haircolor.includes(hcVal)) isMatch = false;
+            if (ecVal && !row.dataset.eyecolor.includes(ecVal)) isMatch = false;
+            if (fcVal && !row.dataset.furcolor.includes(fcVal)) isMatch = false;
             return isMatch;
         });
 
@@ -520,7 +579,9 @@ export class CharacterEditor {
         setValAndState('main_pic_url', 'mainPicUrl', '');
         setValAndState('swatch_pic_url', 'swatchPicUrl', '');
         setValAndState('ref_sheets_urls', 'refSheets', '');
-
+        setValAndState('hair_color', null, '');
+        setValAndState('eye_color', null, '');
+        setValAndState('fur_color', null, '');
         if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
             window.$('#char_description').trumbowyg('empty');
         }
@@ -580,8 +641,9 @@ export class CharacterEditor {
         setValAndState('species', null, payload.species);
         setValAndState('subspecies', null, payload.subspecies);
         setValAndState('languages', null, payload.languages);
-
-        // Richtige HTML ID und payload.description
+        setValAndState('hair_color', null, payload.hairColor);
+        setValAndState('eye_color', null, payload.eyeColor);
+        setValAndState('fur_color', null, payload.furColor);
         if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
             window.$('#char_description').trumbowyg('html', payload.description || '');
         }

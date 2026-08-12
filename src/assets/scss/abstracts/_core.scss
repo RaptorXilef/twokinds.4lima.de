@@ -38,7 +38,7 @@
     }
 
     // FIX: Sass Deprecation Warning - Modern if/else syntax
-    @if ($luma > 128) {
+    @if $luma > 128 {
         @return #000;
     } @else {
         @return #fff;
