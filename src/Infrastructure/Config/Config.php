@@ -72,7 +72,8 @@ final readonly class Config implements ConfigInterface
         // 3. Regulärer Web-Aufruf: Protokoll und Host dynamisch auslesen
         // @phpstan-ignore-next-line
         $isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
-            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https'); // phpcs:ignore Generic.Files.LineLength.TooLong
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https'); // @phpstan-ignore-line
 
         $protocol = $isSecure ? 'https' : 'http';
 

@@ -68,7 +68,6 @@ final class SystemBootstrapper
         \ini_set('session.use_strict_mode', '1');
 
         // Harte kryptografische Absicherung des Session-Cookies erzwingen!
-        // @phpstan-ignore-next-line
         \session_set_cookie_params([
             'lifetime' => 0,
             'path' => '/',
