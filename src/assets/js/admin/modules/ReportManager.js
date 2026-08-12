@@ -38,22 +38,21 @@ export class ReportManager {
         this.perPageSelect = document.getElementById('report-per-page');
         this.statusSelect = document.getElementById('report-status-filter');
         this.tableBody = document.querySelector('#reports-table tbody');
-        this.paginationContainer = document.getElementById('report-pagination');
+        this.paginationContainers = document.querySelectorAll('.report-pagination');
 
-        if (!this.tableBody || !this.paginationContainer) return;
+        if (!this.tableBody || this.paginationContainers.length === 0) return;
 
         this.allRows = Array.from(this.tableBody.querySelectorAll('tr')).filter(
             (row) => !row.classList.contains('empty-table-message')
         );
 
         this.stateKey = 'admin_dt_state_reports';
-
         this.repPage = 1;
         this.repLimit = this.perPageSelect?.value || '15';
         this.repSearch = '';
         this.repStatus = this.statusSelect?.value || 'open';
 
-        this.restoreTableState(); // Lade alten State!
+        this.restoreTableState();
 
         this.searchInput?.addEventListener('input', (e) => {
             this.repSearch = e.target.value;
@@ -155,9 +154,11 @@ export class ReportManager {
             emptyMsg.style.display = 'none';
         }
 
-        renderPagination(this.paginationContainer, this.repPage, totalPages, (newPage) => {
-            this.repPage = newPage;
-            this.renderTable();
+        this.paginationContainers.forEach((container) => {
+            renderPagination(container, this.repPage, totalPages, (newPage) => {
+                this.repPage = newPage;
+                this.renderTable();
+            });
         });
 
         this.saveTableState(); // Speichere den Zustand bei jedem Rendern!
@@ -167,6 +168,7 @@ export class ReportManager {
         // 1. Event Delegation für die Tabelle (Berichte ansehen)
         this.section.addEventListener('click', (e) => {
             const btnView = e.target.closest('.btn-view-report');
+
             if (btnView) {
                 e.preventDefault();
                 try {
@@ -322,6 +324,7 @@ export class ReportManager {
         const debugRaw = document.getElementById('rep-modal-debug');
         const debugRendered = document.getElementById('rep-modal-debug-rendered');
         const btnToggleDebug = document.getElementById('btn-toggle-debug-view');
+
         const submitterIdEl = document.getElementById('rep-modal-submitter-id');
 
         if (submitterIdEl) {

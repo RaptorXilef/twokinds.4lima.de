@@ -6,6 +6,7 @@ export class MailManager {
         this.modalManager = modalManager;
         this.notifications = notifications;
         this.tracker = tracker;
+
         this.section = document.getElementById('section-mails');
 
         if (this.section) {
@@ -21,7 +22,7 @@ export class MailManager {
                 tableBodySelector: '#mail-queue-table tbody',
                 searchInputId: 'mail-queue-search',
                 perPageSelectId: 'mail-queue-per-page',
-                paginationContainerId: 'mail-queue-pagination',
+                paginationContainerSelector: '.mail-queue-pagination',
             });
         }
 
@@ -31,15 +32,15 @@ export class MailManager {
                 tableBodySelector: '#mail-log-table tbody',
                 searchInputId: 'mail-log-search',
                 perPageSelectId: 'mail-log-per-page',
-                paginationContainerId: 'mail-log-pagination',
+                paginationContainerSelector: '.mail-log-pagination',
             });
         }
     }
 
     bindEvents() {
         this.section.addEventListener('click', (e) => {
-            // --- Tab-Switching Logik ---
             const tabBtn = e.target.closest('.media-tab-btn');
+
             if (tabBtn) {
                 e.preventDefault();
 
@@ -75,10 +76,12 @@ export class MailManager {
                 e.preventDefault();
                 this.openPreview(btnPreview.dataset.id);
             }
+
             if (btnSend) {
                 e.preventDefault();
                 this.sendMailNow(btnSend.dataset.id, btnSend);
             }
+
             if (btnResend) {
                 e.preventDefault();
                 this.requeueMail(btnResend.dataset.id, btnResend);
@@ -125,6 +128,7 @@ export class MailManager {
 
         const fd = new FormData();
         fd.append('id', id);
+
         const res = await this.api.post('send_queued_mail', fd);
 
         if (res.success) {
@@ -146,6 +150,7 @@ export class MailManager {
 
         const fd = new FormData();
         fd.append('id', id);
+
         const res = await this.api.post('requeue_mail', fd);
 
         if (res.success) {

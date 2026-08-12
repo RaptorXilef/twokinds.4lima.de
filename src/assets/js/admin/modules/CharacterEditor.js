@@ -72,9 +72,9 @@ export class CharacterEditor {
 
     initTableLogic() {
         this.tableBody = document.querySelector('#characters-table tbody');
-        this.paginationContainer = document.getElementById('character-pagination');
+        this.paginationContainers = document.querySelectorAll('.character-pagination');
 
-        if (!this.tableBody || !this.paginationContainer) return;
+        if (!this.tableBody || this.paginationContainers.length === 0) return;
 
         this.allRows = Array.from(this.tableBody.querySelectorAll('tr')).filter(
             (row) => !row.classList.contains('empty-table-message')
@@ -90,9 +90,10 @@ export class CharacterEditor {
             languages: document.getElementById('char-filter-languages'),
             perPage: document.getElementById('char-per-page'),
         };
-        this.btnReset = document.getElementById('char-filter-reset');
 
+        this.btnReset = document.getElementById('char-filter-reset');
         this.stateKey = 'admin_dt_state_characters';
+
         this.charPage = 1;
         this.charLimit = '15';
 
@@ -204,6 +205,7 @@ export class CharacterEditor {
         this.allRows.forEach((row) => {
             row.style.display = 'none';
         });
+
         filteredRows.slice(startIndex, endIndex).forEach((row) => {
             row.style.display = '';
         });
@@ -222,9 +224,11 @@ export class CharacterEditor {
             emptyMsg.style.display = 'none';
         }
 
-        renderPagination(this.paginationContainer, this.charPage, totalPages, (newPage) => {
-            this.charPage = newPage;
-            this.renderTable();
+        this.paginationContainers.forEach((container) => {
+            renderPagination(container, this.charPage, totalPages, (newPage) => {
+                this.charPage = newPage;
+                this.renderTable();
+            });
         });
 
         this.saveTableState();
@@ -563,7 +567,7 @@ export class CharacterEditor {
         const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val || '';
-            if (stateProp) this.state[stateProp] = val || ''; // Triggert Vorschau!
+            if (stateProp) this.state[stateProp] = val || '';
         };
 
         setValAndState('id', null, payload.id);

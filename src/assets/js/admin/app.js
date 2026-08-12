@@ -28,6 +28,7 @@ const requestIdleCallbackPolyfill =
             });
         }, 1);
     });
+
 window.requestIdleCallback = requestIdleCallbackPolyfill;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -58,8 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         new MobileMenu(); // FIX: Hamburger Menü Logik laden!
         new TabManager(api);
         new ThemeManager();
-        // TIMER INIT ÜBER KLASSE
-        new SessionTimer(api, '.js-session-timer', { notifications });
+        new SessionTimer(api, 'admin-session-timer', { notifications });
     } catch (err) {
         console.error('[AdminApp] Fehler bei der Core-UI Initialisierung:', err);
     }
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     tableBodySelector: '.comic-editor-table tbody',
                     searchInputId: 'comic-search',
                     perPageSelectId: 'comic-per-page',
-                    paginationContainerSelector: '.comic-pagination', // FIX: Selector statt ID
+                    paginationContainerSelector: '.comic-pagination',
                 });
             }
 

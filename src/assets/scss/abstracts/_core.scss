@@ -37,7 +37,12 @@
         $luma: (0.2126 * $red) + (0.7152 * $green) + (0.0722 * $blue);
     }
 
-    @return if($luma > 128, #000, #fff);
+    // FIX: Sass Deprecation Warning - Modern if/else syntax
+    @if ($luma > 128) {
+        @return #000;
+    } @else {
+        @return #fff;
+    }
 }
 
 // ==========================================================================
