@@ -8,6 +8,7 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\DatabaseMigratorInterface;
 use App\Contracts\Utils\ClockInterface;
 use PDO;
+use PDOException;
 use RuntimeException;
 use Throwable;
 
@@ -72,11 +73,23 @@ final readonly class DatabaseMigrator implements DatabaseMigratorInterface
 
                 $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::MIGRATIONS . '` (`version`, `applied_at`) VALUES (?, ?)'); // phpcs:ignore Generic.Files.LineLength.TooLong
                 $stmtInsert->execute([$file, $this->clock->nowAsString()]);
-
-                $this->pdo->commit();
+                if ($this->pdo->inTransaction()) {
+                    try {
+                        $this->pdo->commit();
+                    } catch (PDOException $e) {
+                        if (!\str_contains($e->getMessage(), 'active transaction')) {
+                            throw $e;
+                        }
+                    }
+                }
                 ++$count;
             } catch (Throwable $e) {
-                $this->pdo->rollBack();
+                if ($this->pdo->inTransaction()) {
+                    try {
+                        $this->pdo->rollBack();
+                    } catch (PDOException) {
+                    }
+                }
 
                 throw new RuntimeException("Migration fehlgeschlagen bei Datei {$file}: " . $e->getMessage(), 0, $e);
             }
@@ -88,9 +101,9 @@ final readonly class DatabaseMigrator implements DatabaseMigratorInterface
     private function ensureMigrationsTableExists(): void
     {
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS `' . Table::MIGRATIONS . '` (
-            `version` VARCHAR(255) PRIMARY KEY,
-            `applied_at` DATETIME NOT NULL
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;');
+                `version` VARCHAR(255) PRIMARY KEY,
+                `applied_at` DATETIME NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;');
     }
 
     /**
