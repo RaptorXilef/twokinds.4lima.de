@@ -1,5 +1,14 @@
 # Changelog
 
+## [6.19.3](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.2...v6.19.3) (2026-08-12)
+
+### 🐛 Bug Fixes
+
+* **database:** Add AFTER clause to character color columns migration ([362994e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/362994e887dddd64feee5141bca68cbc7a109575))
+* **frontend:** Synchronize JS SessionTimer with system clock and local storage ([09c6429](https://github.com/RaptorXilef/twokinds.4lima.de/commit/09c64299b66129586d1cd8af53294e4d1a3dd868)), closes [#120](https://github.com/RaptorXilef/twokinds.4lima.de/issues/120)
+* **infrastructure:** Add hair, eye and fur color properties to Characters and introduce custom multi-select UI ([f881032](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f881032a781a874d52ada3639f1aa1bad53fefda))
+* **tests:** Update ConfigTest to match the new dynamic getBaseUrl logic ([0989167](https://github.com/RaptorXilef/twokinds.4lima.de/commit/09891671572a841c1fd2ff5df12ad8c3ee3017e6))
+
 ## [6.19.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.1...v6.19.2) (2026-08-12)
 
 ### 🐛 Bug Fixes
