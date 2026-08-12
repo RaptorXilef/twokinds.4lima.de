@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.19.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.1...v6.19.2) (2026-08-12)
+
+### 🐛 Bug Fixes
+
+* **admin:** Resolve broken JS filters and SCSS deprecation warnings ([08827b9](https://github.com/RaptorXilef/twokinds.4lima.de/commit/08827b93f01be39a826ede057ad5178195b18369)), references [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **admin:** Resolve UnsavedTracker false positives and unhide Newsletter buttons ([ed1a2b7](https://github.com/RaptorXilef/twokinds.4lima.de/commit/ed1a2b7fdfddcf66a12bf56fd2b5dd637d6c4daa))
+* **architecture:** Cleanup SCSS file structure and eliminate Firefox dark mode FOUC ([8ec6bef](https://github.com/RaptorXilef/twokinds.4lima.de/commit/8ec6bef1dbd58c12fd4dcdb810affe718d6941a9)), references [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **frontend:** Comprehensive mobile UI polish and UX enhancements ([e27f022](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e27f022f3f22d15fddfbce8767f2d940939c4bdb)), references [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **frontend:** Correct banner alignment, header element order, and footer character spacing ([e8d87f0](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e8d87f088f9d3dc79b6ff803a65d4c8f9a9970ee)), references [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **frontend:** Eliminate purple background flash (FOUC) on slow connections ([9e70d94](https://github.com/RaptorXilef/twokinds.4lima.de/commit/9e70d948e07e932aa3b5532bf48e3eb237081e4a)), closes [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119), references [#2b2a33](https://github.com/RaptorXilef/twokinds.4lima.de/issues/2b2a33)
+* **js:** Restore MobileMenu in admin and fix SessionTimer selector logic ([10b4571](https://github.com/RaptorXilef/twokinds.4lima.de/commit/10b45714fc98a4d938aa785619a81c3808cada2c)), references [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **ui:** Resolve theme toggle background issue in layout headers ([f23c120](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f23c120fd8b6e90b7ad4f65ffe84f5b39adff07c)), references [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+* **ui:** Restore 3-column footer layout and center alignment ([a236a2f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a236a2fc3cf38da37e256670519bc0c59eba2245)), references [#119](https://github.com/RaptorXilef/twokinds.4lima.de/issues/119)
+
 ## [6.19.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.0...v6.19.1) (2026-08-11)
 
 ### 🐛 Bug Fixes
