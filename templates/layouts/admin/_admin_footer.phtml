@@ -6,12 +6,18 @@ declare(strict_types=1); ?>
 
 <footer class="l-footer">
     <div class="l-footer__info-box">
+        <div class="l-footer__left"></div>
+
         <div class="l-footer__text">
             <p>Twokinds Admin-Panel</p>
             <p>Programmierung:
                 <a href="https://github.com/RaptorXilef" target="_blank" rel="noopener noreferrer">Felix Maywald</a></p>
-            <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version'] ?? 'x'); ?> | <a href="<?php echo $baseUrl ?? ''; ?>/" target="_blank">Zur Webseite</a></div>
+            <div class="website-version">
+                v<?php echo \htmlspecialchars($settings['app_version'] ?? 'x'); ?> | <a href="<?php echo $baseUrl ?? ''; ?>/" target="_blank">Zur Webseite</a>
+            </div>
         </div>
+
+        <div class="l-footer__right"></div>
     </div>
 
     <div class="l-footer__characters">
@@ -37,3 +43,6 @@ declare(strict_types=1); ?>
     </div>
 </footer>
 </div> <!-- End .l-page-wrapper -->
+</body>
+
+</html>

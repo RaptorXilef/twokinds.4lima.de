@@ -15,6 +15,8 @@ use App\Contracts\System\AssetHelperInterface;
 
 <footer class="l-footer">
     <div class="l-footer__info-box">
+        <div class="l-footer__left"></div>
+
         <div class="l-footer__text">
             <p>Twokinds auf Deutsch</p>
             <p>Übersetzung & Programmierung:
@@ -26,10 +28,13 @@ use App\Contracts\System\AssetHelperInterface;
             <p>Webspace kostenlos bereitgestellt durch:
                 <a href="https://www.lima-city.de/" target="_blank" rel="noopener noreferrer">Lima City</a>
             </p>
+
             <!-- Dynamische, serverseitige Versionsnummer aus package.json und Fehler-Link -->
             <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version'] ?? 'x'); ?> | <a href="#" id="open-global-report">Fehler melden</a>
+            </div>
         </div>
-        </div>
+
+        <div class="l-footer__right"></div>
     </div>
 
     <div class="l-footer__characters">
@@ -75,6 +80,7 @@ use App\Contracts\System\AssetHelperInterface;
 <script type="module"
         nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
         src="<?php echo $asset->url('assets/js/frontend/app.js'); ?>"></script>
+
 </body>
 
 </html>
