@@ -179,6 +179,7 @@ export class ComicEditor {
             previewTextId: 'preview-name-hires',
             tracker: this.tracker,
         });
+
         DragDropService.bind('comic-drop-zone-lowres', 'upload_lowres', {
             previewTextId: 'preview-name-lowres',
             tracker: this.tracker,
@@ -188,6 +189,7 @@ export class ComicEditor {
     // --- BILD VORSCHAU HELPER ---
     loadPreviewWithProbe(imgElement, basePath, extensions, fallbackUrl) {
         if (!imgElement) return;
+
         let i = 0;
         imgElement.src = 'https://placehold.co/100x140?text=L%C3%A4dt...';
 
@@ -204,6 +206,7 @@ export class ComicEditor {
             testImg.onerror = testNext;
             testImg.src = `${basePath}.${ext}`;
         };
+
         testNext();
     }
 
@@ -339,6 +342,12 @@ export class ComicEditor {
         DragDropService.reset('comic-drop-zone-hires', 'preview-name-hires');
         DragDropService.reset('comic-drop-zone-lowres', 'preview-name-lowres');
 
+        // Verstecke die Newsletter Buttons, da der Comic ja noch neu ist
+        const btnNlTrans = document.getElementById('btn-nl-trans');
+        const btnNlFull = document.getElementById('btn-nl-full');
+        if (btnNlTrans) btnNlTrans.classList.add('hidden');
+        if (btnNlFull) btnNlFull.classList.add('hidden');
+
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Neuen Comic hinzufügen';
 
@@ -402,6 +411,21 @@ export class ComicEditor {
 
         DragDropService.reset('comic-drop-zone-hires', 'preview-name-hires');
         DragDropService.reset('comic-drop-zone-lowres', 'preview-name-lowres');
+
+        // Mache die Newsletter-Buttons bei einem bestehenden Comic sichtbar und fülle die Daten ab!
+        const btnNlTrans = document.getElementById('btn-nl-trans');
+        const btnNlFull = document.getElementById('btn-nl-full');
+
+        if (btnNlTrans) {
+            btnNlTrans.classList.remove('hidden');
+            btnNlTrans.dataset.page = payload.id;
+            btnNlTrans.dataset.url = `${this.api.baseUrl}/comic/${payload.id}`;
+        }
+        if (btnNlFull) {
+            btnNlFull.classList.remove('hidden');
+            btnNlFull.dataset.page = payload.id;
+            btnNlFull.dataset.url = `${this.api.baseUrl}/comic/${payload.id}`;
+        }
 
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Comic bearbeiten';

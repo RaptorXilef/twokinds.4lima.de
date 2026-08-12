@@ -12,7 +12,18 @@ export class UnsavedTracker {
 
         // Globales Tracking aller Formular-Eingaben
         document.addEventListener('input', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            // Ignoriere Such- und Filterfelder, um falsche Warnungen zu vermeiden
+            if (e.target.closest('.table-controls') || e.target.closest('.filter-form')) {
+                return;
+            }
+
+            // Tracke normale Inputs, Textareas, Selects und contenteditable (z.B. Gruppen-Titel)
+            if (
+                e.target.tagName === 'INPUT' ||
+                e.target.tagName === 'TEXTAREA' ||
+                e.target.tagName === 'SELECT' ||
+                e.target.isContentEditable
+            ) {
                 this.markDirty();
             }
         });
