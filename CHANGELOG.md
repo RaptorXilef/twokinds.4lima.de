@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.19.6](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.5...v6.19.6) (2026-08-12)
+
+### 🐛 Bug Fixes
+
+* **backup:** Resolve "no active transaction" error during restore ([757ad18](https://github.com/RaptorXilef/twokinds.4lima.de/commit/757ad183f26adba72cb7e8b303849ed1c0aa43ce)), closes [#121](https://github.com/RaptorXilef/twokinds.4lima.de/issues/121)
+
+### 📚 Dokumentation
+
+* update README and add v6 release notes ([a9058a5](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a9058a5ba3bb438b34951210a1635a2ef44d5e65))
+
 ## [6.19.5](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.4...v6.19.5) (2026-08-12)
 
 ### 🐛 Bug Fixes
