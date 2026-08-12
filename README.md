@@ -40,7 +40,6 @@
   - [Systemanforderungen](#systemanforderungen)
   - [Lokales Setup](#lokales-setup)
 - [🧪 Code-Qualität \& Testing](#-code-qualität--testing)
-- [](#)
 - [🤝 Mitwirken (Contributing \& CLA)](#-mitwirken-contributing--cla)
 - [📚 Dokumentation \& Historie](#-dokumentation--historie)
 - [⚖️ Lizenz \& Urheberrecht](#️-lizenz--urheberrecht)
@@ -162,7 +161,6 @@ npm run chk         # Prüft JS/CSS via Biome, Stylelint, CSpell und Markuplint
 npm run fix         # Auto-Fixes für Frontend Assets
 ```
 
-![GitHub commit activity](https://img.shields.io/github/commit-activity/w/RaptorXilef/twokinds.4lima.de)
 ---
 
 ## 🤝 Mitwirken (Contributing & CLA)

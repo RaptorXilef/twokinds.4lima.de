@@ -7,9 +7,9 @@ namespace App\Infrastructure\System;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\BackupServiceInterface;
 use App\Contracts\System\JsonHelperInterface;
-use Exception;
 use FTP\Connection;
 use PDO;
+use PDOException;
 use RuntimeException;
 use Throwable;
 use ZipArchive;
@@ -134,12 +134,35 @@ final readonly class SystemBackupService implements BackupServiceInterface
             }
 
             $this->pdo->exec('SET FOREIGN_KEY_CHECKS=1');
-            $this->pdo->commit();
-        } catch (Exception $e) {
-            $this->pdo->rollBack();
+            if ($this->pdo->inTransaction()) {
+                try {
+                    $this->pdo->commit();
+                } catch (PDOException $e) {
+                    if (!\str_contains($e->getMessage(), 'active transaction')) {
+                        throw $e;
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            $this->safeRollback();
             $this->pdo->exec('SET FOREIGN_KEY_CHECKS=1');
 
             throw $e;
+        }
+    }
+
+    /**
+     * @SuppressWarnings("PHPMD.EmptyCatchBlock")
+     */
+    private function safeRollback(): void
+    {
+        if (!$this->pdo->inTransaction()) {
+            return;
+        }
+
+        try {
+            $this->pdo->rollBack();
+        } catch (PDOException) {
         }
     }
 
