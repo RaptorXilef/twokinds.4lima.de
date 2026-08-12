@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.19.4](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.3...v6.19.4) (2026-08-12)
+
+### 🐛 Bug Fixes
+
+* **database:** Resolve "no active transaction" error during migrations ([2e0b94c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/2e0b94ca44bc024eb771e27a103b3e754b5531bf))
+
 ## [6.19.3](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.2...v6.19.3) (2026-08-12)
 
 ### 🐛 Bug Fixes
