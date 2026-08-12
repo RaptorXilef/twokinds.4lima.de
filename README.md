@@ -1,160 +1,226 @@
 <p align="center">
-  <a href="https://twokinds.4lima.de"><img src="https://raw.githubusercontent.com/RaptorXilef/twokinds.4lima.de/refs/heads/main/public/assets/images/layout/banner_night.webp" alt="Projekt Logo"></a>
+  <a href="https://twokinds.4lima.de">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/RaptorXilef/twokinds.4lima.de/refs/heads/main/public/assets/images/theme/banners/night.webp">
+      <img src="https://raw.githubusercontent.com/RaptorXilef/twokinds.4lima.de/refs/heads/main/public/assets/images/theme/banners/night.webp" alt="Twokinds auf Deutsch - Banner">
+    </picture>
+  </a>
 </p>
 
-<h1 align="center">Twokinds Deutsch - Comic-Webseite</h1>
+<h1 align="center">Twokinds auf Deutsch - Das Webcomic-Portal</h1>
 
 <p align="center">
-  <!-- [Version Badge (Beispiel, bitte anpassen)](https://shields.io/badges/git-hub-release) -->
-  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/releases/latest"><img src="https://img.shields.io/github/release-date/RaptorXilef/twokinds.4lima.de?label=Release%20Tag" alt="GitHub Release Date"> <img src="https://img.shields.io/github/v/release/RaptorXilef/twokinds.4lima.de?sort=semver" alt="Version"></a>
-  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/tags"><img src="https://img.shields.io/github/v/tag/RaptorXilef/twokinds.4lima.de?sort=semver" alt="BetaVersion"></a>
-  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/commits/main/"><img src="https://img.shields.io/github/commits-since/RaptorXilef/twokinds.4lima.de/latest?label=Commits%20seit%20letztem%20Release" alt="GitHub commits since latest release"> <img src="https://img.shields.io/github/last-commit/RaptorXilef/twokinds.4lima.de/main?label=Letzter%20Commit" alt="Letzter Commit"></a></a>
-  </p>
-  <p align="center">
-  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/issues"><img src="https://img.shields.io/github/issues/RaptorXilef/twokinds.4lima.de.svg" alt="Issues"></a>
-  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/milestones"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress/RaptorXilef/twokinds.4lima.de/1"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress-percent/RaptorXilef/twokinds.4lima.de/1"></a>
-</p><p align="center">
-  <!--<a href="https://github.com/RaptorXilef/twokinds.4lima.de/milestones"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress/RaptorXilef/twokinds.4lima.de/3"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress-percent/RaptorXilef/twokinds.4lima.de/3"></a>-->
-  <!--<img src="https://img.shields.io/github/checks-status/RaptorXilef/twokinds.4lima.de/main" alt="Checks Status">-->
-  <br>
-  </p>
-  <br><br>
+  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/releases/latest"><img src="https://img.shields.io/github/release-date/RaptorXilef/twokinds.4lima.de?label=Release%20Tag&style=flat-square" alt="GitHub Release Date"></a>
+  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/releases"><img src="https://img.shields.io/github/v/release/RaptorXilef/twokinds.4lima.de?sort=semver&style=flat-square" alt="Version"></a>
+  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/commits/main/"><img src="https://img.shields.io/github/last-commit/RaptorXilef/twokinds.4lima.de/main?label=Letzter%20Commit&style=flat-square" alt="Letzter Commit"></a>
+  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/commits/main/"><img src="https://img.shields.io/github/commits-since/RaptorXilef/twokinds.4lima.de/latest?label=Commits%20seit%20letztem%20Release" alt="GitHub commits since latest release"></a>
+  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/issues"><img src="https://img.shields.io/github/issues/RaptorXilef/twokinds.4lima.de.svg?style=flat-square" alt="Issues"></a>
+</p>
 
-<br>
-<br>
+<p align="center">
+  <i>Ein hochmodernes, maßgeschneidertes Content Management System (CMS) zur Verwaltung und Anzeige der deutschen Übersetzung des Webcomics "TwoKinds" von Tom Fischbach.</i>
+</p>
 
-## Inhaltsverzeichnis
+<hr><br>
 
-- [Inhaltsverzeichnis](#inhaltsverzeichnis)
-- [Über das Projekt](#über-das-projekt)
-- [Funktionen](#funktionen)
-- [Installation](#installation)
-- [Nutzung](#nutzung)
-- [Projektstruktur (Beispiele)](#projektstruktur-beispiele)
-- [Anpassung](#anpassung)
-- [Beitrag leisten](#beitrag-leisten)
-- [Lizenz](#lizenz)
-- [Kontakt](#kontakt)
+> 🚀 **Major Release v6 Live!** Das Projekt wurde vollständig auf eine robuste OOP/DDD-Architektur mit PHPStan Level 10 gehoben.
+> Lies die vollständige [v6 Release-Ankündigung & Feature-Übersicht](./docs/release-notes-v6.md) für alle Details.
 
-## Über das Projekt
+<hr>
 
-Dieses Projekt ist eine PHP-basierte Webseite zur Anzeige und Verwaltung der deutschen Übersetzungen des Webcomics "[Twokinds](https://twokinds.keenspot.com/)". Es wurde entwickelt, um eine benutzerfreundliche Oberfläche für das Lesen des Comics zu bieten, inklusive Navigationsfunktionen, Lesezeichenverwaltung und einem RSS-Feed für neue Comic-Seiten. Das Design ist an das Original von Tom Fischbach angepasst, mit Fokus auf einfache Wartung und Erweiterbarkeit.
+## 📖 Inhaltsverzeichnis
 
-Grundsätzlich ist dieses Repository als Entwicklungsumgebung und Backup der Webseite twokinds.4lima.de zu sehen. Es steht jedoch jedem frei, diese Daten, nach den untenstehenden Lizenzbedingungen zu nutzen.
+- [📖 Inhaltsverzeichnis](#-inhaltsverzeichnis)
+- [🦊 Über das Projekt](#-über-das-projekt)
+- [🏗 Architektur \& Tech-Stack](#-architektur--tech-stack)
+- [✨ Feature-Highlights](#-feature-highlights)
+  - [Für Nutzer (Frontend)](#für-nutzer-frontend)
+  - [Für Administratoren (Backend)](#für-administratoren-backend)
+- [💻 Entwicklung \& Installation](#-entwicklung--installation)
+  - [Systemanforderungen](#systemanforderungen)
+  - [Lokales Setup](#lokales-setup)
+- [🧪 Code-Qualität \& Testing](#-code-qualität--testing)
+- [](#)
+- [🤝 Mitwirken (Contributing \& CLA)](#-mitwirken-contributing--cla)
+- [📚 Dokumentation \& Historie](#-dokumentation--historie)
+- [⚖️ Lizenz \& Urheberrecht](#️-lizenz--urheberrecht)
+  - [Quellcode (Backend/Frontend-Logik)](#quellcode-backendfrontend-logik)
+  - [Bildmaterial \& Original-Comic](#bildmaterial--original-comic)
+- [📬 Kontakt](#-kontakt)
 
-## Funktionen
+---
 
-- **Dynamische Comic-Anzeige:** Lädt Comic-Metadaten (Titel, Transkript) und Bilder dynamisch aus JSON-Dateien.
-- **Responsive Navigation:** Pfeiltasten- und J/K-Tasten-Navigation für Comic-Seiten.
-- **Lesezeichen-Funktion:** Speichert und verwaltet Lesezeichen lokal im Browser (localStorage).
-- **Import/Export von Lesezeichen:** Möglichkeit, Lesezeichen als JSON-Datei zu importieren und exportieren.
-- **RSS-Feed Generator:** Admin-Bereich zum Generieren eines RSS-Feeds für die neuesten Comic-Seiten.
-- **Themenwechsel:** Umschaltfunktion zwischen hellem und dunklem Design.
-- **SEO-Optimierung:** Dynamische Seitentitel, Beschreibungen und Open Graph/Twitter Card Tags.
-- **Fehlerbehandlung:** Anzeige von Platzhalterbildern bei fehlenden Comic-Bildern und Fehlermeldungen für JSON-Dateien.
-- **Adminbereich:** Verschiedene Tools und Generatoren zum erstellen neuer Comicseiten und bearbeiten der angezeiten Titel und Transcripte.
+## 🦊 Über das Projekt
 
-## Installation
+Dieses Repository enthält den vollständigen Quellcode der Plattform **[twokinds.4lima.de](https://twokinds.4lima.de)**. Das Projekt wurde von Grund auf neu entwickelt und dient dazu, den englischsprachigen Webcomic "TwoKinds" der deutschsprachigen Community in höchster Qualität zugänglich zu machen.
 
-Um das Projekt lokal einzurichten, folge diesen Schritten:
+Das System ist weit mehr als eine einfache Bildergalerie: Es ist ein dediziertes, performantes CMS mit einem integrierten Wiki, einem Cloud-Lesezeichen-System, ausgeklügelten Newsletter-Warteschlangen und einem mächtigen Admin-Panel zur Bildverarbeitung.
 
-1. **Webserver mit PHP:** Stelle sicher, dass du einen Webserver (z.B. Apache, Nginx) mit PHP (Version 7.4 oder höher empfohlen) installiert hast.
-2. **Projekt klonen:**
+---
 
-    ```bash
-    git clone [https://github.com/RaptorXilef/twokinds.4lima.de.git](https://github.com/RaptorXilef/twokinds.4lima.de.git)
-    cd twokinds.4lima.de
-    ```
+## 🏗 Architektur & Tech-Stack
 
-3. **Dateien platzieren:** Platziere alle Projektdateien im Root-Verzeichnis deines Webservers (z.B. `htdocs` für Apache).
-4. **Konfigurationsdateien:**
-    - Stelle sicher, dass die Dateien `src/config/comic_var.json`, `src/config/rss_config.json`, `src/config/archive_chapters.json` und `src/config/sitemap.json` existieren und korrekt formatiert sind. Beispiel-Dateien sollten im Repository vorhanden sein.
-    - Passe die `<Name>.json` bei Bedarf an deine Daten oder Sprache an.
-5. **Berechtigungen:** Stelle sicher, dass der Webserver Schreibberechtigungen für das Root-Verzeichnis hat, damit die `<Name>.xml` und `<Name>.php` generiert werden können.
+Die Codebase ist auf absolute Skalierbarkeit, Sicherheit und Performance ausgelegt.
 
-## Nutzung
+- **Backend:** PHP 8.3+ mit strenger Typisierung.
+- **Architektur:** Objektorientiert (OOP) nach Domain-Driven Design (DDD) Prinzipien.
+- **Datenbank:** MySQL/MariaDB (via PDO) mit automatisierten Migrationen.
+- **Frontend Assets:** JavaScript (ES6 Modules), SCSS, Vite / Parcel.
+- **Qualitätssicherung:**
+  - **PHPStan (Level 10)** - 0 Fehler Toleranz.
+  - **Pest PHP** für Unit- und Feature-Testing.
+  - **Biome, ESLint & Stylelint** für Frontend-Assets.
+- **CI/CD:** Vollautomatisches Deployment und Asset-Kompilierung via GitHub Actions.
 
-Nach der Installation kannst du die Webseite über deinen Browser aufrufen (z.B. `http://localhost/`).
+---
 
-- **Comic-Seiten:** Navigiere zu den Comic-Seiten über die URL-Struktur (z.B. `http://localhost/comics/YYYYMMDD.php`).
-- **Lesezeichen:** Besuche `http://localhost/lesezeichen.php`, um deine gespeicherten Lesezeichen zu verwalten.
-- **Adminbereich:** Gehe zu `http://localhost/admin`, um die dortigen Tools zu nutzen. Beim ersten Aufruf des Adminbereichs kannst du ein Nutzernamen und Passwort festlegen.
+## ✨ Feature-Highlights
 
-## Projektstruktur (Beispiele)
+Das System bietet Funktionen, die speziell auf das Lesen und Verwalten von Webcomics zugeschnitten sind.
 
+### Für Nutzer (Frontend)
+
+- 🚀 **Extreme Performance:** Ladezeiten von 0,2-1 Sekunde. Bilder werden via Lazy-Loading und als stark komprimiertes WebP (nur ~200-400 KB pro Comicseite) ausgeliefert.
+- 📱 **Mobile-First & Swipe-Gesten:** 100 % responsiv mit intuitiver Wischsteuerung am Smartphone.
+- ☁️ **Cloud-Lesezeichen:** Angemeldete Nutzer können Lesezeichen plattformübergreifend speichern. Konflikte zwischen lokalen und Cloud-Daten werden intelligent aufgelöst.
+- 📧 **3-Stufen-Newsletter:** Nutzer können wählen, ob sie bei einer fertigen Comic-Seite, bei Vorab-Transkripten (Spoiler!) oder bei der Behebung ihrer Fehlermeldungen benachrichtigt werden wollen.
+- 👥 **Charakter-Wiki & Filter:** Eine tiefe Datenbank aller Charaktere mit Reference-Sheets, Swatches und einer dynamischen Filterfunktion (nach Rasse, Alter, Geschlecht etc.) ohne Seiten-Reload.
+- 🛡 **Security & Privacy:** Absicherung durch CSRF-Tokens, Session-Timeouts (Auto-Logout bei Inaktivität) und passwortlose E-Mail-Verifizierung via Magic Links.
+- 📝 **Crowdsourcing (Report-System):** Ein Frontend-Modal erlaubt Nutzern das direkte Melden von Tippfehlern per WYSIWYG-Editor und Screenshot-Upload.
+
+### Für Administratoren (Backend)
+
+- 🤖 **Automatisches Deployment:** Push auf `main` triggert über die `deploy.yml` einen vollständigen Build- und FTP-Deploy-Prozess.
+- 🖼 **Massen-Upload & WebP-Magie:** Drag & Drop von hochauflösenden Dateien. Das System skaliert Bilder automatisch in Hires/Lowres, wandelt sie in WebP um und generiert Thumbnails.
+- ✂️ **Social-Media Cropper:** Integriertes Tool zum manuellen und automatischen Zuschneiden von 1.91:1 Thumbnails (OpenGraph/Twitter Cards).
+- ✉️ **Mail Queue & CronJobs:** Newsletter blockieren nicht den Server. Sie werden in eine Warteschlange (Queue) eingereiht und im Hintergrund per CronJob nach Priorität abgearbeitet.
+- 🔐 **Rechte- & Rollensystem (RBAC):** Feingranulares Rollenmanagement für Redakteure, Übersetzer und Administratoren.
+- 🕰 **Revisionen & Papierkorb:** Änderungen an Comicseiten werden versioniert (Undo-Funktion). Gelöschte Comics können aus einem Papierkorb wiederhergestellt werden.
+- 💾 **DB Backup & Restore:** Automatisierte Datenbank-Backups mit der Möglichkeit, Exakt-Kopien oder fehlende Datensätze via Admin-Panel wiederherzustellen.
+
+---
+
+## 💻 Entwicklung & Installation
+
+Das Repository dient als primäre Entwicklungsumgebung.
+
+### Systemanforderungen
+
+- PHP 8.3 oder höher (inkl. `ext-pdo`, `ext-gd`, `ext-zip`, `ext-curl`)
+- Node.js >= 26.x & NPM >= 11.x
+- MySQL oder MariaDB Datenbank
+- Composer
+
+### Lokales Setup
+
+1. **Repository klonen**
+
+   ```bash
+   git clone https://github.com/RaptorXilef/twokinds.4lima.de.git
+   cd twokinds.4lima.de
+   ```
+
+2. **Abhängigkeiten installieren**
+
+   ```bash
+   composer install
+   npm install
+   ```
+
+3. **Konfiguration erstellen**
+   Kopiere die benötigten Config-Dateien im `config/`-Verzeichnis (z. B. aus den `.example.php` oder `.default.php` Vorlagen) und benenne sie entsprechend (z. B. `config.local.php`, `secrets.php`). Trage dort deine lokalen Datenbank-Daten ein.
+
+4. **Datenbank initiieren**
+   Das System verfügt über Auto-Migrationen. Sobald die `config/storage.php` bzw. `config.local.php` konfiguriert ist, migriert das Backend das Schema beim Aufruf des Admin-Panels oder über die internen Setup-Skripte selbstständig.
+
+5. **Assets kompilieren**
+
+   ```bash
+   npm run dev        # Startet den Watcher für die lokale Entwicklung
+   # oder
+   npm run legacy:build # Baut alle CSS/JS Assets für die Produktion
+   ```
+
+---
+
+## 🧪 Code-Qualität & Testing
+
+Dieses Projekt unterliegt strengen Qualitätskontrollen. Vor einem Commit oder Pull Request sollten folgende Befehle erfolgreich durchlaufen:
+
+**PHP-Checks (via Composer):**
+
+```bash
+composer qa         # Führt PHPStan (Max Level), CodeSniffer, Mess Detector & Arch-Tests aus
+composer test       # Führt die Pest PHP Test-Suite aus
+composer fix        # Formatiert den Code automatisch via PHP-CS-Fixer und Rector
 ```
-.
-├── admin/                     # Admin-Bereich für Tools wie RSS-Generator
-│   ├── js/
-│   │   └── generator_rss.js   # JavaScript für den RSS-Generator
-│   └── rss_generator.php      # PHP-Skript zum Generieren des RSS-Feeds
-├── assets/                    # Statische Assets wie Icons und Bilder
-│   └── icons/
-├── comics/                     # Enthält die einzelnen Comic-PHP-Dateien (z.B. 20250604.php)
-├── src/
-│   ├── components/            # Wiederverwendbare PHP-Komponenten
-│   │   ├── comic_page_renderer.php # Zentraler Renderer für Comic-Seiten
-│   │   ├── get_comic_image_path.php # Hilfsfunktion für Bildpfade
-│   │   ├── load_comic_data.php # Lädt Comic-Daten aus JSON
-│   │   └── nav_link_helper.php # Hilfsfunktion für Navigationslinks
-│   ├── config/                # Konfigurationsdateien (JSON)
-│   │   ├── comic_var.json     # Metadaten aller Comics
-│   │   └── rss_config.json    # Konfiguration für den RSS-Feed
-│   └── layout/                # Layout-bezogene Dateien (Header, Footer, CSS, JS)
-│       ├── css/
-│       │   ├── main.css       # Haupt-CSS-Datei
-│       │   └── main_dark.css  # CSS für dunkles Theme
-│       ├── js/
-│       │   └── comic.js       # Haupt-JavaScript für Comic-Logik und Lesezeichen
-│       ├── footer.php         # Gemeinsamer Footer
-│       ├── header.php         # Gemeinsamer Header
-│       └── comic_navigation.php # Navigationsleiste für Comics
-├── index.php                  # Startseite
-├── lesezeichen.php            # Seite zur Lesezeichenverwaltung
-├── rss.xml                    # Generierter RSS-Feed (wird von admin/rss_generator.php erstellt)
-└── README.md                  # Diese Datei
+
+**Frontend-Checks (via NPM):**
+
+```bash
+npm run chk         # Prüft JS/CSS via Biome, Stylelint, CSpell und Markuplint
+npm run fix         # Auto-Fixes für Frontend Assets
 ```
 
-## Anpassung
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/RaptorXilef/twokinds.4lima.de)
+---
 
-- **Comic-Daten:** Bearbeite `admin/data_editor_comic.php` oder manuell `src/config/comic_var.json`, um neue Comic-Seiten hinzuzufügen oder bestehende Metadaten zu ändern. Jede Comic-Seite sollte eine entsprechende PHP-Datei im `comics/`-Verzeichnis haben (z.B. `20250604.php`), die den `comic_page_renderer.php` inkludiert.
-- **RSS-Feed:** `admin/generator_rss.php` oder passe `src/config/rss_config.json` manuell an, um den Titel, die Beschreibung, den Autor und die maximale Anzahl der RSS-Einträge zu konfigurieren.
-- **Design:** Modifiziere `src/layout/css/main.css` und `src/layout/css/main_dark.css` für Designänderungen (wenn aktiviert) Standartmäßig laden die Originalen css von <https://twokinds.keenspot.com>.
-- **JavaScript-Logik:** `src/layout/js/comic.js` enthält die clientseitige Logik für Lesezeichen und Navigation.
+## 🤝 Mitwirken (Contributing & CLA)
 
-## Beitrag leisten
+Beiträge (Pull Requests, Bug-Reports) sind herzlich willkommen! Da es sich jedoch um eine proprietäre Codebase handelt, gibt es eine wichtige Voraussetzung:
 
-Beiträge sind herzlich willkommen! Wenn du Fehler findest oder Verbesserungen vorschlagen möchtest, kannst du:
+Um Code beizutragen, musst du dem **Contributor License Agreement (CLA)** zustimmen.
+Füge dazu bei der Erstellung deines Pull Requests exakt folgenden Satz in die PR-Beschreibung ein:
 
-1. Ein Issue eröffnen, um Fehler zu melden oder neue Funktionen vorzuschlagen.
-2. Einen Pull Request erstellen mit deinen Änderungen. Bitte folge dabei den bestehenden Code-Konventionen.
+> **"I accept the CLA"**
 
-## Lizenz
+Weitere Details findest du in der [CLA.md](./CLA.md).
 
-**Hinweis zur Nutzung und Übersetzung**
+---
 
-Dieses Projekt ist unter der Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License lizenziert. Diese Lizenz erlaubt und fördert ausdrücklich die Erstellung von Übersetzungen und abgeleiteten Werken.
+## 📚 Dokumentation & Historie
 
-Ich bitte jedoch darum, von einer direkten Spiegelung oder dem Hosten der deutschen Originalversion auf einer anderen Domain unter einem neuen Namen abzusehen. Dies ist mir sehr wichtig!
+Weitere Informationen zur Entwicklung und den Neuerungen findest du in folgenden Dokumenten:
 
-Solltest du das Projekt in eine andere Sprache übersetzen, bist du selbstverständlich eingeladen, deine Übersetzung unter den Lizenzbedingungen mithilfe des hier bereitgestellten Webseiten-Projekts zu veröffentlichen. Das Hosten von Übersetzungen ist willkommen und erwünscht. So können wir eine klare Quelle für das Originalprojekt, die deutsche Version und zukünftig andere Übersetzungen gewährleisten und Verwirrung vermeiden.
+- 📄 **[v6 Release-Notizen & Features](./docs/release-notes-v6.md)** - Die vollständige Übersicht aller Frontend- und Backend-Neuerungen.
+- 📋 **[Projekt-Changelog](./CHANGELOG.md)** - Die detaillierte Historie aller Änderungen und Commits.
+- 🤝 **[Contributor License Agreement (CLA)](./CLA.md)** - Regeln für die Mitarbeit am Projekt.
 
-<br>
-Dieser Code steht unter der [Creative Commons Namensnennung-Nicht kommerziell-Share Alike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de). [![CC BY-NC 4.0](https://licensebuttons.net/l/by-nc-sa/4.0/80x15.png)](https://creativecommons.org/licenses/by-nc/4.0/deed.de)
+---
 
-Dies bedeutet, dass du den Code teilen und adaptieren darfst, solange du die Namensnennung beibehältst und ihn nicht für kommerzielle Zwecke nutzt.
+## ⚖️ Lizenz & Urheberrecht
 
-Hinweis: Die meisten Logos, Bilder und zugehörigen Zeichen sind urheberrechtlich geschützt; 2023 Thomas J. Fischbach. Website-Design von Thomas J. Fischbach & Brandon J. Dusseau.
-Die bilder laufen unter der Lizenz CC BY-NC-SA 3.0 US - [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 United States](https://creativecommons.org/licenses/by-nc-sa/3.0/us/)
-Siehe: [TwoKinds-Lizenz](https://twokinds.keenspot.com/license/)
+Bitte lies die beiliegende [LICENSE.md](./LICENSE.md) sorgfältig durch.
 
-## Kontakt
+### Quellcode (Backend/Frontend-Logik)
 
-Bei Fragen oder Anregungen kannst du gern ein Issue öffnen:
+**Copyright (c) 2026 Felix Maywald alias RaptorXilef. Alle Rechte vorbehalten.**
+Der bereitgestellte Programmcode ist **proprietär** (Source-available) und steht *nicht* unter einer Open-Source-Lizenz. Eine Nutzung, Vervielfältigung, Verbreitung oder der Betrieb zu eigenen Zwecken bedarf der ausdrücklichen schriftlichen Genehmigung.
 
+### Bildmaterial & Original-Comic
+
+Der Webcomic "TwoKinds", seine Charaktere, Lore und Grafiken sind geistiges Eigentum von **Thomas J. Fischbach**.
+Die Comic-Bilder stehen unter der [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 United States (CC BY-NC-SA 3.0 US)](https://creativecommons.org/licenses/by-nc-sa/3.0/us/) Lizenz.
+Weitere Informationen zur Lizenz des Originalmaterials findest du unter: [TwoKinds-License](https://twokinds.keenspot.com/license/)
+
+---
+
+## 📬 Kontakt
+
+Bei technischen Fragen, Sicherheitslücken oder Anregungen zum Code:
+
+- Eröffne ein Issue hier auf GitHub.
+- Schreibe mir über ein Report auf **[twokinds.4lima.de](https://twokinds.4lima.de)**
+- Kontaktiere mich via [Patreon](https://www.patreon.com/raptorxilef).
+
+*Made with ❤️ for the TwoKinds Community.*
+
+<!--
 <a href="https://github.com/RaptorXilef/twokinds.4lima.de/pulls"><img src="https://img.shields.io/github/issues-pr/RaptorXilef/twokinds.4lima.de.svg" alt="Pull Requests"></a>
+
 ![GitHub language count](https://img.shields.io/github/languages/count/RaptorXilef/twokinds.4lima.de)
 ![GitHub top language](https://img.shields.io/github/languages/top/RaptorXilef/twokinds.4lima.de)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/RaptorXilef/twokinds.4lima.de/total)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/RaptorXilef/twokinds.4lima.de)
 ![GitHub Created At](https://img.shields.io/github/created-at/RaptorXilef/twokinds.4lima.de)
+-->
