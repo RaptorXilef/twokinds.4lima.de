@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Infrastructure\Config;
 
 use App\Infrastructure\Config\Config;
-use RuntimeException;
 
 \uses()->group('infrastructure', 'config');
 
@@ -41,25 +40,22 @@ use RuntimeException;
         ->and($config3->isTestMode())->toBeTrue();
 })->covers(Config::class);
 
-\it('resolves base url with trailing slash', function (): void {
-    $config = new Config(['base_url' => 'https://example.com']);
-    \expect($config->getBaseUrl())->toBe('https://example.com/');
+\it('resolves configured base url without trailing slash', function (): void {
+    $config = new Config(['base_url' => 'https://example.com/']); // Config hat Slash
+    \expect($config->getBaseUrl())->toBe('https://example.com'); // Slash muss weg sein
 })->covers(Config::class);
 
-\it('builds local base url if is_local_env is true and base_url missing', function (): void {
+\it('returns cli_fallback_url in CLI mode if base_url is missing', function (): void {
     $config = new Config([
-        'is_local_env' => true,
-        'server_protocol' => 'http://',
-        'server_host' => 'localhost',
-        'server_script' => '/my_folder/public/index.php',
+        'cli_fallback_url' => 'https://cli-test.local/',
     ]);
-    \expect($config->getBaseUrl())->toBe('http://localhost/my_folder/public/');
+    \expect($config->getBaseUrl())->toBe('https://cli-test.local');
 })->covers(Config::class);
 
-\it('throws exception if base url is missing and not local', function (): void {
-    $config = new Config(['is_local_env' => false]);
-    $config->getBaseUrl();
-})->throws(RuntimeException::class, 'base_url" ist in der config/config.php nicht gesetzt!')->covers(Config::class);
+\it('returns default localhost in CLI mode if no fallback is configured', function (): void {
+    $config = new Config([]);
+    \expect($config->getBaseUrl())->toBe('http://localhost');
+})->covers(Config::class);
 
 \it('generates correct storage path', function (): void {
     $config = new Config([
