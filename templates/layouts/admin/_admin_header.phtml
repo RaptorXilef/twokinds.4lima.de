@@ -31,6 +31,7 @@ use App\Contracts\System\AssetHelperInterface;
 
     <!-- FOUC FIX: Verhindert Firefox Lila-Screen durch sofortiges serverseitiges Styling -->
     <style>
+    /* Standard Fallback (Light Mode) */
     html,
     body {
         margin: 0;
@@ -38,21 +39,18 @@ use App\Contracts\System\AssetHelperInterface;
         background-color: #81dbfe;
     }
 
-    <?php $themePref = $_COOKIE['themePref'] ?? null; ?><?php if ($themePref === '2') { ?>html,
-    body {
-        background-color: #002b3c !important;
+    /* Dark Mode Class (Wird von PHP und JS getoggelt) */
+    body.theme-night {
+        background-color: #002b3c;
     }
 
-    <?php } elseif ($themePref === '1') { ?>html,
-    body {
-        background-color: #81dbfe !important;
-    }
-
-    <?php } else { ?>@media (prefers-color-scheme: dark) {
+    <?php if (!isset($_COOKIE['themePref'])) { ?>
+    /* Kein Cookie gesetzt: Richte dich automatisch nach dem Betriebssystem */
+    @media (prefers-color-scheme: dark) {
 
         html,
         body {
-            background-color: #002b3c !important;
+            background-color: #002b3c;
         }
     }
 
@@ -97,6 +95,7 @@ use App\Contracts\System\AssetHelperInterface;
     <!-- jsdiff (Vergleicht zwei Texte miteinander und hebt Änderungen grün/rot hervor, genutzt bei den Transkript-Reports) -->
     <!-- https://cdnjs.com/libraries/jsdiff -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.3/diff.min.js"></script>
+
 </head>
 
 <body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
@@ -141,7 +140,7 @@ use App\Contracts\System\AssetHelperInterface;
                 <span class="mobile-logo">Twokinds Admin</span>
                 <div class="session-timer-mobile js-session-timer"
                      style="font-family: monospace; font-weight: bold;">
-                    <!-- Timer -->
+                    30:00<!-- Timer -->
                 </div>
             </div>
 

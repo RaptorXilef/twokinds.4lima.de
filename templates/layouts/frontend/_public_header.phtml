@@ -47,6 +47,7 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
+
     <title><?php echo \htmlspecialchars($metaTitle); ?></title>
 
     <meta name="description"
@@ -96,33 +97,22 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
         background-color: #81dbfe;
     }
 
-    <?php $themePref = $_COOKIE['themePref'] ?? null; ?><?php if ($themePref === '2'): ?>
-
-    /* Nutzer hat Dark-Mode erzwungen */
-    html,
-    body {
-        background-color: #002b3c !important;
+    /* Dark Mode Class (Wird von PHP und JS getoggelt) */
+    body.theme-night {
+        background-color: #002b3c;
     }
 
-    <?php elseif ($themePref === '1'): ?>
-
-    /* Nutzer hat Light-Mode erzwungen */
-    html,
-    body {
-        background-color: #81dbfe !important;
-    }
-
-    <?php else: ?>
+    <?php if (!isset($_COOKIE['themePref'])) { ?>
     /* Kein Cookie gesetzt: Richte dich automatisch nach dem Betriebssystem */
     @media (prefers-color-scheme: dark) {
 
         html,
         body {
-            background-color: #002b3c !important;
+            background-color: #002b3c;
         }
     }
 
-    <?php endif; ?>
+    <?php } ?>
 
     </style>
 
@@ -182,7 +172,7 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
                 <span class="mobile-logo">Twokinds auf Deutsch</span>
                 <div class="session-timer-mobile js-session-timer"
                      style="font-family: monospace; font-weight: bold;">
-                    <!-- Timer -->
+                    30:00<!-- Timer -->
                 </div>
             </div>
 
