@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- TEMPORÄRE MIGRATION: v5 -> v6 Lesezeichen ---
     // (Kann in zukünftigen Versionen entfernt werden)
     runBookmarkMigration();
+
     let api;
     try {
         api = new FrontendApi();

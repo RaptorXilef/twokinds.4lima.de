@@ -34,7 +34,7 @@ window.requestIdleCallback = requestIdleCallbackPolyfill;
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Core Services (Sofort laden, da essenziell)
     const notifications = new NotificationService();
-    new ErrorHandlerService(notifications); // Fängt globale Fehler ab
+    new ErrorHandlerService(notifications);
 
     // PERF: Fange Nachrichten auf, die den "blitzschnellen Reload" überlebt haben!
     // Flash-Messages prüfen und absichern
@@ -49,17 +49,17 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.removeItem('admin_flash_msg');
     }
 
-    const tracker = new UnsavedTracker(); // Löst window.isDirty ab
+    const tracker = new UnsavedTracker();
     const api = new Api();
-    const formService = new FormService(api, notifications, tracker); // Der neue Form-Manager
+    const formService = new FormService(api, notifications, tracker);
     const modalManager = new ModalManager();
     const globalUI = new GlobalUI(tracker);
 
     try {
-        new MobileMenu(); // FIX: Hamburger Menü Logik laden!
+        new MobileMenu();
         new TabManager(api);
         new ThemeManager();
-        new SessionTimer(api, 'admin-session-timer', { notifications });
+        new SessionTimer(api, '.js-session-timer', { notifications });
     } catch (err) {
         console.error('[AdminApp] Fehler bei der Core-UI Initialisierung:', err);
     }
