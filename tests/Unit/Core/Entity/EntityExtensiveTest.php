@@ -52,12 +52,14 @@ use DateTimeImmutable;
     \expect($char->name)->toBe('Trace')->and($char->refSheets)->toHaveCount(1)->and($char->gender)->toBe('Male');
 })->covers(Character::class);
 
-\it('Character calculates Keidran age equivalent correctly', function (): void {
-    $char = new Character(new CharacterId('char_0002'), 'Flora', null, null, null, null, null, '11', null, 'Keidran', 'Tiger', null, null, null, null, null, null, [], false);
-    \expect($char->getKeidranAgeEquivalent())->toBe('27');
+\it('Character calculates Keidran age equivalent using math curve', function (): void {
+    $char = new Character(new CharacterId('char_0002'), 'Flora', null, null, null, null, null, '11', 'Mage', 'Keidran', 'Tiger', null, null, null, null, null, null, [], false);
+    // 0.12*11^2 + 0.8*11 + 2 = 25.32 -> 25
+    \expect($char->getKeidranAgeEquivalent())->toBe('25');
 
-    $charSpan = new Character(new CharacterId('char_0003'), 'Flora', null, null, null, null, null, '11-16', null, 'Keidran', 'Tiger', null, null, null, null, null, null, [], false);
-    \expect($charSpan->getKeidranAgeEquivalent())->toBe('27-44');
+    $charSpan = new Character(new CharacterId('char_0003'), 'Flora', null, null, null, null, null, '11-16', 'Mage', 'Keidran', 'Tiger', null, null, null, null, null, null, [], false);
+    // 0.12*16^2 + 0.8*16 + 2 = 45.52 -> 46
+    \expect($charSpan->getKeidranAgeEquivalent())->toBe('25-46');
 })->covers(Character::class);
 
 \it('CharacterGroup validates empty CharacterIds', function (): void {

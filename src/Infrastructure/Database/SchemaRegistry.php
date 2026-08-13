@@ -45,6 +45,7 @@ final class SchemaRegistry
                 UNIQUE KEY `idx_username` (`username`),
                 UNIQUE KEY `idx_email` (`email`),
                 INDEX `idx_role` (`role_id`),
+                INDEX `idx_created` (`created_at`),
                 INDEX `idx_newsletter` (`wants_newsletter`),
                 INDEX `idx_newsletter_transcript` (`wants_newsletter_transcript`),
                 INDEX `idx_notification_report` (`wants_notification_report`)
@@ -62,7 +63,8 @@ final class SchemaRegistry
             'login_attempts' => 'CREATE TABLE IF NOT EXISTS `login_attempts` (
                 `ip_address` VARCHAR(45) PRIMARY KEY,
                 `attempts` INT NOT NULL DEFAULT 1,
-                `last_attempt` DATETIME NOT NULL
+                `last_attempt` DATETIME NOT NULL,
+                INDEX `idx_last_attempt` (`last_attempt`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
             // --- TWOKINDS CORE ---
@@ -91,7 +93,8 @@ final class SchemaRegistry
                 `comic_id` VARCHAR(8) NOT NULL,
                 `revision_data` JSON NOT NULL,
                 `created_at` DATETIME NOT NULL,
-                INDEX `idx_comic` (`comic_id`)
+                INDEX `idx_comic` (`comic_id`),
+                INDEX `idx_created_at` (`created_at`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
             // Domain: Characters
@@ -114,7 +117,8 @@ final class SchemaRegistry
                 `is_dead` TINYINT(1) NOT NULL DEFAULT 0,
                 `main_pic` VARCHAR(255),
                 `swatch_pic` VARCHAR(255),
-                `ref_sheets` JSON
+                `ref_sheets` JSON,
+                INDEX `idx_name` (`name`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
             'character_groups' => 'CREATE TABLE IF NOT EXISTS `character_groups` (
@@ -142,7 +146,8 @@ final class SchemaRegistry
                 `debug_info` TEXT,
                 INDEX `idx_status` (`status`),
                 INDEX `idx_comic` (`comic_id`),
-                INDEX `idx_user` (`user_id`)
+                INDEX `idx_user` (`user_id`),
+                INDEX `idx_ip_date` (`ip_hash`, `date`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
             'magic_links' => 'CREATE TABLE IF NOT EXISTS `magic_links` (
@@ -150,7 +155,8 @@ final class SchemaRegistry
                 `email` VARCHAR(255) NOT NULL,
                 `code` VARCHAR(10),
                 `expires` DATETIME,
-                INDEX `idx_code` (`code`)
+                INDEX `idx_code` (`code`),
+                INDEX `idx_expires` (`expires`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
             'mail_queue' => 'CREATE TABLE IF NOT EXISTS `mail_queue` (
@@ -162,7 +168,8 @@ final class SchemaRegistry
                 `attempts` INT DEFAULT 0,
                 `priority` INT NOT NULL DEFAULT 10,
                 `created_at` DATETIME NOT NULL,
-                INDEX `idx_priority` (`priority`)
+                INDEX `idx_priority` (`priority`),
+                INDEX `idx_queue_processing` (`attempts`, `priority`, `created_at`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
             'mail_logs' => 'CREATE TABLE IF NOT EXISTS `mail_logs` (

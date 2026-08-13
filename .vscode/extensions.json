@@ -74,7 +74,8 @@
         "yzhang.markdown-all-in-one",
         "mehedidracula.php-namespace-resolver",
         "redhat.vscode-xml",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "clarkyu.vscode-sql-beautify"
     ],
     // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
     "unwantedRecommendations": ["htmlhint.vscode-htmlhint", "mikebovenlander.formate"]
