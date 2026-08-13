@@ -29,6 +29,14 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                            placeholder="Name, Alias oder Biographie durchsuchen...">
                 </div>
                 <div>
+                    <label class="d-block font-small font-bold mb-5 text-faded">Lebensstatus</label>
+                    <select id="char-filter-is-dead">
+                        <option value="">Alle</option>
+                        <option value="0">Lebend</option>
+                        <option value="1">Verstorben</option>
+                    </select>
+                </div>
+                <div>
                     <label class="d-block font-small font-bold mb-5 text-faded">Geschlecht</label>
                     <select id="char-filter-gender">
                         <option value="">Alle</option>
@@ -38,13 +46,34 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                     </select>
                 </div>
                 <div>
-                    <label class="d-block font-small font-bold mb-5 text-faded">Alter</label>
-                    <select id="char-filter-age">
-                        <option value="">Alle</option>
-                        <?php foreach ($filterData['age'] as $v) {
-                            echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
-                        } ?>
-                    </select>
+                    <label class="d-block font-small font-bold mb-5 text-faded">Alter (Menschl.)</label>
+                    <div class="d-flex gap-5">
+                        <input type="number"
+                               id="char-filter-age-min"
+                               placeholder="Min"
+                               class="w-100 bg-content"
+                               style="padding: 5px;">
+                        <input type="number"
+                               id="char-filter-age-max"
+                               placeholder="Max"
+                               class="w-100 bg-content"
+                               style="padding: 5px;">
+                    </div>
+                </div>
+                <div>
+                    <label class="d-block font-small font-bold mb-5 text-faded">Alter (Keidranjahre)</label>
+                    <div class="d-flex gap-5">
+                        <input type="number"
+                               id="char-filter-keidran-min"
+                               placeholder="Min"
+                               class="w-100 bg-content"
+                               style="padding: 5px;">
+                        <input type="number"
+                               id="char-filter-keidran-max"
+                               placeholder="Max"
+                               class="w-100 bg-content"
+                               style="padding: 5px;">
+                    </div>
                 </div>
                 <div>
                     <label class="d-block font-small font-bold mb-5 text-faded">Spezies</label>

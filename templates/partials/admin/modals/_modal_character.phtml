@@ -41,7 +41,6 @@ declare(strict_types=1);
                                id="character_id"
                                name="id"
                                value="new">
-
                         <div class="grid-2-cols mb-15">
                             <div class="form-group mb-0">
                                 <label for="name">Anzeige Name * (Pflicht)</label>
@@ -67,28 +66,33 @@ declare(strict_types=1);
                             </div>
                             <div class="form-group mb-0">
                                 <label for="gender">Geschlecht</label>
-                                <select id="gender"
-                                        name="gender"
-                                        class="bg-content w-100">
-                                    <option value="">Keine Angabe</option>
-                                    <option value="Männlich">Männlich</option>
-                                    <option value="Weiblich">Weiblich</option>
-                                    <option value="Neutrum">Neutrum</option>
-                                    <option value="Androgyn">Androgyn</option>
-                                </select>
+                                <input type="text"
+                                       id="gender"
+                                       name="gender"
+                                       data-datalist="dl-gender"
+                                       placeholder="z.B. Männlich, Weiblich"
+                                       class="bg-content js-append-input">
                             </div>
                             <div class="form-group mb-0">
-                                <label for="age">Alter</label>
+                                <label for="age">Alter (Menschl. Jahre)</label>
                                 <input type="text"
                                        id="age"
                                        name="age"
-                                       pattern="^[0-9~]+|n/a|N/A$"
-                                       title="Nur Zahlen, die Tilde (~) oder n/a"
-                                       placeholder="z.B. 24, ~11, n/a"
+                                       pattern="^[0-9~\-]+|n/a|N/A$"
+                                       title="Zahlen, Tilde oder Binde-Strich für Spannen"
+                                       placeholder="z.B. 24, 24-28, ~11"
                                        class="bg-content">
                             </div>
                             <div class="form-group mb-0">
-                                <label for="char_rank">Klasse / Rang (Mehrfach mgl.)</label>
+                                <label for="keidran_age">Alter (Keidranjahre)</label>
+                                <input type="text"
+                                       id="keidran_age"
+                                       name="keidran_age"
+                                       placeholder="Wird bei Keidran auto. berechnet"
+                                       class="bg-content">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="char_rank">Klasse / Rang</label>
                                 <input type="text"
                                        id="char_rank"
                                        name="rank"
@@ -114,9 +118,8 @@ declare(strict_types=1);
                                        placeholder="z.B. Tiger, Wolf"
                                        class="bg-content js-append-input">
                             </div>
-                            <div class="form-group mb-0"
-                                 style="grid-column: span 1;">
-                                <label for="languages">Sprachen (Kommagetrennt)</label>
+                            <div class="form-group mb-0">
+                                <label for="languages">Sprachen</label>
                                 <input type="text"
                                        id="languages"
                                        name="languages"
@@ -124,7 +127,6 @@ declare(strict_types=1);
                                        placeholder="z.B. Keidran, Mensch"
                                        class="bg-content js-append-input">
                             </div>
-
                             <div class="form-group mb-0">
                                 <label for="hair_color">Haarfarbe</label>
                                 <input type="text"
@@ -152,8 +154,18 @@ declare(strict_types=1);
                                        placeholder="z.B. Weiß, Schwarz"
                                        class="bg-content js-append-input">
                             </div>
+                            <div
+                                 class="form-group mb-0 p-10 border-medium border-radius-4 bg-even d-flex align-center gap-10">
+                                <input type="checkbox"
+                                       id="is_dead"
+                                       name="is_dead"
+                                       value="1"
+                                       class="checkbox-lg m-0 w-auto">
+                                <label for="is_dead"
+                                       class="m-0 cursor-pointer text-danger font-bold">Charakter ist verstorben /
+                                    Tot</label>
+                            </div>
                         </div>
-
                         <div class="form-group mb-15">
                             <label>Profilbild Upload & Auswahl</label>
                             <div class="d-flex flex-column">
@@ -291,7 +303,6 @@ declare(strict_types=1);
                 </div>
             </div>
         </div>
-
         <div class="modal-footer-actions">
             <div class="modal-buttons">
                 <button type="button"

@@ -32,7 +32,6 @@ export class CharacterEditor {
         this.form = document.getElementById('char-form');
         /** @type {DataTransfer} */
         this.accumulatedRefFiles = new DataTransfer();
-
         this.currentDraftKey = null;
 
         if (this.form) {
@@ -128,7 +127,10 @@ export class CharacterEditor {
         this.filters = {
             search: document.getElementById('char-filter-search'),
             gender: document.getElementById('char-filter-gender'),
-            age: document.getElementById('char-filter-age'),
+            ageMin: document.getElementById('char-filter-age-min'),
+            ageMax: document.getElementById('char-filter-age-max'),
+            keidranMin: document.getElementById('char-filter-keidran-min'),
+            keidranMax: document.getElementById('char-filter-keidran-max'),
             species: document.getElementById('char-filter-species'),
             subspecies: document.getElementById('char-filter-subspecies'),
             rank: document.getElementById('char-filter-rank'),
@@ -136,12 +138,12 @@ export class CharacterEditor {
             haircolor: document.getElementById('char-filter-haircolor'),
             eyecolor: document.getElementById('char-filter-eyecolor'),
             furcolor: document.getElementById('char-filter-furcolor'),
+            isDead: document.getElementById('char-filter-is-dead'),
             perPage: document.getElementById('char-per-page'),
         };
 
         this.btnReset = document.getElementById('char-filter-reset');
         this.stateKey = 'admin_dt_state_characters';
-
         this.charPage = 1;
         this.charLimit = '15';
 
@@ -157,7 +159,7 @@ export class CharacterEditor {
 
         Object.values(this.filters).forEach((el) => {
             if (el) {
-                if (el.tagName === 'INPUT' && el.type === 'text') {
+                if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'number')) {
                     el.addEventListener('input', debouncedApply);
                 } else {
                     el.addEventListener('change', applyFilters);
@@ -185,7 +187,10 @@ export class CharacterEditor {
                 limit: this.charLimit,
                 search: this.filters.search?.value || '',
                 gender: this.filters.gender?.value || '',
-                age: this.filters.age?.value || '',
+                ageMin: this.filters.ageMin?.value || '',
+                ageMax: this.filters.ageMax?.value || '',
+                keidranMin: this.filters.keidranMin?.value || '',
+                keidranMax: this.filters.keidranMax?.value || '',
                 species: this.filters.species?.value || '',
                 subspecies: this.filters.subspecies?.value || '',
                 rank: this.filters.rank?.value || '',
@@ -193,6 +198,7 @@ export class CharacterEditor {
                 haircolor: this.filters.haircolor?.value || '',
                 eyecolor: this.filters.eyecolor?.value || '',
                 furcolor: this.filters.furcolor?.value || '',
+                isDead: this.filters.isDead?.value || '',
             };
             sessionStorage.setItem(this.stateKey, JSON.stringify(state));
         } catch (err) {
@@ -210,7 +216,10 @@ export class CharacterEditor {
                 if (this.filters.perPage) this.filters.perPage.value = this.charLimit;
                 if (this.filters.search) this.filters.search.value = s.search || '';
                 if (this.filters.gender) this.filters.gender.value = s.gender || '';
-                if (this.filters.age) this.filters.age.value = s.age || '';
+                if (this.filters.ageMin) this.filters.ageMin.value = s.ageMin || '';
+                if (this.filters.ageMax) this.filters.ageMax.value = s.ageMax || '';
+                if (this.filters.keidranMin) this.filters.keidranMin.value = s.keidranMin || '';
+                if (this.filters.keidranMax) this.filters.keidranMax.value = s.keidranMax || '';
                 if (this.filters.species) this.filters.species.value = s.species || '';
                 if (this.filters.subspecies) this.filters.subspecies.value = s.subspecies || '';
                 if (this.filters.rank) this.filters.rank.value = s.rank || '';
@@ -218,18 +227,33 @@ export class CharacterEditor {
                 if (this.filters.haircolor) this.filters.haircolor.value = s.haircolor || '';
                 if (this.filters.eyecolor) this.filters.eyecolor.value = s.eyecolor || '';
                 if (this.filters.furcolor) this.filters.furcolor.value = s.furcolor || '';
+                if (this.filters.isDead) this.filters.isDead.value = s.isDead || '';
             }
         } catch (err) {
             console.warn('[CharacterEditor] Konnte Filter-Status nicht wiederherstellen:', err);
         }
     }
-
+    checkAgeRange(charAgeStr, fMinStr, fMaxStr) {
+        if (!fMinStr && !fMaxStr) return true;
+        if (!charAgeStr) return false;
+        const nums = charAgeStr.match(/\d+/g);
+        if (!nums) return false;
+        const numVals = nums.map((n) => parseInt(n, 10));
+        const charMin = Math.min(...numVals);
+        const charMax = Math.max(...numVals);
+        const fMin = fMinStr ? parseInt(fMinStr, 10) : 0;
+        const fMax = fMaxStr ? parseInt(fMaxStr, 10) : Infinity;
+        return charMax >= fMin && charMin <= fMax;
+    }
     renderTable() {
         if (!this.tableBody) return;
 
         const sVal = this.filters.search?.value.toLowerCase().trim() || '';
         const gVal = this.filters.gender?.value || '';
-        const aVal = this.filters.age?.value || '';
+        const aMin = this.filters.ageMin?.value || '';
+        const aMax = this.filters.ageMax?.value || '';
+        const kMin = this.filters.keidranMin?.value || '';
+        const kMax = this.filters.keidranMax?.value || '';
         const spVal = this.filters.species?.value || '';
         const subVal = this.filters.subspecies?.value || '';
         const rVal = this.filters.rank?.value || '';
@@ -237,18 +261,25 @@ export class CharacterEditor {
         const hcVal = this.filters.haircolor?.value || '';
         const ecVal = this.filters.eyecolor?.value || '';
         const fcVal = this.filters.furcolor?.value || '';
+        const dVal = this.filters.isDead?.value || '';
         const filteredRows = this.allRows.filter((row) => {
             let isMatch = true;
             if (sVal && !row.dataset.search.includes(sVal)) isMatch = false;
-            if (gVal && row.dataset.gender !== gVal) isMatch = false;
-            if (aVal && row.dataset.age !== aVal) isMatch = false;
-            if (spVal && row.dataset.species !== spVal) isMatch = false;
-            if (subVal && row.dataset.subspecies !== subVal) isMatch = false;
+            if (gVal && !row.dataset.gender.includes(gVal)) isMatch = false;
+            if (spVal && !row.dataset.species.includes(spVal)) isMatch = false;
+            if (subVal && !row.dataset.subspecies.includes(subVal)) isMatch = false;
             if (rVal && !row.dataset.rank.includes(rVal)) isMatch = false;
             if (lVal && !row.dataset.languages.includes(lVal)) isMatch = false;
             if (hcVal && !row.dataset.haircolor.includes(hcVal)) isMatch = false;
             if (ecVal && !row.dataset.eyecolor.includes(ecVal)) isMatch = false;
             if (fcVal && !row.dataset.furcolor.includes(fcVal)) isMatch = false;
+            if (dVal && row.dataset.isdead !== dVal) isMatch = false;
+            if (aMin || aMax) {
+                if (!this.checkAgeRange(row.dataset.age, aMin, aMax)) isMatch = false;
+            }
+            if (kMin || kMax) {
+                if (!this.checkAgeRange(row.dataset.keidranage, kMin, kMax)) isMatch = false;
+            }
             return isMatch;
         });
 
@@ -570,7 +601,10 @@ export class CharacterEditor {
 
         const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
-            if (el) el.value = val;
+            if (el) {
+                if (el.type === 'checkbox') el.checked = !!val;
+                else el.value = val;
+            }
             if (stateProp) this.state[stateProp] = val;
         };
 
@@ -579,9 +613,7 @@ export class CharacterEditor {
         setValAndState('main_pic_url', 'mainPicUrl', '');
         setValAndState('swatch_pic_url', 'swatchPicUrl', '');
         setValAndState('ref_sheets_urls', 'refSheets', '');
-        setValAndState('hair_color', null, '');
-        setValAndState('eye_color', null, '');
-        setValAndState('fur_color', null, '');
+        setValAndState('is_dead', null, false);
         if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
             window.$('#char_description').trumbowyg('empty');
         }
@@ -627,7 +659,10 @@ export class CharacterEditor {
 
         const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
-            if (el) el.value = val || '';
+            if (el) {
+                if (el.type === 'checkbox') el.checked = !!val;
+                else el.value = val || '';
+            }
             if (stateProp) this.state[stateProp] = val || '';
         };
 
@@ -637,6 +672,7 @@ export class CharacterEditor {
         setValAndState('alt_names', null, payload.altNames);
         setValAndState('gender', null, payload.gender);
         setValAndState('age', null, payload.age);
+        setValAndState('keidran_age', null, payload.keidranAge);
         setValAndState('rank', null, payload.rank);
         setValAndState('species', null, payload.species);
         setValAndState('subspecies', null, payload.subspecies);
@@ -644,6 +680,7 @@ export class CharacterEditor {
         setValAndState('hair_color', null, payload.hairColor);
         setValAndState('eye_color', null, payload.eyeColor);
         setValAndState('fur_color', null, payload.furColor);
+        setValAndState('is_dead', null, payload.isDead);
         if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
             window.$('#char_description').trumbowyg('html', payload.description || '');
         }

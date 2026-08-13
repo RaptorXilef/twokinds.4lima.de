@@ -43,13 +43,10 @@ $alphaChars = $filteredChars;
 \usort($alphaChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
 
 $isFilteredView = $limitToIds !== null;
-$headerText = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charaktere';
-?>
-
+$headerText = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charaktere'; ?>
 <div class="comic-characters-container interactive"
      id="char-display-wrapper"
      data-active-view="tags">
-
     <div class="char-display-header"
          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h3 style="margin: 0;"><?php echo $headerText; ?></h3>
@@ -90,23 +87,23 @@ $headerText = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charaktere
                         <?php foreach ($charsInThisGroup as $character) {
                             $picUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
                             $link = "{$baseUrl}/charaktere/" . \urlencode($character->id->value);
-                            // Such-String generieren
-                            $searchStr = \strtolower($character->name . ' ' . ($character->fullName ?? '') . ' ' . ($character->altNames ?? '') . ' ' . \strip_tags($character->description ?? ''));
-                            ?>
+                            $searchStr = \strtolower($character->name . ' ' . ($character->fullName ?? '') . ' ' . ($character->altNames ?? '') . ' ' . \strip_tags($character->description ?? '')); ?>
                             <div class="character-item"
                                  data-search="<?php echo \htmlspecialchars($searchStr); ?>"
                                  data-gender="<?php echo \htmlspecialchars($character->gender ?? ''); ?>"
                                  data-age="<?php echo \htmlspecialchars($character->age ?? ''); ?>"
+                                 data-keidranage="<?php echo \htmlspecialchars($character->keidranAge ?? ''); ?>"
                                  data-rank="<?php echo \htmlspecialchars($character->rank ?? ''); ?>"
                                  data-species="<?php echo \htmlspecialchars($character->species ?? ''); ?>"
                                  data-subspecies="<?php echo \htmlspecialchars($character->subspecies ?? ''); ?>"
                                  data-languages="<?php echo \htmlspecialchars($character->languages ?? ''); ?>"
                                  data-haircolor="<?php echo \htmlspecialchars($character->hairColor ?? ''); ?>"
                                  data-eyecolor="<?php echo \htmlspecialchars($character->eyeColor ?? ''); ?>"
-                                 data-furcolor="<?php echo \htmlspecialchars($character->furColor ?? ''); ?>">
+                                 data-furcolor="<?php echo \htmlspecialchars($character->furColor ?? ''); ?>"
+                                 data-isdead="<?php echo $character->isDead ? '1' : '0'; ?>">
                                 <a href = "<?php echo $link; ?>">
                                 <div class = "character-avatar-container">
-                                <img src = "<?php echo \htmlspecialchars($picUrl); ?>" alt = "<?php echo \htmlspecialchars($character->name); ?>" loading = "lazy">
+                                <img src = "<?php echo \htmlspecialchars($picUrl); ?>" alt = "<?php echo \htmlspecialchars($character->name); ?>" loading = "lazy" style="<?php echo $character->isDead ? 'filter: grayscale(1); border: 2px solid #dc3545;' : ''; ?>">
                                 </div>
                                 <p class = "character-name"><?php echo \htmlspecialchars($character->name); ?></p>
                                 </a>
@@ -126,25 +123,25 @@ $headerText = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charaktere
                 <?php foreach ($alphaChars as $character) {
                     $picUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
                     $link = "{$baseUrl}/charaktere/" . \urlencode($character->id->value);
-                    $searchStr = \strtolower($character->name . ' ' . ($character->fullName ?? '') . ' ' . ($character->altNames ?? '') . ' ' . \strip_tags($character->description ?? ''));
-                    ?>
+                    $searchStr = \strtolower($character->name . ' ' . ($character->fullName ?? '') . ' ' . ($character->altNames ?? '') . ' ' . \strip_tags($character->description ?? '')); ?>
                     <div class="character-item"
                          data-search="<?php echo \htmlspecialchars($searchStr); ?>"
                          data-gender="<?php echo \htmlspecialchars($character->gender ?? ''); ?>"
                          data-age="<?php echo \htmlspecialchars($character->age ?? ''); ?>"
+                         data-keidranage="<?php echo \htmlspecialchars($character->keidranAge ?? ''); ?>"
                          data-rank="<?php echo \htmlspecialchars($character->rank ?? ''); ?>"
                          data-species="<?php echo \htmlspecialchars($character->species ?? ''); ?>"
                          data-subspecies="<?php echo \htmlspecialchars($character->subspecies ?? ''); ?>"
                          data-languages="<?php echo \htmlspecialchars($character->languages ?? ''); ?>"
                          data-haircolor="<?php echo \htmlspecialchars($character->hairColor ?? ''); ?>"
                          data-eyecolor="<?php echo \htmlspecialchars($character->eyeColor ?? ''); ?>"
-                         data-furcolor="<?php echo \htmlspecialchars($character->furColor ?? ''); ?>">
+                         data-furcolor="<?php echo \htmlspecialchars($character->furColor ?? ''); ?>"
+                         data-isdead="<?php echo $character->isDead ? '1' : '0'; ?>">
                         <a href = "<?php echo $link; ?>">
                         <div class = "character-avatar-container">
-                        <img src = "<?php echo \htmlspecialchars($picUrl); ?>" alt = "<?php echo \htmlspecialchars($character->name); ?>" loading = "lazy">
+                        <img src = "<?php echo \htmlspecialchars($picUrl); ?>" alt = "<?php echo \htmlspecialchars($character->name); ?>" loading = "lazy" style="<?php echo $character->isDead ? 'filter: grayscale(1); border: 2px solid #dc3545;' : ''; ?>">
                         </div>
                         <p class = "character-name"><?php echo \htmlspecialchars($character->name); ?></p>
-
                         <div class = "character-tags">
                         <?php if (isset($tagsMap[$character->id->value])) {
                             foreach ($tagsMap[$character->id->value] as $tag) { ?>

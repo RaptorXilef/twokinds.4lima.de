@@ -22,6 +22,7 @@ final readonly class Character
         public ?string $altNames = null,
         public ?string $gender = null,
         public ?string $age = null,
+        public ?string $keidranAge = null,
         public ?string $rank = null,
         public ?string $species = null,
         public ?string $subspecies = null,
@@ -32,6 +33,7 @@ final readonly class Character
         public ?string $mainPic = null,
         public ?string $swatchPic = null,
         public array $refSheets = [],
+        public bool $isDead = false,
     ) {
     }
 }

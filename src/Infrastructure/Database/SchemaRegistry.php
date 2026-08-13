@@ -103,6 +103,7 @@ final class SchemaRegistry
                 `alt_names` VARCHAR(255),
                 `gender` VARCHAR(100),
                 `age` VARCHAR(100),
+                `keidran_age` VARCHAR(100),
                 `rank` VARCHAR(100),
                 `species` VARCHAR(100),
                 `subspecies` VARCHAR(100),
@@ -110,6 +111,7 @@ final class SchemaRegistry
                 `hair_color` VARCHAR(255),
                 `eye_color` VARCHAR(255),
                 `fur_color` VARCHAR(255),
+                `is_dead` TINYINT(1) NOT NULL DEFAULT 0,
                 `main_pic` VARCHAR(255),
                 `swatch_pic` VARCHAR(255),
                 `ref_sheets` JSON

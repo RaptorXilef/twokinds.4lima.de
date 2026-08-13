@@ -57,7 +57,11 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             }
 
             $media = $this->resolveMediaUrls($request, $dto, $existing, $safeName);
-
+            $keidranAge = $dto->keidranAge;
+            $isKeidran = \stripos($dto->species ?? '', 'keidran') !== false || \stripos($dto->subspecies ?? '', 'keidran') !== false;
+            if ($isKeidran && ($keidranAge === null || $keidranAge === '') && $dto->age !== null) {
+                $keidranAge = \preg_replace_callback('/(\d+)/', fn ($m): string => (string) \round((int) $m[1] * 7), $dto->age);
+            }
             $character = new Character(
                 id: new CharacterId($charIdStr),
                 name: $dto->name,
@@ -67,6 +71,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
                 altNames: $dto->altNames,
                 gender: $dto->gender,
                 age: $dto->age,
+                keidranAge: $keidranAge,
                 rank: $dto->rank,
                 species: $dto->species,
                 subspecies: $dto->subspecies,
@@ -77,13 +82,14 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
                 mainPic: $media['mainPic'],
                 swatchPic: $media['swatchPic'],
                 refSheets: $media['refSheets'],
+                isDead: $dto->isDead,
             );
 
             $this->characterService->saveCharacter($character);
 
             $msg = "Charakter '{$dto->name}' erfolgreich gespeichert.";
             if ($media['warnings'] !== []) {
-                $msg .= "<br><br><strong style='color:#856404;'><i class='fa-solid fa-triangle-exclamation'></i> Warnungen:</strong><br>- " // phpcs:ignore Generic.Files.LineLength.TooLong
+                $msg .= "<br><br><strong style='color:#856404;'><i class='fa-solid fa-triangle-exclamation'></i> Warnungen:</strong><br>- "
                     . \implode('<br>- ', $media['warnings']);
             }
 

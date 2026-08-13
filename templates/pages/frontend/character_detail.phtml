@@ -30,9 +30,13 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
         <header class="d-flex align-center gap-20 mb-30 pb-15 border-bottom-2">
             <img src="<?php echo \htmlspecialchars($profilePicUrl); ?>"
                  alt="Avatar von <?php echo \htmlspecialchars($character->name); ?>"
-                 class="avatar-lg">
-            <h1 class="page-header border-none m-0 p-0">
+                 class="avatar-lg"
+                 style="<?php echo $character->isDead ? 'filter: grayscale(1); border: 2px solid #dc3545;' : ''; ?>">
+            <h1 class="page-header border-none m-0 p-0 d-flex align-center flex-wrap gap-10">
                 <?php echo \htmlspecialchars($character->name); ?>
+                <?php if ($character->isDead) { ?>
+                    <span class="badge bg-danger text-white font-small p-5" style="background: #dc3545; color: white;">Verstorben</span>
+                <?php } ?>
             </h1>
         </header>
         <!-- HAUPT-LAYOUT: Display Block statt Flex, damit Float funktioniert! -->
@@ -59,7 +63,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                     </h3>
                 <?php } ?>
                 <!-- Biografische Daten (Ohne Kasten, elegant als Liste) -->
-                <?php if ($character->altNames || $character->gender || $character->age || $character->rank || $character->species || $character->languages || $character->hairColor || $character->eyeColor || $character->furColor) { ?>
+                <?php if ($character->altNames || $character->gender || $character->age || $character->keidranAge || $character->rank || $character->species || $character->languages || $character->hairColor || $character->eyeColor || $character->furColor) { ?>
                     <ul class="list-none p-0 m-0"
                         style="line-height: 1.8;">
                         <?php if ($character->altNames) { ?>
@@ -68,16 +72,11 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                         <?php if ($character->gender) { ?>
                             <li><strong>Geschlecht:</strong> <?php echo \htmlspecialchars($character->gender); ?></li>
                         <?php } ?>
-                        <?php if ($character->age) {
-                            $displayAge = \htmlspecialchars($character->age);
-                            // Keidran Alter-Magie!
-                            $isKeidran = \stripos($character->species ?? '', 'k') !== false || \stripos($character->subspecies ?? '', 'k') !== false;
-                            if ($isKeidran && \preg_match('/(\d+)/', $character->age, $matches)) {
-                                $rawAge = (int) $matches[1];
-                                $humanAge = \round($rawAge * 2.36); // Multiplikator für Keidran
-                                $displayAge .= " (~{$humanAge} äquivalent)";
-                            } ?>
-                            <li><strong>Alter:</strong> <?php echo $displayAge; ?></li>
+                        <?php if ($character->age) { ?>
+                            <li><strong>Alter (Menschlich):</strong> <?php echo \htmlspecialchars($character->age); ?> Jahre</li>
+                        <?php } ?>
+                        <?php if ($character->keidranAge) { ?>
+                            <li><strong>Alter (Keidranjahre):</strong> <?php echo \htmlspecialchars($character->keidranAge); ?> Jahre</li>
                         <?php } ?>
                         <?php if ($character->rank) { ?>
                             <li><strong>Klasse/Rang:</strong> <?php echo \htmlspecialchars($character->rank); ?></li>
@@ -153,9 +152,9 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                         $pageName = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
                         $pageLink = "{$baseUrl}/comic/{$comicId}"; ?>
                         <a href="<?php echo $pageLink; ?>" title="<?php echo \htmlspecialchars($pageName); ?>" class="loaded">
-                        <span><?php echo \htmlspecialchars($pageName); ?></span>
-                        <img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
-                        </a>
+<span><?php echo \htmlspecialchars($pageName); ?></span>
+<img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
+</a>
                     <?php } ?>
                 </div>
             <?php } ?>

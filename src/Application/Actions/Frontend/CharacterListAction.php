@@ -51,7 +51,6 @@ final readonly class CharacterListAction implements ActionInterface
     {
         $filterData = [
             'gender' => [],
-            'age' => [],
             'rank' => [],
             'species' => [],
             'subspecies' => [],
@@ -62,7 +61,6 @@ final readonly class CharacterListAction implements ActionInterface
         ];
 
         foreach ($characters as $char) {
-            $this->appendDirectFilters($filterData, $char);
             $this->appendCommaSeparatedFilters($filterData, $char);
         }
 
@@ -79,29 +77,11 @@ final readonly class CharacterListAction implements ActionInterface
     /**
      * @param array<string, array<string, bool>> &$filterData
      */
-    private function appendDirectFilters(array &$filterData, Character $char): void
-    {
-        if ($char->gender !== null && $char->gender !== '') {
-            $filterData['gender'][$char->gender] = true;
-        }
-        if ($char->age !== null && $char->age !== '') {
-            $filterData['age'][$char->age] = true;
-        }
-        if ($char->species !== null && $char->species !== '') {
-            $filterData['species'][$char->species] = true;
-        }
-        if ($char->subspecies === null || $char->subspecies === '') {
-            return;
-        }
-
-        $filterData['subspecies'][$char->subspecies] = true;
-    }
-
-    /**
-     * @param array<string, array<string, bool>> &$filterData
-     */
     private function appendCommaSeparatedFilters(array &$filterData, Character $char): void
     {
+        $this->extractCommaItems($filterData['gender'], $char->gender);
+        $this->extractCommaItems($filterData['species'], $char->species);
+        $this->extractCommaItems($filterData['subspecies'], $char->subspecies);
         $this->extractCommaItems($filterData['rank'], $char->rank);
         $this->extractCommaItems($filterData['languages'], $char->languages);
         $this->extractCommaItems($filterData['hairColor'], $char->hairColor);

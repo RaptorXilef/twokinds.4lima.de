@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 /**
  * @var string $baseUrl
  * @var array $groups
@@ -10,7 +9,6 @@ declare(strict_types=1);
  * @var array $perms
  */
 $allGenders = [];
-$allAges = [];
 $allSpecies = [];
 $allSubspecies = [];
 $allLanguages = [];
@@ -20,16 +18,25 @@ $allEyeColors = [];
 $allFurColors = [];
 foreach ($characters as $c) {
     if ($c->gender) {
-        $allGenders[$c->gender] = true;
-    }
-    if ($c->age) {
-        $allAges[$c->age] = true;
+        foreach (\explode(',', $c->gender) as $i) {
+            if (\trim($i) !== '') {
+                $allGenders[\trim($i)] = true;
+            }
+        }
     }
     if ($c->species) {
-        $allSpecies[$c->species] = true;
+        foreach (\explode(',', $c->species) as $i) {
+            if (\trim($i) !== '') {
+                $allSpecies[\trim($i)] = true;
+            }
+        }
     }
     if ($c->subspecies) {
-        $allSubspecies[$c->subspecies] = true;
+        foreach (\explode(',', $c->subspecies) as $i) {
+            if (\trim($i) !== '') {
+                $allSubspecies[\trim($i)] = true;
+            }
+        }
     }
     if ($c->languages) {
         foreach (\explode(',', $c->languages) as $l) {
@@ -68,7 +75,6 @@ foreach ($characters as $c) {
     }
 }
 \ksort($allGenders);
-\ksort($allAges);
 \ksort($allSpecies);
 \ksort($allSubspecies);
 \ksort($allLanguages);
@@ -76,27 +82,30 @@ foreach ($characters as $c) {
 \ksort($allHairColors);
 \ksort($allEyeColors);
 \ksort($allFurColors); ?>
+<datalist id="dl-gender"><?php foreach (\array_keys($allGenders) as $v) {
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+} ?></datalist>
 <datalist id="dl-species"><?php foreach (\array_keys($allSpecies) as $v) {
-                                echo '<option value="' . \htmlspecialchars((string) $v) . '">';
-                            } ?></datalist>
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+} ?></datalist>
 <datalist id="dl-subspecies"><?php foreach (\array_keys($allSubspecies) as $v) {
-                                    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
-                                } ?></datalist>
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+} ?></datalist>
 <datalist id="dl-languages"><?php foreach (\array_keys($allLanguages) as $v) {
-                                echo '<option value="' . \htmlspecialchars((string) $v) . '">';
-                            } ?></datalist>
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+} ?></datalist>
 <datalist id="dl-ranks"><?php foreach (\array_keys($allRanks) as $v) {
-                            echo '<option value="' . \htmlspecialchars((string) $v) . '">';
-                        } ?></datalist>
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+} ?></datalist>
 <datalist id="dl-haircolor"><?php foreach (\array_keys($allHairColors) as $v) {
-                                echo '<option value="' . \htmlspecialchars((string) $v) . '">';
-                            } ?></datalist>
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+} ?></datalist>
 <datalist id="dl-eyecolor"><?php foreach (\array_keys($allEyeColors) as $v) {
-                                echo '<option value="' . \htmlspecialchars((string) $v) . '">';
-                            } ?></datalist>
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+} ?></datalist>
 <datalist id="dl-furcolor"><?php foreach (\array_keys($allFurColors) as $v) {
-                                echo '<option value="' . \htmlspecialchars((string) $v) . '">';
-                            } ?></datalist>
+    echo '<option value="' . \htmlspecialchars((string) $v) . '">';
+} ?></datalist>
 
 <!-- ========================================== -->
 <!-- SECTION: CHARAKTERE                        -->
@@ -113,7 +122,6 @@ foreach ($characters as $c) {
         <?php } ?>
     </div>
 </div>
-
 <div class="filter-form mb-20">
     <legend><i class="fa-solid fa-filter text-link"></i> Charaktere filtern</legend>
     <div class="filter-controls grid-auto-180">
@@ -122,6 +130,14 @@ foreach ($characters as $c) {
             <input type="text"
                    id="char-filter-search"
                    placeholder="Name, ID, Alias oder Biografie durchsuchen...">
+        </div>
+        <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Lebensstatus</label>
+            <select id="char-filter-is-dead">
+                <option value="">Alle</option>
+                <option value="0">Lebend</option>
+                <option value="1">Verstorben</option>
+            </select>
         </div>
         <div>
             <label class="d-block font-small font-bold mb-5 text-faded">Geschlecht</label>
@@ -133,13 +149,34 @@ foreach ($characters as $c) {
             </select>
         </div>
         <div>
-            <label class="d-block font-small font-bold mb-5 text-faded">Alter</label>
-            <select id="char-filter-age">
-                <option value="">Alle</option>
-                <?php foreach (\array_keys($allAges) as $v) {
-                    echo '<option value="' . \htmlspecialchars((string) $v) . '">' . \htmlspecialchars((string) $v) . '</option>';
-                } ?>
-            </select>
+            <label class="d-block font-small font-bold mb-5 text-faded">Alter (Menschl.)</label>
+            <div class="d-flex gap-5">
+                <input type="number"
+                       id="char-filter-age-min"
+                       placeholder="Min"
+                       class="w-100 bg-content"
+                       style="padding: 5px;">
+                <input type="number"
+                       id="char-filter-age-max"
+                       placeholder="Max"
+                       class="w-100 bg-content"
+                       style="padding: 5px;">
+            </div>
+        </div>
+        <div>
+            <label class="d-block font-small font-bold mb-5 text-faded">Alter (Keidranjahre)</label>
+            <div class="d-flex gap-5">
+                <input type="number"
+                       id="char-filter-keidran-min"
+                       placeholder="Min"
+                       class="w-100 bg-content"
+                       style="padding: 5px;">
+                <input type="number"
+                       id="char-filter-keidran-max"
+                       placeholder="Max"
+                       class="w-100 bg-content"
+                       style="padding: 5px;">
+            </div>
         </div>
         <div>
             <label class="d-block font-small font-bold mb-5 text-faded">Spezies</label>
@@ -252,6 +289,7 @@ foreach ($characters as $c) {
                         'altNames' => $char->altNames ?? '',
                         'gender' => $char->gender ?? '',
                         'age' => $char->age ?? '',
+                        'keidranAge' => $char->keidranAge ?? '',
                         'rank' => $char->rank ?? '',
                         'species' => $char->species ?? '',
                         'subspecies' => $char->subspecies ?? '',
@@ -259,28 +297,34 @@ foreach ($characters as $c) {
                         'hairColor' => $char->hairColor ?? '',
                         'eyeColor' => $char->eyeColor ?? '',
                         'furColor' => $char->furColor ?? '',
+                        'isDead' => $char->isDead,
                         'mainPic' => $char->mainPic ?? '',
                         'swatchPic' => $char->swatchPic ?? '',
-                        'refSheets' => $char->refSheets ?? []
+                        'refSheets' => $char->refSheets ?? [],
                     ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
                     $searchStr = \strtolower($cId . ' ' . $char->name . ' ' . ($char->fullName ?? '') . ' ' . ($char->altNames ?? '') . ' ' . \strip_tags($char->description ?? '')); ?>
                     <tr data-search="<?php echo \htmlspecialchars($searchStr); ?>"
                         data-gender="<?php echo \htmlspecialchars($char->gender ?? ''); ?>"
                         data-age="<?php echo \htmlspecialchars($char->age ?? ''); ?>"
+                        data-keidranage="<?php echo \htmlspecialchars($char->keidranAge ?? ''); ?>"
                         data-rank="<?php echo \htmlspecialchars($char->rank ?? ''); ?>"
                         data-species="<?php echo \htmlspecialchars($char->species ?? ''); ?>"
                         data-subspecies="<?php echo \htmlspecialchars($char->subspecies ?? ''); ?>"
                         data-languages="<?php echo \htmlspecialchars($char->languages ?? ''); ?>"
                         data-haircolor="<?php echo \htmlspecialchars($char->hairColor ?? ''); ?>"
                         data-eyecolor="<?php echo \htmlspecialchars($char->eyeColor ?? ''); ?>"
-                        data-furcolor="<?php echo \htmlspecialchars($char->furColor ?? ''); ?>">
+                        data-furcolor="<?php echo \htmlspecialchars($char->furColor ?? ''); ?>"
+                        data-isdead="<?php echo $char->isDead ? '1' : '0'; ?>">
                         <td class="mono"><?php echo \htmlspecialchars($cId); ?></td>
                         <td>
                             <img src="<?php echo \htmlspecialchars($pic); ?>"
-                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; <?php echo $char->isDead ? 'filter: grayscale(1); border: 2px solid #dc3545;' : ''; ?>">
                         </td>
                         <td>
                             <strong><?php echo \htmlspecialchars($char->name); ?></strong>
+                            <?php if ($char->isDead) { ?>
+                                <span class="badge bg-danger text-white ml-5" style="background: #dc3545; color: white;">Verstorben</span>
+                            <?php } ?>
                             <?php if ($char->description) { ?>
                                 <div class="description-preview"
                                      style="max-height: 2.5em;"><?php echo \strip_tags($char->description); ?></div>

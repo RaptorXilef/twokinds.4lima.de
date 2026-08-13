@@ -22,6 +22,7 @@ final readonly class SaveSingleCharacterRequest
         public ?string $altNames,
         public ?string $gender,
         public ?string $age,
+        public ?string $keidranAge,
         public ?string $rank,
         public ?string $species,
         public ?string $subspecies,
@@ -29,6 +30,7 @@ final readonly class SaveSingleCharacterRequest
         public ?string $hairColor,
         public ?string $eyeColor,
         public ?string $furColor,
+        public bool $isDead,
     ) {
     }
 
@@ -54,6 +56,7 @@ final readonly class SaveSingleCharacterRequest
             altNames: isset($data['alt_names']) && $data['alt_names'] !== '' ? Sanitizer::string($data['alt_names']) : null,
             gender: isset($data['gender']) && $data['gender'] !== '' ? Sanitizer::string($data['gender']) : null,
             age: isset($data['age']) && $data['age'] !== '' ? Sanitizer::string($data['age']) : null,
+            keidranAge: isset($data['keidran_age']) && $data['keidran_age'] !== '' ? Sanitizer::string($data['keidran_age']) : null,
             rank: isset($data['rank']) && $data['rank'] !== '' ? Sanitizer::string($data['rank']) : null,
             species: isset($data['species']) && $data['species'] !== '' ? Sanitizer::string($data['species']) : null,
             subspecies: isset($data['subspecies']) && $data['subspecies'] !== '' ? Sanitizer::string($data['subspecies']) : null,
@@ -61,6 +64,7 @@ final readonly class SaveSingleCharacterRequest
             hairColor: isset($data['hair_color']) && $data['hair_color'] !== '' ? Sanitizer::string($data['hair_color']) : null,
             eyeColor: isset($data['eye_color']) && $data['eye_color'] !== '' ? Sanitizer::string($data['eye_color']) : null,
             furColor: isset($data['fur_color']) && $data['fur_color'] !== '' ? Sanitizer::string($data['fur_color']) : null,
+            isDead: \in_array($data['is_dead'] ?? false, [true, 1, '1', 'true', 'on'], true),
         );
         // phpcs:enable Generic.Files.LineLength.TooLong
     }

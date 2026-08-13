@@ -50,7 +50,10 @@ export class CharacterFilter {
         this.filters = {
             search: this.searchInput,
             gender: document.getElementById('char-filter-gender'),
-            age: document.getElementById('char-filter-age'),
+            ageMin: document.getElementById('char-filter-age-min'),
+            ageMax: document.getElementById('char-filter-age-max'),
+            keidranMin: document.getElementById('char-filter-keidran-min'),
+            keidranMax: document.getElementById('char-filter-keidran-max'),
             species: document.getElementById('char-filter-species'),
             subspecies: document.getElementById('char-filter-subspecies'),
             rank: document.getElementById('char-filter-rank'),
@@ -58,15 +61,24 @@ export class CharacterFilter {
             haircolor: document.getElementById('char-filter-haircolor'),
             eyecolor: document.getElementById('char-filter-eyecolor'),
             furcolor: document.getElementById('char-filter-furcolor'),
+            isDead: document.getElementById('char-filter-is-dead'),
         };
 
         // Debounce mit 250ms Verzögerung!
         const applyFiltersDebounced = this.debounce(() => this.applyFilters(), 250);
 
         Object.values(this.filters).forEach((input) => {
-            if (input) input.addEventListener('input', applyFiltersDebounced);
+            if (input) {
+                if (
+                    input.tagName === 'INPUT' &&
+                    (input.type === 'text' || input.type === 'number')
+                ) {
+                    input.addEventListener('input', applyFiltersDebounced);
+                } else {
+                    input.addEventListener('change', () => this.applyFilters());
+                }
+            }
         });
-
         if (this.btnReset) {
             this.btnReset.addEventListener('click', () => {
                 Object.values(this.filters).forEach((input) => {
@@ -76,11 +88,25 @@ export class CharacterFilter {
             });
         }
     }
-
+    checkAgeRange(charAgeStr, fMinStr, fMaxStr) {
+        if (!fMinStr && !fMaxStr) return true;
+        if (!charAgeStr) return false;
+        const nums = charAgeStr.match(/\d+/g);
+        if (!nums) return false;
+        const numVals = nums.map((n) => parseInt(n, 10));
+        const charMin = Math.min(...numVals);
+        const charMax = Math.max(...numVals);
+        const fMin = fMinStr ? parseInt(fMinStr, 10) : 0;
+        const fMax = fMaxStr ? parseInt(fMaxStr, 10) : Infinity;
+        return charMax >= fMin && charMin <= fMax;
+    }
     applyFilters() {
         const sVal = this.filters.search?.value.toLowerCase().trim() || '';
         const gVal = this.filters.gender?.value || '';
-        const aVal = this.filters.age?.value || '';
+        const aMin = this.filters.ageMin?.value || '';
+        const aMax = this.filters.ageMax?.value || '';
+        const kMin = this.filters.keidranMin?.value || '';
+        const kMax = this.filters.keidranMax?.value || '';
         const spVal = this.filters.species?.value || '';
         const subVal = this.filters.subspecies?.value || '';
         const rVal = this.filters.rank?.value || '';
@@ -88,21 +114,28 @@ export class CharacterFilter {
         const hcVal = this.filters.haircolor?.value || '';
         const ecVal = this.filters.eyecolor?.value || '';
         const fcVal = this.filters.furcolor?.value || '';
+        const dVal = this.filters.isDead?.value || '';
         let globalMatchCount = 0;
 
         document.querySelectorAll('.character-item').forEach((item) => {
             let isMatch = true;
 
             if (sVal && !item.dataset.search.includes(sVal)) isMatch = false;
-            if (gVal && item.dataset.gender !== gVal) isMatch = false;
-            if (aVal && item.dataset.age !== aVal) isMatch = false;
-            if (spVal && item.dataset.species !== spVal) isMatch = false;
-            if (subVal && item.dataset.subspecies !== subVal) isMatch = false;
+            if (gVal && !item.dataset.gender.includes(gVal)) isMatch = false;
+            if (spVal && !item.dataset.species.includes(spVal)) isMatch = false;
+            if (subVal && !item.dataset.subspecies.includes(subVal)) isMatch = false;
             if (rVal && !item.dataset.rank.includes(rVal)) isMatch = false;
             if (lVal && !item.dataset.languages.includes(lVal)) isMatch = false;
             if (hcVal && !item.dataset.haircolor.includes(hcVal)) isMatch = false;
             if (ecVal && !item.dataset.eyecolor.includes(ecVal)) isMatch = false;
             if (fcVal && !item.dataset.furcolor.includes(fcVal)) isMatch = false;
+            if (dVal && item.dataset.isdead !== dVal) isMatch = false;
+            if (aMin || aMax) {
+                if (!this.checkAgeRange(item.dataset.age, aMin, aMax)) isMatch = false;
+            }
+            if (kMin || kMax) {
+                if (!this.checkAgeRange(item.dataset.keidranage, kMin, kMax)) isMatch = false;
+            }
             item.style.display = isMatch ? '' : 'none';
             if (isMatch) globalMatchCount++;
         });
