@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.20.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.8...v6.20.0) (2026-08-13)
+
+### 🚀 Features
+
+* **frontend:** Add lightbox image zoom to character detail page ([363d887](https://github.com/RaptorXilef/twokinds.4lima.de/commit/363d8871b4edc90d03e67e7e36e707d2826c3dd4))
+
 ## [6.19.8](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.7...v6.19.8) (2026-08-13)
 
 ### 🐛 Bug Fixes
