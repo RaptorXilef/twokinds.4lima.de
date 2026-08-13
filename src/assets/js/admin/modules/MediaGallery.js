@@ -18,7 +18,18 @@ export class MediaGallery {
         this.notifications = notifications;
         this.tracker = tracker;
 
-        /** @type {HTMLElement|null} */
+        this.currentMediaTab = 'characters';
+        this.currentGalleryTargetInput = null;
+        this.isTabInitialized = false;
+
+        // Binde die Modal-Ereignisse IMMER sofort, egal welcher Tab offen ist!
+        this.bindDynamicGalleryEvents();
+    }
+
+    /**
+     * Wird nur aufgerufen, wenn der Benutzer auch wirklich den Galerie-Tab öffnet
+     */
+    initTab() {
         this.section = document.getElementById('section-media');
         /** @type {HTMLElement|null} */
         this.galChars = document.getElementById('media-gallery-characters');
@@ -27,21 +38,14 @@ export class MediaGallery {
         /** @type {HTMLInputElement|null} */
         this.mediaSearchInput = document.getElementById('media-search');
 
-        /** @type {string} */
-        this.currentMediaTab = 'characters';
-        /** @type {HTMLInputElement|null} */
-        this.currentGalleryTargetInput = null;
+        if (this.section && this.galChars && !this.isTabInitialized) {
+            this.isTabInitialized = true;
 
-        // PERFORMANCE BOOST: Debounced Live-Suche
-        this.applyFilterDebounced = debounce(() => this.applyFilter(), 250);
-
-        if (this.section) {
+            // PERFORMANCE BOOST: Debounced Live-Suche
+            this.applyFilterDebounced = debounce(() => this.applyFilter(), 250);
             this.bindSectionEvents();
-            this.loadMedia();
+            this.loadMedia(); // Lädt die Bilder ressourcenschonend erst hier
         }
-
-        // Immer laden, da Modals global aufrufbar sind
-        this.bindDynamicGalleryEvents();
     }
 
     bindSectionEvents() {
@@ -62,6 +66,7 @@ export class MediaGallery {
                 tabBtn.classList.add('active');
 
                 this.currentMediaTab = tabBtn.dataset.type;
+
                 const viewChars = document.getElementById('media-view-characters');
                 const viewComics = document.getElementById('media-view-comics');
 
@@ -103,18 +108,23 @@ export class MediaGallery {
             onChange: async (files) => {
                 DragDropService.reset('media-drop-zone');
                 if (files.length === 0) return;
+
                 this.notifications.show('Lade Bilder hoch...', 'info');
+
                 const fd = new window.FormData();
                 for (const file of files) {
                     fd.append('files[]', file);
                 }
+
                 const json = await this.api.post('upload_media', fd);
+
                 if (json.success) {
                     this.notifications.show(json.message, 'success');
                     this.loadMedia();
                 } else {
                     this.notifications.show(json.error, 'error');
                 }
+
                 const uploadInput = document.getElementById('media-upload-input');
                 if (uploadInput) uploadInput.value = '';
             },
@@ -202,6 +212,7 @@ export class MediaGallery {
 
                 const galGrid = document.getElementById('gallery-grid-dynamic');
                 if (galGrid) galGrid.innerHTML = '<p>Lade Bilder...</p>';
+
                 this.modalManager.open('gallery-modal');
 
                 try {
@@ -243,7 +254,7 @@ export class MediaGallery {
                                             item.dataset.filename;
                                     }
                                     this.currentGalleryTargetInput.dispatchEvent(
-                                        new Event('input')
+                                        new Event('input', { bubbles: true })
                                     );
                                 }
                                 this.modalManager.close('gallery-modal');

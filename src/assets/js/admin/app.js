@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Variablen für Editoren definieren, damit sie später im tabLoaded-Scope erreichbar sind
     let comicEditor = null;
     let reportManager = null;
+    let mediaGalleryInstance = null; // Wird global verwaltet für Modals in anderen Tabs
 
     // 2. Main Editors (Safeguard um die globale Initialisierung)
     try {
@@ -85,7 +86,31 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    // Tab-spezifische Instanz (Sortable.js braucht das DOM beim Laden)
+    // Globaler Event-Listener, um die Galerie überall per Klick nachzuladen, auch wenn der Tab nie offen war!
+    document.addEventListener('click', async (e) => {
+        const btnOpenGallery = e.target.closest('.btn-open-gallery-dynamic');
+        if (btnOpenGallery && !mediaGalleryInstance) {
+            e.preventDefault();
+            const originalText = btnOpenGallery.innerHTML;
+            btnOpenGallery.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Lade Galerie...';
+            btnOpenGallery.style.pointerEvents = 'none';
+            try {
+                const { MediaGallery } = await import('./modules/MediaGallery.js');
+                mediaGalleryInstance = new MediaGallery(api, modalManager, notifications, tracker);
+
+                btnOpenGallery.innerHTML = originalText;
+                btnOpenGallery.style.pointerEvents = 'auto';
+                btnOpenGallery.click(); // Event neu abfeuern, jetzt fängt das Modul es ab!
+            } catch (err) {
+                console.error('[AdminApp] Fehler beim Nachladen der Galerie:', err);
+                notifications.show('Fehler beim Laden der Galerie.', 'error');
+                btnOpenGallery.innerHTML = originalText;
+                btnOpenGallery.style.pointerEvents = 'auto';
+            }
+        }
+    });
+
     let groupEditor = null;
 
     // 3. TabLoaded Event (Feuert, wenn AJAX HTML in eine Section eingefügt hat)
@@ -129,8 +154,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (tab === 'section-media') {
-                const { MediaGallery } = await import('./modules/MediaGallery.js');
-                new MediaGallery(api, modalManager, notifications, tracker);
+                if (!mediaGalleryInstance) {
+                    const { MediaGallery } = await import('./modules/MediaGallery.js');
+                    mediaGalleryInstance = new MediaGallery(
+                        api,
+                        modalManager,
+                        notifications,
+                        tracker
+                    );
+                }
+                mediaGalleryInstance.initTab(); // Initiiert den eigentlichen Tab-Inhalt
             }
 
             if (tab === 'section-mails') {
