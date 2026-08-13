@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.19.8](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.7...v6.19.8) (2026-08-13)
+
+### 🐛 Bug Fixes
+
+* **admin:** Overhaul dynamic media gallery to resolve loading, selection, and event clash bugs ([46128aa](https://github.com/RaptorXilef/twokinds.4lima.de/commit/46128aa0778eaf3eb9e2a4b0aed191d72480d856))
+* **admin:** Resolve lazy-loading bug for dynamic gallery modals ([b8d4888](https://github.com/RaptorXilef/twokinds.4lima.de/commit/b8d4888c635503f418c045ce981b1ae4518ef91e))
+
 ## [6.19.7](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.6...v6.19.7) (2026-08-13)
 
 ### 🐛 Bug Fixes
