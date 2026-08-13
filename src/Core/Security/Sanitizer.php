@@ -15,7 +15,7 @@ final class Sanitizer
      */
     public static function string(mixed $input): string
     {
-        $str = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof Stringable ? (string) $input : ''); // phpcs:ignore Generic.Files.LineLength.TooLong
+        $str = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof Stringable ? (string) $input : '');
 
         return \trim(\strip_tags($str));
     }
@@ -25,7 +25,7 @@ final class Sanitizer
      */
     public static function email(mixed $input): string
     {
-        $str = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof Stringable ? (string) $input : ''); // phpcs:ignore Generic.Files.LineLength.TooLong
+        $str = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof Stringable ? (string) $input : '');
         $sanitized = \filter_var(\trim($str), \FILTER_SANITIZE_EMAIL);
 
         return $sanitized !== false ? $sanitized : '';
@@ -36,7 +36,8 @@ final class Sanitizer
      */
     public static function html(mixed $input): string
     {
-        $inputStr = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof Stringable ? (string) $input : ''); // phpcs:ignore Generic.Files.LineLength.TooLong
+        $inputStr = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof Stringable ? (string) $input : '');
+
         if (\trim($inputStr) === '') {
             return '';
         }
@@ -44,6 +45,8 @@ final class Sanitizer
         $config = (new HtmlSanitizerConfig())
             // Erlaubt grundlegende sichere Elemente (p, br, b, i, strong, em, div, span, h1-h6, ul, li...)
             ->allowSafeElements()
+            ->allowRelativeLinks()  // <-- NEU: Erlaubt relative Links wie href="char_0021"
+            ->allowRelativeMedias() // <-- NEU: Erlaubt relative Bilder wie src="/assets/..."
             // Links absichern: Nur http/https erlauben, target und rel für externe Links zulassen
             ->allowElement('a', ['href', 'title', 'target', 'rel'])
             // Bilder absichern: Nur saubere Quellen und Layout-Attribute zulassen
@@ -64,12 +67,15 @@ final class Sanitizer
         $name = $info['filename'];
         $ext = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
 
+        // Umlaute ersetzen
         $name = \mb_strtolower($name, 'UTF-8');
         $name = \str_replace(['ä', 'ö', 'ü', 'ß'], ['ae', 'oe', 'ue', 'ss'], $name);
 
+        // Sonderzeichen durch Bindestriche ersetzen
         $replaced = \preg_replace('/[^a-z0-9]+/', '-', $name);
         $name = \is_string($replaced) ? $replaced : '';
 
+        // Mehrfache Bindestriche entfernen
         $replaced2 = \preg_replace('/-+/', '-', $name);
         $name = \is_string($replaced2) ? $replaced2 : '';
 
