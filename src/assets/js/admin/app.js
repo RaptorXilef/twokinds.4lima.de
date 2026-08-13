@@ -101,7 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 btnOpenGallery.innerHTML = originalText;
                 btnOpenGallery.style.pointerEvents = 'auto';
-                btnOpenGallery.click(); // Event neu abfeuern, jetzt fängt das Modul es ab!
+
+                // Extrem wichtig: Der Timeout entkoppelt den Klick vom aktuellen Event-Loop-Tick,
+                // wodurch der "Benötigt 2 Klicks zum Öffnen" Bug komplett behoben wird!
+                setTimeout(() => btnOpenGallery.click(), 10);
             } catch (err) {
                 console.error('[AdminApp] Fehler beim Nachladen der Galerie:', err);
                 notifications.show('Fehler beim Laden der Galerie.', 'error');

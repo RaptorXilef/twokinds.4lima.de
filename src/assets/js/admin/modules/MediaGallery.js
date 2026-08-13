@@ -22,6 +22,10 @@ export class MediaGallery {
         this.currentGalleryTargetInput = null;
         this.isTabInitialized = false;
 
+        // Cache für die aktuelle Auswahl im Modal
+        this.selectedGalleryItems = new Set();
+        this.isMultiSelect = false;
+
         // Binde die Modal-Ereignisse IMMER sofort, egal welcher Tab offen ist!
         this.bindDynamicGalleryEvents();
     }
@@ -194,6 +198,7 @@ export class MediaGallery {
         document.addEventListener('click', async (e) => {
             const btnOpenGallery = e.target.closest('.btn-open-gallery-dynamic');
             const btnCloseGallery = e.target.closest('.btn-close-gallery-modal');
+            const btnConfirmGallery = e.target.closest('#btn-gallery-confirm');
 
             if (btnCloseGallery) {
                 e.preventDefault();
@@ -201,10 +206,37 @@ export class MediaGallery {
                 return;
             }
 
+            // Neu: Bestätigen Button übernimmt die Auswahl gebündelt und schreibt sie HART ins Feld
+            if (btnConfirmGallery) {
+                e.preventDefault();
+                if (this.currentGalleryTargetInput) {
+                    if (this.tracker) this.tracker.markDirty();
+
+                    const finalValue = Array.from(this.selectedGalleryItems).join(', ');
+
+                    // Schreibe alle markierten Elemente als kommagetrennten String in das Input
+                    this.currentGalleryTargetInput.value = finalValue;
+
+                    // Triggere Input-Events für das Live-Preview Update im Modal (CharacterEditor.js fängt das ab)
+                    this.currentGalleryTargetInput.dispatchEvent(
+                        new Event('input', { bubbles: true })
+                    );
+                    this.currentGalleryTargetInput.dispatchEvent(
+                        new Event('change', { bubbles: true })
+                    );
+                }
+                this.modalManager.close('gallery-modal');
+                return;
+            }
+
+            // Öffnen der Galerie
             if (btnOpenGallery) {
                 e.preventDefault();
                 const targetId = btnOpenGallery.dataset.target;
                 const folder = btnOpenGallery.dataset.folder;
+
+                // Prüfen ob Mehrfachauswahl erlaubt ist (RefSheets)
+                this.isMultiSelect = btnOpenGallery.dataset.multi === 'true';
                 this.currentGalleryTargetInput = document.getElementById(targetId);
 
                 const modalTitle = document.getElementById('gallery-modal-title');
@@ -212,6 +244,16 @@ export class MediaGallery {
 
                 const galGrid = document.getElementById('gallery-grid-dynamic');
                 if (galGrid) galGrid.innerHTML = '<p>Lade Bilder...</p>';
+
+                // Aktuelle Auswahl auslesen und im Set cachen
+                this.selectedGalleryItems.clear();
+                if (this.currentGalleryTargetInput && this.currentGalleryTargetInput.value) {
+                    const vals = this.currentGalleryTargetInput.value
+                        .split(',')
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                    vals.forEach((v) => this.selectedGalleryItems.add(v));
+                }
 
                 this.modalManager.open('gallery-modal');
 
@@ -226,38 +268,43 @@ export class MediaGallery {
                     }
 
                     if (galGrid) {
+                        // Markiere Bilder, die bereits im Input-Feld stehen
                         galGrid.innerHTML = json.files
-                            .map(
-                                (f) => `
-                            <div class="char-selection-item gallery-item" data-filename="${f.filename}" style="position: relative;">
-                                <img src="${f.url}" loading="lazy" style="width:60px;height:60px;object-fit:cover;border-radius:5px;">
-                                <span style="font-size: 0.75em; word-break: break-all;">${f.filename}</span>
-                            </div>
-                        `
-                            )
+                            .map((f) => {
+                                const isSelected = this.selectedGalleryItems.has(f.filename);
+                                return `
+                                <div class="char-selection-item gallery-item ${isSelected ? 'selected' : ''}" data-filename="${f.filename}" style="position: relative;">
+                                    <img src="${f.url}" loading="lazy" style="width:60px;height:60px;object-fit:cover;border-radius:5px;">
+                                    <span style="font-size: 0.75em; word-break: break-all; pointer-events: none;">${f.filename}</span>
+                                </div>
+                            `;
+                            })
                             .join('');
 
+                        // Klick-Logik zum Markieren/Demarkieren
                         galGrid.querySelectorAll('.gallery-item').forEach((item) => {
-                            item.addEventListener('click', () => {
-                                if (this.tracker) this.tracker.markDirty();
-                                if (this.currentGalleryTargetInput) {
-                                    if (this.currentGalleryTargetInput.id === 'ref_sheets_urls') {
-                                        const vals = this.currentGalleryTargetInput.value
-                                            .split(',')
-                                            .map((s) => s.trim())
-                                            .filter(Boolean);
-                                        if (!vals.includes(item.dataset.filename))
-                                            vals.push(item.dataset.filename);
-                                        this.currentGalleryTargetInput.value = vals.join(', ');
-                                    } else {
-                                        this.currentGalleryTargetInput.value =
-                                            item.dataset.filename;
+                            item.addEventListener('click', (ev) => {
+                                ev.preventDefault(); // Stoppt eventuelles Bubbling von Child-Elementen
+                                ev.stopPropagation(); // SICHERHEIT: Verhindert, dass der ComicEditor dazwischenfunkt!
+
+                                const filename = item.dataset.filename;
+
+                                if (this.selectedGalleryItems.has(filename)) {
+                                    // Abwählen wenn schon markiert
+                                    this.selectedGalleryItems.delete(filename);
+                                    item.classList.remove('selected');
+                                } else {
+                                    // Bei Single-Select vorher alle anderen abwählen
+                                    if (!this.isMultiSelect) {
+                                        this.selectedGalleryItems.clear();
+                                        galGrid
+                                            .querySelectorAll('.gallery-item')
+                                            .forEach((el) => el.classList.remove('selected'));
                                     }
-                                    this.currentGalleryTargetInput.dispatchEvent(
-                                        new Event('input', { bubbles: true })
-                                    );
+                                    // Neues Bild markieren
+                                    this.selectedGalleryItems.add(filename);
+                                    item.classList.add('selected');
                                 }
-                                this.modalManager.close('gallery-modal');
                             });
                         });
                     }

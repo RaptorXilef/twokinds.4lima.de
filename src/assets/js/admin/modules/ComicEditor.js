@@ -67,10 +67,12 @@ export class ComicEditor {
                 e.preventDefault();
                 this.openAddModal();
             }
+
             if (btnRestore) {
                 e.preventDefault();
                 this.restoreDeleted();
             }
+
             if (btnEdit) {
                 e.preventDefault();
                 try {
@@ -81,10 +83,12 @@ export class ComicEditor {
                     this.notifications.show('Fehler beim Öffnen des Comics.', 'error');
                 }
             }
+
             if (btnDelete) {
                 e.preventDefault();
                 this.deleteComic(btnDelete.dataset.id, btnDelete);
             }
+
             if (btnUndo) {
                 e.preventDefault();
                 this.undoComic(btnUndo.dataset.id);
@@ -100,17 +104,23 @@ export class ComicEditor {
             const charItem = e.target.closest('.char-selection-item:not(.user-selection-item)');
             const userItem = e.target.closest('.user-selection-item');
 
+            // SICHERHEIT: Prüfen ob der Klick überhaupt im Comic-Modal stattfindet
+            const comicModal = document.getElementById('comic-modal');
+            const isInsideComicModal =
+                comicModal && comicModal.style.display !== 'none' && comicModal.contains(e.target);
+
             if (btnSave) {
                 e.preventDefault();
                 this.saveComic(btnSave);
             }
+
             if (btnCancel) {
                 e.preventDefault();
                 this.modalManager.close('comic-modal');
             }
 
-            // Klick auf normales Charakter-Icon
-            if (charItem && this.form) {
+            // Nur ausführen, wenn wir uns wirklich im Comic-Fenster befinden!
+            if (charItem && this.form && isInsideComicModal) {
                 charItem.classList.toggle('selected');
                 const charId = charItem.dataset.charId;
                 const hiddenSelect = document.getElementById('hidden-comic-chars');
@@ -124,7 +134,7 @@ export class ComicEditor {
             }
 
             // Klick auf Helfer-Icon (User)
-            if (userItem && this.form) {
+            if (userItem && this.form && isInsideComicModal) {
                 userItem.classList.toggle('selected');
                 const userId = userItem.dataset.userId;
                 const hiddenSelect = document.getElementById('hidden-comic-users');
@@ -198,11 +208,14 @@ export class ComicEditor {
                 imgElement.src = fallbackUrl;
                 return;
             }
+
             const ext = extensions[i++];
             const testImg = new Image();
+
             testImg.onload = () => {
                 imgElement.src = testImg.src;
             };
+
             testImg.onerror = testNext;
             testImg.src = `${basePath}.${ext}`;
         };
@@ -500,6 +513,7 @@ export class ComicEditor {
         if (!this.form) return;
 
         const customData = {};
+
         if (typeof window.$ !== 'undefined' && window.$('#transcript').length) {
             customData.transcript = window.$('#transcript').trumbowyg('html');
         }
@@ -523,6 +537,7 @@ export class ComicEditor {
         formData.append('comic_id', id);
 
         const result = await this.api.post('delete_comic', formData);
+
         if (result.success) {
             this.notifications.show(result.message, 'success');
             const row = btnElement.closest('tr');
@@ -538,9 +553,11 @@ export class ComicEditor {
 
         const formData = new window.FormData();
         formData.append('comic_id', id);
+
         sessionStorage.setItem('highlightEntityId', id);
 
         const result = await this.api.post('undo_comic', formData);
+
         if (result.success) {
             this.notifications.show(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
@@ -553,6 +570,7 @@ export class ComicEditor {
         if (!confirm('Möchtest du den zuletzt gelöschten Comic wiederherstellen?')) return;
 
         const result = await this.api.post('restore_deleted_comic');
+
         if (result.success) {
             this.notifications.show(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
