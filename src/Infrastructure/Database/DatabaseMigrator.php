@@ -78,7 +78,28 @@ final readonly class DatabaseMigrator implements DatabaseMigratorInterface
         $this->pdo->beginTransaction();
 
         try {
-            $this->pdo->exec($sql);
+            // Wir splitten die SQL-Befehle am Semikolon auf
+            $statements = \array_filter(\array_map(trim(...), \explode(';', $sql)));
+
+            foreach ($statements as $statement) {
+                if ($statement === '') {
+                    continue;
+                }
+
+                try {
+                    $this->pdo->exec($statement);
+                } catch (PDOException $e) {
+                    $mysqlCode = $e->errorInfo[1] ?? 0;
+
+                    // 1060 = Duplicate column name
+                    // 1061 = Duplicate key name (Index existiert)
+                    // 1068 = Multiple primary key defined
+                    // 1091 = Can't DROP column/key; check that it exists
+                    if (!\in_array($mysqlCode, [1060, 1061, 1068, 1091], true)) {
+                        throw $e;
+                    }
+                }
+            }
 
             $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::MIGRATIONS . '` (`version`, `applied_at`) VALUES (?, ?)'); // phpcs:ignore Generic.Files.LineLength.TooLong
             $stmtInsert->execute([$file, $this->clock->nowAsString()]);

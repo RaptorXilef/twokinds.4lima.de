@@ -1,1 +1,1 @@
-ALTER TABLE `characters` DROP COLUMN IF EXISTS `keidran_age`;
+ALTER TABLE `characters` DROP COLUMN `keidran_age`;
