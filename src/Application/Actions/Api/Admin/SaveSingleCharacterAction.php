@@ -57,18 +57,6 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             }
 
             $media = $this->resolveMediaUrls($request, $dto, $existing, $safeName);
-            $keidranAge = $dto->keidranAge;
-            $isKeidran = \stripos($dto->species ?? '', 'keidran') !== false || \stripos($dto->subspecies ?? '', 'keidran') !== false;
-            if ($isKeidran && $dto->age !== null) {
-                $keidranAge = \preg_replace_callback('/(\d+)/', function (array $m): string {
-                    $raw = (int) $m[1];
-                    $map = [1 => 3, 2 => 6, 3 => 9, 4 => 12, 5 => 14, 6 => 16, 7 => 18, 8 => 20, 9 => 22, 10 => 24, 11 => 27, 12 => 29, 13 => 32, 14 => 35, 15 => 39, 16 => 44, 17 => 49, 18 => 54, 19 => 60, 20 => 66, 21 => 73, 22 => 80];
-
-                    return (string) ($map[$raw] ?? \round($raw * 2.5));
-                }, $dto->age);
-            } elseif (!$isKeidran) {
-                $keidranAge = null;
-            }
             $character = new Character(
                 id: new CharacterId($charIdStr),
                 name: $dto->name,
@@ -78,7 +66,6 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
                 altNames: $dto->altNames,
                 gender: $dto->gender,
                 age: $dto->age,
-                keidranAge: $keidranAge,
                 rank: $dto->rank,
                 species: $dto->species,
                 subspecies: $dto->subspecies,
@@ -124,7 +111,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
      *     warnings: array<int, string>
      * }
      */
-    private function resolveMediaUrls(ServerRequest $request, SaveSingleCharacterRequest $dto, ?Character $existing, string $safeName): array // phpcs:ignore Generic.Files.LineLength.TooLong
+    private function resolveMediaUrls(ServerRequest $request, SaveSingleCharacterRequest $dto, ?Character $existing, string $safeName): array
     {
         /** @var array{profile: ?string, main: ?string, swatch: ?string, refs: array<int, string>, warnings: array<int, string>} $processedMedia */
         $processedMedia = $this->mediaService->processCharacterImages($safeName, $request->files);

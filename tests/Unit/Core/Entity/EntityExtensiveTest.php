@@ -48,8 +48,16 @@ use DateTimeImmutable;
 })->covers(Chapter::class);
 
 \it('Character initializes full', function (): void {
-    $char = new Character(new CharacterId('char_0001'), 'Trace', 'trace.webp', 'Templar', 'Trace Legacy', 'Master', 'Male', '24', null, 'Mage', 'Human', null, 'English', null, null, null, 'main.webp', 'swatch.webp', ['ref1.webp'], false);
+    $char = new Character(new CharacterId('char_0001'), 'Trace', 'trace.webp', 'Templar', 'Trace Legacy', 'Master', 'Male', '24', 'Mage', 'Human', null, 'English', null, null, null, 'main.webp', 'swatch.webp', ['ref1.webp'], false);
     \expect($char->name)->toBe('Trace')->and($char->refSheets)->toHaveCount(1)->and($char->gender)->toBe('Male');
+})->covers(Character::class);
+
+\it('Character calculates Keidran age equivalent correctly', function (): void {
+    $char = new Character(new CharacterId('char_0002'), 'Flora', null, null, null, null, null, '11', null, 'Keidran', 'Tiger', null, null, null, null, null, null, [], false);
+    \expect($char->getKeidranAgeEquivalent())->toBe('27');
+
+    $charSpan = new Character(new CharacterId('char_0003'), 'Flora', null, null, null, null, null, '11-16', null, 'Keidran', 'Tiger', null, null, null, null, null, null, [], false);
+    \expect($charSpan->getKeidranAgeEquivalent())->toBe('27-44');
 })->covers(Character::class);
 
 \it('CharacterGroup validates empty CharacterIds', function (): void {

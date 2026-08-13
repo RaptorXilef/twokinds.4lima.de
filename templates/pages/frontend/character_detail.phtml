@@ -63,7 +63,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                     </h3>
                 <?php } ?>
                 <!-- Biografische Daten (Ohne Kasten, elegant als Liste) -->
-                <?php if ($character->altNames || $character->gender || $character->age || $character->keidranAge || $character->rank || $character->species || $character->languages || $character->hairColor || $character->eyeColor || $character->furColor) { ?>
+                <?php if ($character->altNames || $character->gender || $character->age || $character->getKeidranAgeEquivalent() || $character->rank || $character->species || $character->languages || $character->hairColor || $character->eyeColor || $character->furColor) { ?>
                     <ul class="list-none p-0 m-0"
                         style="line-height: 1.8;">
                         <?php if ($character->altNames) { ?>
@@ -73,10 +73,10 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                             <li><strong>Geschlecht:</strong> <?php echo \htmlspecialchars($character->gender); ?></li>
                         <?php } ?>
                         <?php if ($character->age) { ?>
-                            <li><strong>Alter:</strong> <?php echo \htmlspecialchars($character->age); ?> Jahre</li>
+                            <li><strong>Alter (Real):</strong> <?php echo \htmlspecialchars($character->age); ?> Jahre</li>
                         <?php } ?>
-                        <?php if ($character->keidranAge) { ?>
-                            <li><strong>Menschen-Äquivalent:</strong> ~<?php echo \htmlspecialchars($character->keidranAge); ?> Jahre</li>
+                        <?php if ($character->getKeidranAgeEquivalent()) { ?>
+                            <li><strong>Menschen-Äquivalent:</strong> ~<?php echo \htmlspecialchars($character->getKeidranAgeEquivalent()); ?> Jahre</li>
                         <?php } ?>
                         <?php if ($character->rank) { ?>
                             <li><strong>Klasse/Rang:</strong> <?php echo \htmlspecialchars($character->rank); ?></li>

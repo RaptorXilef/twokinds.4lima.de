@@ -672,7 +672,6 @@ export class CharacterEditor {
         setValAndState('alt_names', null, payload.altNames);
         setValAndState('gender', null, payload.gender);
         setValAndState('age', null, payload.age);
-        setValAndState('keidran_age', null, payload.keidranAge);
         setValAndState('rank', null, payload.rank);
         setValAndState('species', null, payload.species);
         setValAndState('subspecies', null, payload.subspecies);

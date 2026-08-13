@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Database;
 
+// ! MySql
 final class SchemaRegistry
 {
     /**
@@ -103,7 +104,6 @@ final class SchemaRegistry
                 `alt_names` VARCHAR(255),
                 `gender` VARCHAR(100),
                 `age` VARCHAR(100),
-                `keidran_age` VARCHAR(100),
                 `rank` VARCHAR(100),
                 `species` VARCHAR(100),
                 `subspecies` VARCHAR(100),
