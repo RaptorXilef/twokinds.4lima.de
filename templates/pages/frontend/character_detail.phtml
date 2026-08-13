@@ -73,10 +73,10 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                             <li><strong>Geschlecht:</strong> <?php echo \htmlspecialchars($character->gender); ?></li>
                         <?php } ?>
                         <?php if ($character->age) { ?>
-                            <li><strong>Alter (Menschlich):</strong> <?php echo \htmlspecialchars($character->age); ?> Jahre</li>
+                            <li><strong>Alter:</strong> <?php echo \htmlspecialchars($character->age); ?> Jahre</li>
                         <?php } ?>
                         <?php if ($character->keidranAge) { ?>
-                            <li><strong>Alter (Keidranjahre):</strong> <?php echo \htmlspecialchars($character->keidranAge); ?> Jahre</li>
+                            <li><strong>Menschen-Äquivalent:</strong> ~<?php echo \htmlspecialchars($character->keidranAge); ?> Jahre</li>
                         <?php } ?>
                         <?php if ($character->rank) { ?>
                             <li><strong>Klasse/Rang:</strong> <?php echo \htmlspecialchars($character->rank); ?></li>
@@ -119,8 +119,8 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                 <div class="masonry-grid-140">
                     <?php foreach ($character->refSheets as $sheet) { ?>
                         <a href="<?php echo $baseUrl; ?>/assets/images/characters/refsheets/<?php echo \htmlspecialchars($sheet); ?>" target="_blank" title="Reference Sheet (Vollbild)" class="masonry-item">
-<img src="<?php echo $baseUrl; ?>/assets/images/characters/refsheets/<?php echo \htmlspecialchars($sheet); ?>" alt="Ref Sheet" loading="lazy">
-</a>
+                        <img src="<?php echo $baseUrl; ?>/assets/images/characters/refsheets/<?php echo \htmlspecialchars($sheet); ?>" alt="Ref Sheet" loading="lazy">
+                        </a>
                     <?php } ?>
                 </div>
             <?php } ?>
@@ -132,7 +132,7 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
         <section>
             <h2 class="font-1-5x mb-15 pb-5 d-flex justify-between align-end border-bottom-light"> Alle Comic-Auftritte
                 <span class="comic-count-badge badge-pill">
-<?php echo \count($characterComics); ?> Seiten </span>
+                <?php echo \count($characterComics); ?> Seiten </span>
             </h2>
             <?php if (empty($characterComics)) { ?>
                 <div class="no-bookmarks bg-even border-radius-8 p-30 text-center">
@@ -152,9 +152,9 @@ include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
                         $pageName = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
                         $pageLink = "{$baseUrl}/comic/{$comicId}"; ?>
                         <a href="<?php echo $pageLink; ?>" title="<?php echo \htmlspecialchars($pageName); ?>" class="loaded">
-<span><?php echo \htmlspecialchars($pageName); ?></span>
-<img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
-</a>
+                        <span><?php echo \htmlspecialchars($pageName); ?></span>
+                        <img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
+                        </a>
                     <?php } ?>
                 </div>
             <?php } ?>

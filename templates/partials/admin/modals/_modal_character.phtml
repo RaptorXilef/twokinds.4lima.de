@@ -19,7 +19,6 @@ declare(strict_types=1);
             <h2 id="modal-title-char">Charakter bearbeiten</h2>
             <button class="modal-close btn-close-char-modal">&times;</button>
         </div>
-
         <div class="modal-scroll-content">
             <!-- Linke Spalte: Vorschaubild -->
             <div class="d-flex align-start gap-20 mb-15">
@@ -74,21 +73,13 @@ declare(strict_types=1);
                                        class="bg-content js-append-input">
                             </div>
                             <div class="form-group mb-0">
-                                <label for="age">Alter (Menschl. Jahre)</label>
+                                <label for="age">Alter (Real)</label>
                                 <input type="text"
                                        id="age"
                                        name="age"
                                        pattern="^[0-9~\-]+|n/a|N/A$"
                                        title="Zahlen, Tilde oder Binde-Strich für Spannen"
                                        placeholder="z.B. 24, 24-28, ~11"
-                                       class="bg-content">
-                            </div>
-                            <div class="form-group mb-0">
-                                <label for="keidran_age">Alter (Keidranjahre)</label>
-                                <input type="text"
-                                       id="keidran_age"
-                                       name="keidran_age"
-                                       placeholder="Wird bei Keidran auto. berechnet"
                                        class="bg-content">
                             </div>
                             <div class="form-group mb-0">
@@ -154,8 +145,8 @@ declare(strict_types=1);
                                        placeholder="z.B. Weiß, Schwarz"
                                        class="bg-content js-append-input">
                             </div>
-                            <div
-                                 class="form-group mb-0 p-10 border-medium border-radius-4 bg-even d-flex align-center gap-10">
+                            <div class="form-group mb-0 p-10 border-medium border-radius-4 bg-even d-flex align-center gap-10"
+                                 style="grid-column: 1 / -1;">
                                 <input type="checkbox"
                                        id="is_dead"
                                        name="is_dead"

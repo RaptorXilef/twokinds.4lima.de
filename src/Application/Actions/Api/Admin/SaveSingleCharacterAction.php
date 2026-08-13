@@ -59,8 +59,15 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             $media = $this->resolveMediaUrls($request, $dto, $existing, $safeName);
             $keidranAge = $dto->keidranAge;
             $isKeidran = \stripos($dto->species ?? '', 'keidran') !== false || \stripos($dto->subspecies ?? '', 'keidran') !== false;
-            if ($isKeidran && ($keidranAge === null || $keidranAge === '') && $dto->age !== null) {
-                $keidranAge = \preg_replace_callback('/(\d+)/', fn ($m): string => (string) \round((int) $m[1] * 7), $dto->age);
+            if ($isKeidran && $dto->age !== null) {
+                $keidranAge = \preg_replace_callback('/(\d+)/', function (array $m): string {
+                    $raw = (int) $m[1];
+                    $map = [1 => 3, 2 => 6, 3 => 9, 4 => 12, 5 => 14, 6 => 16, 7 => 18, 8 => 20, 9 => 22, 10 => 24, 11 => 27, 12 => 29, 13 => 32, 14 => 35, 15 => 39, 16 => 44, 17 => 49, 18 => 54, 19 => 60, 20 => 66, 21 => 73, 22 => 80];
+
+                    return (string) ($map[$raw] ?? \round($raw * 2.5));
+                }, $dto->age);
+            } elseif (!$isKeidran) {
+                $keidranAge = null;
             }
             $character = new Character(
                 id: new CharacterId($charIdStr),
@@ -201,13 +208,15 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             $urlsStr = \is_string($rawUrls) ? \trim($rawUrls) : '';
 
             if ($urlsStr !== '') {
-                $refSheets = \array_values(\array_filter(
-                    \array_map(
-                        fn ($sheetUrl): string => \str_replace(' ', '_', \trim($sheetUrl)),
-                        \explode(',', $urlsStr),
+                $refSheets = \array_values(
+                    \array_filter(
+                        \array_map(
+                            fn ($sheetUrl): string => \str_replace(' ', '_', \trim($sheetUrl)),
+                            \explode(',', $urlsStr),
+                        ),
+                        fn ($val): bool => $val !== '',
                     ),
-                    fn ($val): bool => $val !== '',
-                ));
+                );
             }
         }
 
