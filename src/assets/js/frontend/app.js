@@ -15,6 +15,7 @@ import { ReportModal } from './modules/ReportModal.js';
 import { RssCopier } from './modules/RssCopier.js';
 import { AccordionManager } from './ui/AccordionManager.js';
 import { ImageFallback } from './ui/ImageFallback.js';
+import { LightboxManager } from './ui/LightboxManager.js';
 import { MobileMenu } from './ui/MobileMenu.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     safeInit('EmailProtector', () => new EmailProtector());
     safeInit('RssCopier', () => new RssCopier());
     safeInit('MobileMenu', () => new MobileMenu());
+    safeInit('LightboxManager', () => new LightboxManager());
 
     // API-abhängige Module nur laden, wenn die API existiert
     if (api) {

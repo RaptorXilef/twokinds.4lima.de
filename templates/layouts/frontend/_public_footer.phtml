@@ -16,7 +16,6 @@ use App\Contracts\System\AssetHelperInterface;
 <footer class="l-footer">
     <div class="l-footer__info-box">
         <div class="l-footer__left"></div>
-
         <div class="l-footer__text">
             <p>Twokinds auf Deutsch</p>
             <p>Übersetzung & Programmierung:
@@ -33,10 +32,8 @@ use App\Contracts\System\AssetHelperInterface;
             <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version'] ?? 'x'); ?> | <a href="#" id="open-global-report">Fehler melden</a>
             </div>
         </div>
-
         <div class="l-footer__right"></div>
     </div>
-
     <div class="l-footer__characters">
         <!-- Das dynamische Footer-Gimmick (Crowd) -->
         <div class="l-footer__characters-inner">
@@ -60,12 +57,15 @@ use App\Contracts\System\AssetHelperInterface;
     </div>
 </footer>
 </div> <!-- End .l-page-wrapper -->
-
+<div id="image-hover-overlay">
+    <img src=""
+         id="hover-overlay-img"
+         alt="Zoom Preview">
+</div>
 <?php if (!empty($settings['google_analytics_id'])) {
     // Isolierten Cookie-Banner laden
     include __DIR__ . '/../../partials/frontend/_cookie_consent.phtml';
 } ?>
-
 <?php include __DIR__ . '/../../partials/frontend/_global_report_modal.phtml'; ?>
 
 <!-- Google Analytics -->
@@ -76,11 +76,9 @@ use App\Contracts\System\AssetHelperInterface;
 
     </script>
 <?php } ?>
-
 <script type="module"
         nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
         src="<?php echo $asset->url('assets/js/frontend/app.js'); ?>"></script>
-
 </body>
 
 </html>
