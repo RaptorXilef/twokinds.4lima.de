@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.19.7](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.6...v6.19.7) (2026-08-13)
+
+### 🐛 Bug Fixes
+
+* **characters:** Add advanced age parsing, Keidran age auto-calculation and death status ([f443f7c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f443f7ccc25e114df32762adf4b9f5b0d134580b))
+* **characters:** Implement accurate Keidran age math and remove redundant modal field ([408b8bd](https://github.com/RaptorXilef/twokinds.4lima.de/commit/408b8bd6fd1022e8ba94189c48b40f01a981cc46))
+* **characters:** Remove redundant keidran_age column and calculate it on the fly ([c77fe75](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c77fe750b4e71ed7675b95aaf2facfc6ef97520a))
+* **core:** Use polynomial math formula for Keidran age and add database performance indexes ([eaeec4e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/eaeec4e07c9c4b22da6bb9421c64bd1682e8e8aa))
+* **security:** Allow relative links and media in HTML Sanitizer ([81f584c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/81f584c54a3632cca58ba72b327e7c49bf2ada25))
+
 ## [6.19.6](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.5...v6.19.6) (2026-08-12)
 
 ### 🐛 Bug Fixes
