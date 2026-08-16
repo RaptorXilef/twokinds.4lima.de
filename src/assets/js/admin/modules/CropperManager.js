@@ -12,6 +12,7 @@ export class CropperManager {
         this.api = api;
         this.notifications = notifications;
         this.cropperInstance = null;
+
         this.bindEvents();
     }
 
@@ -82,12 +83,14 @@ export class CropperManager {
                 'Es existiert noch kein Hires-Bild für diesen Comic auf dem Server. Bitte lade die Bilder zuerst hoch.'
             );
         };
+
         testImg.src = imgUrl;
     }
 
     closeCropper() {
         const cropperModal = document.getElementById('cropper-modal');
         if (cropperModal) cropperModal.style.display = 'none';
+
         if (this.cropperInstance) {
             this.cropperInstance.destroy();
             this.cropperInstance = null;
@@ -122,22 +125,31 @@ export class CropperManager {
 
                 // Live-Vorschau updaten (Cache Buster)
                 const timestamp = Date.now();
+
+                // Live-Update für das Bild im Comic-Modal (alte Cache-Buster entfernen, neuen anhängen)
                 const prevSocial = document.getElementById('prev-comic-social');
                 if (prevSocial) {
-                    prevSocial.src = `${this.api.baseUrl}/assets/images/comics/social/${comicId}.jpg?t=${timestamp}`;
+                    const cleanSrc = prevSocial.src.split('?')[0];
+                    prevSocial.src = `${cleanSrc}?t=${timestamp}`;
                 }
 
-                // Miniaturansicht in der Tabelle updaten
+                // Live-Update für das Bild in der Tabellen-Übersicht im Hintergrund
                 const tableRow = document
                     .querySelector(`.btn-delete-comic[data-id="${comicId}"]`)
                     ?.closest('tr');
                 if (tableRow) {
                     const tableThumb = tableRow.querySelectorAll('img')[1];
                     if (tableThumb) {
-                        tableThumb.src = `${this.api.baseUrl}/assets/images/comics/social/${comicId}.jpg?t=${timestamp}`;
+                        const cleanSrc = tableThumb.src.split('?')[0];
+                        tableThumb.src = `${cleanSrc}?t=${timestamp}`;
                         tableThumb.style.display = 'inline-block';
                     }
                 }
+
+                // Event triggern, damit ComicEditor.js Bescheid weiß
+                document.dispatchEvent(
+                    new CustomEvent('comicMediaUpdated', { detail: { comicId, timestamp } })
+                );
             } else {
                 this.notifications.show(result.error, 'error');
             }

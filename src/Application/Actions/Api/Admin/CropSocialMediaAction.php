@@ -11,7 +11,10 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\MediaServiceInterface;
+use App\Core\Exception\EntityNotFoundException;
 use App\Core\Service\AuthService;
+use App\Core\Service\ComicService;
+use App\Core\ValueObject\ComicId;
 use Throwable;
 
 #[Route('POST', '/api/crop_social_media')]
@@ -22,6 +25,7 @@ final readonly class CropSocialMediaAction implements ActionInterface
         private ConfigInterface $config,
         private MediaServiceInterface $mediaService,
         private AuthService $auth,
+        private ComicService $comicService,
     ) {
     }
 
@@ -80,6 +84,11 @@ final readonly class CropSocialMediaAction implements ActionInterface
             );
 
             if ($success) {
+                try {
+                    $this->comicService->triggerImageCacheBust(new ComicId($comicId));
+                } catch (EntityNotFoundException) {
+                }
+
                 return JsonResponse::success(['message' => 'Social-Media-Bild erfolgreich zugeschnitten!']);
             }
 
