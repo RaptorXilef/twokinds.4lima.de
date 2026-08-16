@@ -68,7 +68,6 @@ use App\Core\Entity\User;
                     </button>
                 </div>
             </div>
-
             <form id="comic-form"
                   class="admin-form"
                   enctype="multipart/form-data">
@@ -80,7 +79,6 @@ use App\Core\Entity\User;
                        id="old_comic_id"
                        name="old_comic_id"
                        value="">
-
                 <div class="grid-2-cols mb-15">
                     <div class="form-group mb-0">
                         <label for="comic_id">Comic ID (YYYYMMDD) *</label>
@@ -92,7 +90,6 @@ use App\Core\Entity\User;
                                placeholder="z.B. 20251024">
                         <small class="text-faded">Füllt URLs beim Verlassen des Feldes automatisch aus.</small>
                     </div>
-
                     <div class="form-group mb-0">
                         <label for="type">Typ</label>
                         <select id="type"
@@ -103,7 +100,6 @@ use App\Core\Entity\User;
                         </select>
                     </div>
                 </div>
-
                 <div class="grid-2-1-cols mb-15">
                     <div class="form-group mb-0">
                         <label for="name">Titel / Name</label>
@@ -136,7 +132,6 @@ use App\Core\Entity\User;
                                name="url_originalbild"
                                placeholder="Dateiname (z.B. 12345.png) oder volle https:// URL">
                     </div>
-
                     <div class="form-group mb-0">
                         <label for="url_originalsketch">Original URL (Sketch)</label>
                         <input type="text"
@@ -163,7 +158,6 @@ use App\Core\Entity\User;
                             <div id="preview-name-hires"
                                  class="mt-5 font-bold text-success"></div>
                         </div>
-
                         <div id="comic-drop-zone-lowres"
                              class="drag-drop-zone drop-zone-sm zone-lowres bg-even border-dashed border-radius-6 mb-0">
                             <i class="fa-solid fa-compress"></i>
@@ -216,11 +210,11 @@ use App\Core\Entity\User;
                         <div id="view-chars-alpha">
                             <div class="char-selection-grid">
                                 <?php $alphaChars = $characters;
-                                \usort($alphaChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
-                                foreach ($alphaChars as $char) {
-                                    $pic = $char->picUrl
-                                        ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}"
-                                        : 'https://placehold.co/60x60?text=N/A'; ?>
+\usort($alphaChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
+foreach ($alphaChars as $char) {
+    $pic = $char->picUrl
+        ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}"
+        : 'https://placehold.co/60x60?text=N/A'; ?>
                                     <div class="char-selection-item"
                                          data-char-id="<?php echo \htmlspecialchars($char->id->value); ?>">
                                         <img src="<?php echo \htmlspecialchars($pic); ?>"
@@ -265,7 +259,6 @@ use App\Core\Entity\User;
                     <div class="d-flex justify-between align-center mb-10 mt-20 border-top-dashed pt-10">
                         <label class="mb-0">Mitwirkende Nutzer (Übersetzung, Lektorat etc.)</label>
                     </div>
-
                     <select name="user_ids[]"
                             id="hidden-comic-users"
                             multiple
@@ -281,11 +274,11 @@ use App\Core\Entity\User;
                         <div id="view-users"
                              class="char-selection-grid">
                             <?php $alphaUsers = $allUsers ?? [];
-                            \usort($alphaUsers, fn ($a, $b) => \strcasecmp($a->username->value, $b->username->value));
-                            foreach ($alphaUsers as $u) {
-                                $pic = $u->avatarUrl
-                                    ? "{$baseUrl}/assets/images/avatars/{$u->avatarUrl}"
-                                    : 'https://placehold.co/60x60?text=N/A'; ?>
+\usort($alphaUsers, fn ($a, $b) => \strcasecmp($a->username->value, $b->username->value));
+foreach ($alphaUsers as $u) {
+    $pic = $u->avatarUrl
+        ? "{$baseUrl}/assets/images/avatars/{$u->avatarUrl}"
+        : 'https://placehold.co/60x60?text=N/A'; ?>
                                 <div class="char-selection-item user-selection-item"
                                      data-user-id="<?php echo \htmlspecialchars($u->id); ?>">
                                     <img src="<?php echo \htmlspecialchars($pic); ?>"
@@ -296,31 +289,23 @@ use App\Core\Entity\User;
                             <?php } ?>
                         </div>
                     </div>
-
                 </div>
             </form>
         </div>
-
         <div class="modal-footer-actions">
 
             <!-- Newsletter Buttons (Links-Bündig) -->
             <div class="modal-buttons gap-5">
                 <button type="button"
-                        class="button btn-trigger-newsletter hidden"
-                        data-type="transcript"
-                        data-page=""
-                        data-url=""
-                        id="btn-nl-trans">
-                    <i class="fa-solid fa-envelope"></i> Newsletter (Text)
-                </button>
+                        class="button"
+                        id="btn-nl-trans"
+                        title="Speichert und sendet Vorab-Mail an Abonnenten">
+                    <i class="fa-solid fa-envelope"></i> Newsletter (Text) </button>
                 <button type="button"
-                        class="button add btn-trigger-newsletter hidden"
-                        data-type="full"
-                        data-page=""
-                        data-url=""
-                        id="btn-nl-full">
-                    <i class="fa-solid fa-envelope"></i> Newsletter (Bild)
-                </button>
+                        class="button add"
+                        id="btn-nl-full"
+                        title="Speichert und sendet Release-Mail an Abonnenten">
+                    <i class="fa-solid fa-envelope"></i> Newsletter (Bild) </button>
             </div>
 
             <!-- Die alten Buttons (Rechts-Bündig) -->

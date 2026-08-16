@@ -29,15 +29,16 @@ declare(strict_types=1);
 
         <div style="padding: 25px;">
             <p style="font-size: 1.1em; margin-top: 0;">Für die ganz Ungeduldigen: Das deutsche Transkript für
-                <strong><?php echo \htmlspecialchars($comicName); ?></strong> (Seite <?php echo \htmlspecialchars($pageNumber); ?>) ist fertig!</p>
+                <strong><?php echo \htmlspecialchars($comicName); ?></strong> (Seite <?php echo \htmlspecialchars($pageNumber); ?>) ist fertig!
+            </p>
 
             <div
                  style="background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 12px; border-radius: 5px; margin: 20px 0; text-align: center;">
-                <strong>Achtung:</strong> Das Lesen des Textes ohne das finale Bild kann starke Spoiler enthalten!
+                <strong>Info:</strong> Auf der Webseite kannst du das englische Originalbild zum Transkript anzeigen lassen!
             </div>
 
             <?php if ($comicTitle !== '' || $comicChapter !== '') { ?>
-                <div style="text-align: center; margin-top: 25px; margin-bottom: 10px;">
+                <div style="text-align: center; margin-top: 30px; margin-bottom: 15px;">
                     <?php if ($comicChapter !== '') { ?>
                         <span style="font-size: 0.85em; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px;">Kapitel <?php echo \htmlspecialchars($comicChapter); ?></span><br>
                     <?php } ?>
@@ -47,16 +48,16 @@ declare(strict_types=1);
                 </div>
             <?php } ?>
 
-            <p style="text-align: center; margin: 20px 0 25px;">
-                <a href="<?php echo \htmlspecialchars($pageUrl); ?>" style="display: inline-block; padding: 14px 28px; background-color: #6c757d; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1em; box-shadow: 0 3px 6px rgba(108,117,125,0.3);">Zum Vorab-Transkript</a>
-            </p>
-
             <?php if ($transcriptSnippet !== '') { ?>
                 <div
-                     style="background-color: #fafafa; border-left: 4px solid #6c757d; padding: 15px; border-radius: 0 4px 4px 0; margin-bottom: 20px; font-style: italic; color: #555;">
+                     style="background-color: #f8fafc; border-left: 4px solid #00add9; padding: 15px; border-radius: 0 4px 4px 0; margin-bottom: 25px; font-style: italic; color: #4a5568;">
                     "<?php echo \htmlspecialchars($transcriptSnippet); ?>"
                 </div>
             <?php } ?>
+
+            <p style="text-align: center; margin: 30px 0 20px;">
+                <a href="<?php echo \htmlspecialchars($pageUrl); ?>" style="display: inline-block; padding: 14px 32px; background-color: #00add9; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 10px rgba(0, 173, 217, 0.4); text-transform: uppercase; letter-spacing: 1px;">Zum Vorab-Transkript</a>
+            </p>
 
             <hr style="border: 0; border-top: 1px dashed #ccc; margin: 30px 0 20px;">
             <p style="font-size: 0.85em; color: #888; text-align: center; margin: 0;">Du erhältst diese E-Mail, weil du

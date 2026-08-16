@@ -104,6 +104,8 @@ export class ComicEditor {
             const charItem = e.target.closest('.char-selection-item:not(.user-selection-item)');
             const userItem = e.target.closest('.user-selection-item');
             const btnToggleCharView = e.target.closest('#btn-toggle-char-view');
+            const btnNlTrans = e.target.closest('#btn-nl-trans');
+            const btnNlFull = e.target.closest('#btn-nl-full');
 
             // SICHERHEIT: Prüfen ob der Klick überhaupt im Comic-Modal stattfindet
             const comicModal = document.getElementById('comic-modal');
@@ -131,9 +133,18 @@ export class ComicEditor {
                 }
             }
 
-            if (btnSave) {
+            if (btnSave && isInsideComicModal) {
                 e.preventDefault();
                 this.saveComic(btnSave);
+            }
+
+            // Neu: Newsletter Button Klicks abfangen -> Erst Speichern, dann senden!
+            if ((btnNlTrans || btnNlFull) && isInsideComicModal) {
+                e.preventDefault();
+                this.saveAndSendNewsletter(
+                    btnNlTrans || btnNlFull,
+                    btnNlTrans ? 'transcript' : 'full'
+                );
             }
 
             if (btnCancel) {
@@ -250,7 +261,6 @@ export class ComicEditor {
         const idVal = this.state.comicId;
         const oldIdVal = this.form?.querySelector('[name="old_comic_id"]')?.value.trim() ?? '';
         const localPreviewId = oldIdVal !== '' ? oldIdVal : idVal;
-
         const origVal = this.state.origUrl;
         const sketchVal = this.state.sketchUrl;
 
@@ -377,12 +387,6 @@ export class ComicEditor {
         DragDropService.reset('comic-drop-zone-hires', 'preview-name-hires');
         DragDropService.reset('comic-drop-zone-lowres', 'preview-name-lowres');
 
-        // Verstecke die Newsletter Buttons, da der Comic ja noch neu ist
-        const btnNlTrans = document.getElementById('btn-nl-trans');
-        const btnNlFull = document.getElementById('btn-nl-full');
-        if (btnNlTrans) btnNlTrans.classList.add('hidden');
-        if (btnNlFull) btnNlFull.classList.add('hidden');
-
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Neuen Comic hinzufügen';
 
@@ -432,7 +436,6 @@ export class ComicEditor {
         setValAndState('type', null, payload.type || 'Comicseite');
         setValAndState('name', null, payload.name);
         setValAndState('chapter_id', null, payload.chapterId);
-
         setValAndState('url_originalbild', 'origUrl', payload.originalUrl);
         setValAndState('url_originalsketch', 'sketchUrl', payload.sketchUrl);
 
@@ -446,21 +449,6 @@ export class ComicEditor {
 
         DragDropService.reset('comic-drop-zone-hires', 'preview-name-hires');
         DragDropService.reset('comic-drop-zone-lowres', 'preview-name-lowres');
-
-        // Mache die Newsletter-Buttons bei einem bestehenden Comic sichtbar und fülle die Daten ab!
-        const btnNlTrans = document.getElementById('btn-nl-trans');
-        const btnNlFull = document.getElementById('btn-nl-full');
-
-        if (btnNlTrans) {
-            btnNlTrans.classList.remove('hidden');
-            btnNlTrans.dataset.page = payload.id;
-            btnNlTrans.dataset.url = `${this.api.baseUrl}/comic/${payload.id}`;
-        }
-        if (btnNlFull) {
-            btnNlFull.classList.remove('hidden');
-            btnNlFull.dataset.page = payload.id;
-            btnNlFull.dataset.url = `${this.api.baseUrl}/comic/${payload.id}`;
-        }
 
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Comic bearbeiten';
@@ -547,6 +535,77 @@ export class ComicEditor {
 
         // PERF: true übergeben für SOFORTIGEN Reload (ohne setTimeout!)
         await this.formService.submit(this.form, btnElement, 'save_single_comic', customData, true);
+    }
+
+    async saveAndSendNewsletter(btnElement, type) {
+        if (!this.form) return;
+        if (!this.form.reportValidity()) return;
+
+        const comicIdInput = this.form.querySelector('[name="comic_id"]');
+        const comicId = comicIdInput ? comicIdInput.value.trim() : '';
+
+        if (comicId.length !== 8) {
+            this.notifications.show('Bitte gib eine gültige 8-stellige Comic-ID an.', 'error');
+            return;
+        }
+
+        if (
+            !confirm(
+                `Möchtest du den Comic speichern und den Newsletter (${type === 'full' ? 'Bild' : 'Text'}) für Seite ${comicId} versenden?`
+            )
+        ) {
+            return;
+        }
+
+        const originalText = btnElement.innerHTML;
+        btnElement.disabled = true;
+        btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
+
+        const customData = {};
+        if (typeof window.$ !== 'undefined' && window.$('#transcript').length) {
+            customData.transcript = window.$('#transcript').trumbowyg('html');
+        }
+
+        // 1. Speichern (ohne automatischen Reload)
+        const saveSuccess = await this.formService.submit(
+            this.form,
+            btnElement,
+            'save_single_comic',
+            customData,
+            false
+        );
+
+        if (!saveSuccess) {
+            return; // Fehler wurde vom formService angezeigt
+        }
+
+        // 2. Newsletter Senden
+        btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sende Newsletter...';
+
+        const fd = new window.FormData();
+        fd.append('type', type);
+        fd.append('comic_name', 'TwoKinds');
+        fd.append('page_number', comicId);
+        fd.append('page_url', `${this.api.baseUrl}/comic/${comicId}`);
+
+        try {
+            const res = await this.api.post('admin_trigger_newsletter', fd);
+            if (res.success) {
+                this.notifications.show(`Comic gespeichert und Newsletter versendet!`, 'success');
+                this.formService.clearDraft(this.currentDraftKey);
+                this.modalManager.close('comic-modal');
+                sessionStorage.setItem('highlightEntityId', comicId);
+                setTimeout(() => window.location.reload(), 1500); // Erfolgreichen Reload anstoßen
+            } else {
+                this.notifications.show(res.error, 'error');
+                btnElement.disabled = false;
+                btnElement.innerHTML = originalText;
+            }
+        } catch (err) {
+            this.notifications.show('Fehler beim Versenden des Newsletters.', err);
+            btnElement.disabled = false;
+            btnElement.innerHTML = originalText;
+        }
     }
 
     async deleteComic(id, btnElement) {
