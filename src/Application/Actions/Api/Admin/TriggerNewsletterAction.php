@@ -46,14 +46,11 @@ final readonly class TriggerNewsletterAction implements ActionInterface
 
         $pageNumberRaw = $request->post['page_number'] ?? '';
         $pageNumber = \is_scalar($pageNumberRaw) ? \trim((string) $pageNumberRaw) : '';
-
-        $pageUrlRaw = $request->post['page_url'] ?? '';
-        $pageUrl = \is_scalar($pageUrlRaw) ? \trim((string) $pageUrlRaw) : '';
-
-        if ($pageUrl === '' || $pageNumber === '') {
-            return JsonResponse::error('Seiten-URL und Seitenzahl müssen angegeben werden.', 400);
+        if ($pageNumber === '') {
+            return JsonResponse::error('Seitenzahl (Comic-ID) muss angegeben werden.', 400);
         }
-
+        $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
+        $pageUrl = $baseUrl . '/comic/' . $pageNumber;
         $isTranscript = $type === 'transcript';
 
         /** @var array<int, User> $subscribers */
@@ -89,8 +86,6 @@ final readonly class TriggerNewsletterAction implements ActionInterface
 
             $comicTitle = $comic->name;
             $comicChapter = $comic->chapterId ?? '';
-
-            $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
             $cb = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
             $imageUrl = "{$baseUrl}/assets/images/comics/social/{$comic->id->value}.jpg{$cb}";
         }
