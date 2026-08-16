@@ -279,8 +279,10 @@ foreach ($characters as $c) {
             <?php } else { ?>
                 <?php foreach ($characters as $char) {
                     $cId = $char->id->value;
-                    $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/100x100?text=N/A';
-                    $charData = \json_encode([
+                    $pic = $char->picUrl
+                        ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}"
+                        : 'https://placehold.co/100x100?text=N/A';
+                    $charDataJson = \json_encode([
                         'id' => $cId,
                         'name' => $char->name,
                         'fullName' => $char->fullName ?? '',
@@ -289,7 +291,7 @@ foreach ($characters as $c) {
                         'altNames' => $char->altNames ?? '',
                         'gender' => $char->gender ?? '',
                         'age' => $char->age ?? '',
-                        'keidranAge' => $char->keidranAge ?? '',
+                        'keidranAge' => $char->getKeidranAgeEquivalent() ?? '',
                         'rank' => $char->rank ?? '',
                         'species' => $char->species ?? '',
                         'subspecies' => $char->subspecies ?? '',
@@ -301,12 +303,13 @@ foreach ($characters as $c) {
                         'mainPic' => $char->mainPic ?? '',
                         'swatchPic' => $char->swatchPic ?? '',
                         'refSheets' => $char->refSheets ?? [],
-                    ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
+                    ], \JSON_THROW_ON_ERROR);
+                    $charDataHtml = \htmlspecialchars($charDataJson, \ENT_QUOTES, 'UTF-8');
                     $searchStr = \strtolower($cId . ' ' . $char->name . ' ' . ($char->fullName ?? '') . ' ' . ($char->altNames ?? '') . ' ' . \strip_tags($char->description ?? '')); ?>
                     <tr data-search="<?php echo \htmlspecialchars($searchStr); ?>"
                         data-gender="<?php echo \htmlspecialchars($char->gender ?? ''); ?>"
                         data-age="<?php echo \htmlspecialchars($char->age ?? ''); ?>"
-                        data-keidranage="<?php echo \htmlspecialchars($char->keidranAge ?? ''); ?>"
+                        data-keidranage="<?php echo \htmlspecialchars($char->getKeidranAgeEquivalent() ?? ''); ?>"
                         data-rank="<?php echo \htmlspecialchars($char->rank ?? ''); ?>"
                         data-species="<?php echo \htmlspecialchars($char->species ?? ''); ?>"
                         data-subspecies="<?php echo \htmlspecialchars($char->subspecies ?? ''); ?>"
@@ -335,7 +338,7 @@ foreach ($characters as $c) {
                                 <?php if ($perms['char_edit']) { ?>
                                     <button type="button"
                                             class="button edit btn-edit-char"
-                                            data-payload='<?php echo $charData; ?>'
+                                            data-payload="<?php echo $charDataHtml; ?>"
                                             title="Bearbeiten">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>

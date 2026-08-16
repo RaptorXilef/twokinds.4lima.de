@@ -3,8 +3,10 @@ export class BackupManager {
         this.api = api;
         this.modalManager = modalManager;
         this.notifications = notifications;
+
         this.tableBody = document.getElementById('backup-table-body');
         this.allTables = [];
+
         this.init();
     }
 
@@ -26,23 +28,28 @@ export class BackupManager {
                 e.preventDefault();
                 this.openCreateModal();
             }
+
             if (btnCloseModal) {
                 e.preventDefault();
                 this.modalManager.close('backup-create-modal');
                 this.modalManager.close('backup-restore-modal');
             }
+
             if (btnSubmitCreate) {
                 e.preventDefault();
                 this.createBackup(btnSubmitCreate);
             }
+
             if (btnSubmitRestore) {
                 e.preventDefault();
                 this.restoreBackup(btnSubmitRestore);
             }
+
             if (btnDelete) {
                 e.preventDefault();
                 this.deleteBackup(btnDelete.dataset.filename);
             }
+
             if (btnRestoreOpen) {
                 e.preventDefault();
                 try {
@@ -54,6 +61,7 @@ export class BackupManager {
 
     async loadBackups() {
         if (!this.tableBody) return;
+
         const res = await this.api.get('list_backups');
         if (res.success) {
             this.allTables = res.tables || [];
@@ -65,6 +73,7 @@ export class BackupManager {
 
     renderTable(backups) {
         this.tableBody.innerHTML = '';
+
         if (backups.length === 0) {
             this.tableBody.innerHTML =
                 '<tr><td colspan="5" class="empty-table-message">Keine Backups gefunden.</td></tr>';
@@ -77,6 +86,9 @@ export class BackupManager {
             const typeStr =
                 b.type === 'full' ? 'Komplett' : `Tabelle: ${b.type.replace('table_', '')}`;
 
+            // Maskiert das generierte JSON sicher als HTML Attribute String
+            const payloadStr = JSON.stringify(b).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${dateStr}</td>
@@ -86,7 +98,7 @@ export class BackupManager {
                 <td class="actions-cell">
                     <form style="display:flex; gap:5px; justify-content: flex-end;">
                         <a href="${this.api.baseUrl}/api/download_backup?file=${b.filename}" target="_blank" class="button edit" title="Herunterladen"><i class="fa-solid fa-download"></i></a>
-                        <button type="button" class="button add btn-restore-backup" data-payload='${JSON.stringify(b)}' title="Wiederherstellen"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button type="button" class="button add btn-restore-backup" data-payload="${payloadStr}" title="Wiederherstellen"><i class="fa-solid fa-rotate-left"></i></button>
                         <button type="button" class="button delete btn-delete-backup" data-filename="${b.filename}" title="Löschen"><i class="fa-solid fa-trash"></i></button>
                     </form>
                 </td>
@@ -107,21 +119,25 @@ export class BackupManager {
     openRestoreModal(backupData) {
         document.getElementById('restore-filename').value = backupData.filename;
         document.getElementById('restore-filename-display').value = backupData.filename;
+
         const select = document.getElementById('backup-restore-table-select');
         select.innerHTML = '<option value="all">Alle im Backup enthaltenen Tabellen</option>';
         backupData.tables.forEach((t) => {
             select.innerHTML += `<option value="${t}">Nur Tabelle: ${t}</option>`;
         });
+
         this.modalManager.open('backup-restore-modal');
     }
 
     async createBackup(btn) {
         const fd = new FormData(document.getElementById('backup-create-form'));
         const origText = btn.innerHTML;
+
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Erstelle...';
         btn.disabled = true;
 
         const res = await this.api.post('create_backup', fd);
+
         btn.innerHTML = origText;
         btn.disabled = false;
 
@@ -135,6 +151,7 @@ export class BackupManager {
     async restoreBackup(btn) {
         const form = document.getElementById('backup-restore-form');
         const fd = new FormData(form);
+
         const msgBox = document.getElementById('restore-modal-msg');
 
         // Fehler-Box vor neuem Versuch zurücksetzen
@@ -183,9 +200,12 @@ export class BackupManager {
 
     async deleteBackup(filename) {
         if (!confirm(`Soll das Backup ${filename} wirklich gelöscht werden?`)) return;
+
         const fd = new FormData();
         fd.append('filename', filename);
+
         const res = await this.api.post('delete_backup', fd);
+
         if (res.success) {
             this.notifications.show(res.message, 'success');
             this.loadBackups();

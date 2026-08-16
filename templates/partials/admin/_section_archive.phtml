@@ -6,7 +6,7 @@ use App\Core\Entity\Chapter;
 
 /**
  * @var Chapter[] $dbChapters
- * @var array     $perms
+ * @var array $perms
  */
 ?>
 <div class="table-controls actions-bar">
@@ -38,12 +38,12 @@ use App\Core\Entity\Chapter;
                 </tr>
             <?php } else { ?>
                 <?php foreach ($dbChapters as $chap) {
-                    $payload = \json_encode([
-                        'id'          => $chap->id,
-                        'title'       => $chap->title,
+                    $payloadJson = \json_encode([
+                        'id' => $chap->id,
+                        'title' => $chap->title,
                         'description' => $chap->description,
-                    ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
-                    ?>
+                    ], \JSON_THROW_ON_ERROR);
+                    $payloadHtml = \htmlspecialchars($payloadJson, \ENT_QUOTES, 'UTF-8'); ?>
                     <tr>
                         <td class="mono"><?php echo \htmlspecialchars($chap->id); ?></td>
                         <td><strong><?php echo \htmlspecialchars($chap->title); ?></strong></td>
@@ -58,7 +58,7 @@ use App\Core\Entity\Chapter;
                                 <?php if ($perms['chap_edit']) { ?>
                                     <button type="button"
                                             class="button edit btn-edit-chapter"
-                                            data-payload='<?php echo $payload; ?>'
+                                            data-payload="<?php echo $payloadHtml; ?>"
                                             title="Bearbeiten">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>

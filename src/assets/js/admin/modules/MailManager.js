@@ -87,6 +87,15 @@ export class MailManager {
                 this.requeueMail(btnResend.dataset.id, btnResend);
             }
         });
+
+        // Globaler Klick-Listener zum Schließen des E-Mail Vorschau Modals
+        document.addEventListener('click', (e) => {
+            const btnClose = e.target.closest('.btn-close-mail-modal');
+            if (btnClose) {
+                e.preventDefault();
+                this.modalManager.close('mail-preview-modal');
+            }
+        });
     }
 
     async openPreview(id) {
