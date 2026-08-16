@@ -95,10 +95,10 @@ final readonly class UpdateReportStatusAction implements ActionInterface
             return;
         }
 
-        $comicIdVal = $report->comicId->value ?? '';
+        $comicIdVal = $report->comicId ? $report->comicId->value : '';
         $pageUrl = \in_array($comicIdVal, ['', '0'], true)
             ? \rtrim($this->config->getBaseUrl(), '/')
-            : \rtrim($this->config->getBaseUrl(), '/') . '/comics/' . $comicIdVal;
+            : \rtrim($this->config->getBaseUrl(), '/') . '/comic/' . $comicIdVal;
 
         $this->mailService->sendTemplate(
             $user->email->value,
@@ -108,6 +108,10 @@ final readonly class UpdateReportStatusAction implements ActionInterface
                 'username' => $user->username->value,
                 'comicId' => $comicIdVal !== '' ? $comicIdVal : 'Allgemeine Webseite',
                 'pageUrl' => $pageUrl,
+                'reportType' => $report->type,
+                'reportDesc' => $report->description,
+                'reportSugg' => $report->transcriptSuggestion,
+                'reportDate' => $report->date->format('d.m.Y H:i'),
             ],
         );
     }

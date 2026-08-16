@@ -5,6 +5,10 @@ declare(strict_types=1);
  * @var string $username
  * @var string $comicId
  * @var string $pageUrl
+ * @var string $reportType
+ * @var string $reportDesc
+ * @var string $reportSugg
+ * @var string $reportDate
  */
 ?>
 <!DOCTYPE html>
@@ -14,24 +18,53 @@ declare(strict_types=1);
     <meta charset="UTF-8">
 </head>
 
-<body style="font-family: sans-serif; line-height: 1.6; color: #333; background: #ececec; padding: 20px;">
+<body
+      style="font-family: 'Open Sans', 'Lucida Grande', arial, sans-serif; line-height: 1.6; color: #333; background: #81dbfe; padding: 20px;">
     <div
-         style="max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h2 style="color: #2c3e50;">Hallo <?php echo \htmlspecialchars($username); ?>!</h2>
+         style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); overflow: hidden;">
 
-        <p>Vielen Dank für deine Adleraugen! <i class="fa-solid fa-eye"></i></p>
-        <p>Du hast uns vor Kurzem einen Fehler auf <strong><?php echo \htmlspecialchars($comicId); ?></strong> gemeldet. Wir haben uns die Sache
-            angesehen, den Fehler korrigiert und deine Meldung als "erledigt" geschlossen.</p>
+        <div style="background-color: #d1e5d4; padding: 20px; text-align: center; border-bottom: 3px solid #28a745;">
+            <h2 style="color: #155724; margin: 0; font-size: 1.6em;">Hallo <?php echo \htmlspecialchars($username); ?>!</h2>
+        </div>
 
-        <p style="text-align: center; margin: 30px 0;">
-            <a href="<?php echo \htmlspecialchars($pageUrl); ?>" style="display: inline-block; padding: 12px 24px; background-color: #28a745; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold;">Zur korrigierten Seite ansehen</a>
-        </p>
+        <div style="padding: 25px;">
+            <p style="font-size: 1.1em; margin-top: 0; text-align: center;">Vielen Dank für deine Adleraugen!
+                <span style="font-size: 1.2em;">👀</span></p>
+            <p>Du hast uns am <strong><?php echo \htmlspecialchars($reportDate); ?></strong> einen Fehler auf der Seite <strong><?php echo \htmlspecialchars($comicId); ?></strong> gemeldet.
+                Wir haben uns die Sache angesehen, den Fehler korrigiert und deine Meldung nun erfolgreich als
+                "erledigt" geschlossen.</p>
 
-        <p>Hilfe aus der Community wie deine macht diese Seite überhaupt erst möglich. Vielen Dank dafür!</p>
+            <div
+                 style="background-color: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin: 25px 0;">
+                <h4
+                    style="margin-top: 0; color: #555; text-transform: uppercase; font-size: 0.85em; letter-spacing: 1px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                    Zusammenfassung deiner Meldung</h4>
+                <p style="margin: 10px 0 5px;"><strong>Kategorie:</strong> <?php echo \htmlspecialchars($reportType === 'transcript' ? 'Transkript/Text' : ($reportType === 'image' ? 'Bild/Darstellung' : 'Sonstiges')); ?></p>
 
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-        <p style="font-size: 0.85em; color: #888;">Du erhältst diese E-Mail, weil du in deinem Profil die Option
-            "Fehlerberichte (Reports)" aktiviert hast. Du kannst dies jederzeit abschalten.</p>
+                <?php if ($reportDesc !== '') { ?>
+                    <p style="margin: 10px 0 5px;">
+                        <strong>Beschreibung:</strong><br><span style="color: #666; font-style: italic;"><?php echo \htmlspecialchars(\strip_tags($reportDesc)); ?></span>
+                    </p>
+                <?php } ?>
+
+                <?php if ($reportSugg !== '') { ?>
+                    <p style="margin: 10px 0 0;"><strong>Dein
+                            Vorschlag:</strong><br><span style="color: #666; font-style: italic;"><?php echo \htmlspecialchars(\strip_tags($reportSugg)); ?></span></p>
+                <?php } ?>
+            </div>
+
+            <p style="text-align: center; margin: 30px 0;">
+                <a href="<?php echo \htmlspecialchars($pageUrl); ?>" style="display: inline-block; padding: 14px 28px; background-color: #28a745; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1em; box-shadow: 0 3px 6px rgba(40,167,69,0.3);">Korrigierte Seite ansehen</a>
+            </p>
+
+            <p style="text-align: center; margin-bottom: 0;">Hilfe aus der Community wie deine macht diese Seite
+                überhaupt erst möglich. Vielen Dank dafür!</p>
+
+            <hr style="border: 0; border-top: 1px dashed #ccc; margin: 30px 0 20px;">
+            <p style="font-size: 0.85em; color: #888; text-align: center; margin: 0;">Du erhältst diese E-Mail, weil du
+                in deinem Profil die Option "Fehlerberichte (Reports)" aktiviert hast. Du kannst dies jederzeit
+                abschalten.</p>
+        </div>
     </div>
 </body>
 

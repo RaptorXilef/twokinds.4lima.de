@@ -6,6 +6,9 @@ declare(strict_types=1);
  * @var string $comicName
  * @var string $pageNumber
  * @var string $pageUrl
+ * @var string $comicTitle
+ * @var string $comicChapter
+ * @var string $transcriptSnippet
  */
 ?>
 <!DOCTYPE html>
@@ -15,26 +18,51 @@ declare(strict_types=1);
     <meta charset="UTF-8">
 </head>
 
-<body style="font-family: sans-serif; line-height: 1.6; color: #333; background: #ececec; padding: 20px;">
+<body
+      style="font-family: 'Open Sans', 'Lucida Grande', arial, sans-serif; line-height: 1.6; color: #333; background: #81dbfe; padding: 20px;">
     <div
-         style="max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h2 style="color: #2c3e50;">Hallo <?php echo \htmlspecialchars($username); ?>!</h2>
-        <p>Für die ganz Ungeduldigen: Das deutsche Transkript für <strong><?php echo \htmlspecialchars($comicName); ?></strong> (Seite <?php echo \htmlspecialchars($pageNumber); ?>) ist fertig!
-        </p>
+         style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); overflow: hidden;">
 
-        <div
-             style="background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 10px; border-radius: 4px; margin: 20px 0;">
-            <strong>Achtung:</strong> Das Lesen des Textes ohne das finale Bild kann starke Spoiler enthalten!
+        <div style="background-color: #ddead7; padding: 20px; text-align: center; border-bottom: 3px solid #b1cab5;">
+            <h2 style="color: #2c3e50; margin: 0; font-size: 1.6em;">Hallo <?php echo \htmlspecialchars($username); ?>!</h2>
         </div>
 
-        <p style="text-align: center; margin: 30px 0;">
-            <a href="<?php echo \htmlspecialchars($pageUrl); ?>" style="display: inline-block; padding: 12px 24px; background-color: #6c757d; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold;">Zum Vorab-Transkript</a>
-        </p>
+        <div style="padding: 25px;">
+            <p style="font-size: 1.1em; margin-top: 0;">Für die ganz Ungeduldigen: Das deutsche Transkript für
+                <strong><?php echo \htmlspecialchars($comicName); ?></strong> (Seite <?php echo \htmlspecialchars($pageNumber); ?>) ist fertig!</p>
 
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-        <p style="font-size: 0.85em; color: #888;">Du erhältst diese E-Mail, weil du den <strong>Vorab-Newsletter (Nur
-                Text)</strong> abonniert hast. Du kannst dies jederzeit in deinem Profil auf der Webseite deaktivieren.
-        </p>
+            <div
+                 style="background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 12px; border-radius: 5px; margin: 20px 0; text-align: center;">
+                <strong>Achtung:</strong> Das Lesen des Textes ohne das finale Bild kann starke Spoiler enthalten!
+            </div>
+
+            <?php if ($comicTitle !== '' || $comicChapter !== '') { ?>
+                <div style="text-align: center; margin-top: 25px; margin-bottom: 10px;">
+                    <?php if ($comicChapter !== '') { ?>
+                        <span style="font-size: 0.85em; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px;">Kapitel <?php echo \htmlspecialchars($comicChapter); ?></span><br>
+                    <?php } ?>
+                    <?php if ($comicTitle !== '') { ?>
+                        <strong style="font-size: 1.3em; color: #333;"><?php echo \htmlspecialchars($comicTitle); ?></strong>
+                    <?php } ?>
+                </div>
+            <?php } ?>
+
+            <p style="text-align: center; margin: 20px 0 25px;">
+                <a href="<?php echo \htmlspecialchars($pageUrl); ?>" style="display: inline-block; padding: 14px 28px; background-color: #6c757d; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1em; box-shadow: 0 3px 6px rgba(108,117,125,0.3);">Zum Vorab-Transkript</a>
+            </p>
+
+            <?php if ($transcriptSnippet !== '') { ?>
+                <div
+                     style="background-color: #fafafa; border-left: 4px solid #6c757d; padding: 15px; border-radius: 0 4px 4px 0; margin-bottom: 20px; font-style: italic; color: #555;">
+                    "<?php echo \htmlspecialchars($transcriptSnippet); ?>"
+                </div>
+            <?php } ?>
+
+            <hr style="border: 0; border-top: 1px dashed #ccc; margin: 30px 0 20px;">
+            <p style="font-size: 0.85em; color: #888; text-align: center; margin: 0;">Du erhältst diese E-Mail, weil du
+                den <strong>Vorab-Newsletter (Nur Text)</strong> abonniert hast. Du kannst dies jederzeit in deinem
+                Profil auf der Webseite deaktivieren.</p>
+        </div>
     </div>
 </body>
 

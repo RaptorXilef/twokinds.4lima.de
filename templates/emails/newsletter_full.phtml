@@ -6,6 +6,10 @@ declare(strict_types=1);
  * @var string $comicName
  * @var string $pageNumber
  * @var string $pageUrl
+ * @var string $comicTitle
+ * @var string $comicChapter
+ * @var string $transcriptSnippet
+ * @var string $imageUrl
  */
 ?>
 <!DOCTYPE html>
@@ -15,21 +19,54 @@ declare(strict_types=1);
     <meta charset="UTF-8">
 </head>
 
-<body style="font-family: sans-serif; line-height: 1.6; color: #333; background: #ececec; padding: 20px;">
+<body
+      style="font-family: 'Open Sans', 'Lucida Grande', arial, sans-serif; line-height: 1.6; color: #333; background: #81dbfe; padding: 20px;">
     <div
-         style="max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h2 style="color: #2c3e50;">Hallo <?php echo \htmlspecialchars($username); ?>!</h2>
-        <p>Gute Nachrichten! Eine neue, vollständig übersetzte Seite von <strong><?php echo \htmlspecialchars($comicName); ?></strong> (Seite <?php echo \htmlspecialchars($pageNumber); ?>) ist
-            soeben online gegangen.</p>
+         style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); overflow: hidden;">
 
-        <p style="text-align: center; margin: 30px 0;">
-            <a href="<?php echo \htmlspecialchars($pageUrl); ?>" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold;">Zur neuen Comic-Seite</a>
-        </p>
+        <div style="background-color: #ddead7; padding: 20px; text-align: center; border-bottom: 3px solid #b1cab5;">
+            <h2 style="color: #2c3e50; margin: 0; font-size: 1.6em;">Hallo <?php echo \htmlspecialchars($username); ?>!</h2>
+        </div>
 
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-        <p style="font-size: 0.85em; color: #888;">Du erhältst diese E-Mail, weil du den <strong>Newsletter für
-                vollständige Comic-Seiten</strong> abonniert hast. Du kannst dies jederzeit in deinem Profil auf der
-            Webseite deaktivieren.</p>
+        <div style="padding: 25px;">
+            <p style="font-size: 1.1em; margin-top: 0;">Gute Nachrichten! Eine neue, vollständig übersetzte Seite von
+                <strong><?php echo \htmlspecialchars($comicName); ?></strong> (Seite <?php echo \htmlspecialchars($pageNumber); ?>) ist soeben online gegangen.</p>
+
+            <?php if ($comicTitle !== '' || $comicChapter !== '') { ?>
+                <div style="text-align: center; margin-top: 30px; margin-bottom: 10px;">
+                    <?php if ($comicChapter !== '') { ?>
+                        <span style="font-size: 0.85em; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 1px;">Kapitel <?php echo \htmlspecialchars($comicChapter); ?></span><br>
+                    <?php } ?>
+                    <?php if ($comicTitle !== '') { ?>
+                        <strong style="font-size: 1.3em; color: #333;"><?php echo \htmlspecialchars($comicTitle); ?></strong>
+                    <?php } ?>
+                </div>
+            <?php } ?>
+
+            <p style="text-align: center; margin: 25px 0;">
+                <a href="<?php echo \htmlspecialchars($pageUrl); ?>" style="display: inline-block; padding: 14px 28px; background-color: #08c; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1em; box-shadow: 0 3px 6px rgba(0,136,204,0.3);">Zur neuen Comic-Seite</a>
+            </p>
+
+            <?php if ($imageUrl !== '') { ?>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <a href="<?php echo \htmlspecialchars($pageUrl); ?>">
+                        <img src="<?php echo \htmlspecialchars($imageUrl); ?>" alt="Vorschaubild" style="max-width: 100%; height: auto; border-radius: 6px; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    </a>
+                </div>
+            <?php } ?>
+
+            <?php if ($transcriptSnippet !== '') { ?>
+                <div
+                     style="background-color: #fafafa; border-left: 4px solid #08c; padding: 15px; border-radius: 0 4px 4px 0; margin-bottom: 20px; font-style: italic; color: #555;">
+                    "<?php echo \htmlspecialchars($transcriptSnippet); ?>"
+                </div>
+            <?php } ?>
+
+            <hr style="border: 0; border-top: 1px dashed #ccc; margin: 30px 0 20px;">
+            <p style="font-size: 0.85em; color: #888; text-align: center; margin: 0;">Du erhältst diese E-Mail, weil du
+                den <strong>Newsletter für vollständige Comic-Seiten</strong> abonniert hast. Du kannst dies jederzeit
+                in deinem Profil auf der Webseite deaktivieren.</p>
+        </div>
     </div>
 </body>
 
