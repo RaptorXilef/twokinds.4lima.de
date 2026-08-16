@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.20.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.20.0...v6.20.1) (2026-08-16)
+
+### 🐛 Bug Fixes
+
+* **admin:** Resolve toggle bug and make character selection resizable ([14c71a0](https://github.com/RaptorXilef/twokinds.4lima.de/commit/14c71a093cbb9abb2cbc226ab371c9bf0af754a4))
+* **admin:** Restore missing character view toggle logic in Comic Modal ([e5d4eef](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e5d4eef059db21b4436fb4228447ce394f09ec82))
+
 ## [6.20.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.19.8...v6.20.0) (2026-08-13)
 
 ### 🚀 Features
