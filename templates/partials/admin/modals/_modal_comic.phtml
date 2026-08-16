@@ -208,37 +208,39 @@ use App\Core\Entity\User;
                         <?php } ?>
                     </select>
 
-                    <div class="bg-even border-medium border-radius-4 p-10">
+                    <!-- Resizable Wrapper für Charaktere -->
+                    <div class="bg-even border-medium border-radius-4 p-10"
+                         style="resize: vertical; overflow: auto; min-height: 250px; height: 350px;"> <!-- TODO zu SCSS -->
 
                         <!-- Ansicht 1: Alphabetisch -->
-                        <div id="view-chars-alpha"
-                             class="char-selection-grid scroll-y max-h-250">
-                            <?php $alphaChars = $characters;
-                            \usort($alphaChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
-
-                            foreach ($alphaChars as $char) {
-                                $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/60x60?text=N/A';?>
-                                <div class="char-selection-item"
-                                     data-char-id="<?php echo \htmlspecialchars($char->id->value); ?>">
-                                    <img src="<?php echo \htmlspecialchars($pic); ?>"
-                                         loading="lazy"
-                                         alt="Char">
-                                    <span><?php echo \htmlspecialchars($char->name); ?></span>
-                                </div>
-                            <?php } ?>
+                        <div id="view-chars-alpha">
+                            <div class="char-selection-grid">
+                                <?php $alphaChars = $characters;
+                                \usort($alphaChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
+                                foreach ($alphaChars as $char) {
+                                    $pic = $char->picUrl
+                                        ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}"
+                                        : 'https://placehold.co/60x60?text=N/A'; ?>
+                                    <div class="char-selection-item"
+                                         data-char-id="<?php echo \htmlspecialchars($char->id->value); ?>">
+                                        <img src="<?php echo \htmlspecialchars($pic); ?>"
+                                             loading="lazy"
+                                             alt="Char">
+                                        <span><?php echo \htmlspecialchars($char->name); ?></span>
+                                    </div>
+                                <?php } ?>
+                            </div>
                         </div>
-
                         <div id="view-chars-grouped"
-                             class="hidden scroll-y max-h-250">
+                             class="hidden">
                             <?php foreach ($groups as $group) { ?>
-                                <h4 class="mt-10 mb-5 border-bottom border-medium pb-5"><?php echo \htmlspecialchars($group->name); ?></h4>
+                                <h4 class="mt-0 mb-5 border-bottom border-medium pb-5"><?php echo \htmlspecialchars($group->name); ?></h4>
                                 <div class="char-selection-grid mb-15">
                                     <?php foreach ($group->characterIds as $cidObj) {
                                         $char = null;
                                         foreach ($characters as $c) {
                                             if ($c->id->value === $cidObj->value) {
                                                 $char = $c;
-
                                                 break;
                                             }
                                         }
@@ -273,16 +275,17 @@ use App\Core\Entity\User;
                         <?php } ?>
                     </select>
 
-                    <div class="bg-even border-medium border-radius-4 p-10">
+                    <!-- Resizable Wrapper für Nutzer -->
+                    <div class="bg-even border-medium border-radius-4 p-10"
+                         style="resize: vertical; overflow: auto; min-height: 150px; height: 200px;">
                         <div id="view-users"
-                             class="char-selection-grid scroll-y max-h-250">
-                            <?php
-                            $alphaUsers = $allUsers ?? [];
-\usort($alphaUsers, fn ($a, $b) => \strcasecmp($a->username->value, $b->username->value));
-
-foreach ($alphaUsers as $u) {
-    $pic = $u->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$u->avatarUrl}" : 'https://placehold.co/60x60?text=N/A';
-    ?>
+                             class="char-selection-grid">
+                            <?php $alphaUsers = $allUsers ?? [];
+                            \usort($alphaUsers, fn ($a, $b) => \strcasecmp($a->username->value, $b->username->value));
+                            foreach ($alphaUsers as $u) {
+                                $pic = $u->avatarUrl
+                                    ? "{$baseUrl}/assets/images/avatars/{$u->avatarUrl}"
+                                    : 'https://placehold.co/60x60?text=N/A'; ?>
                                 <div class="char-selection-item user-selection-item"
                                      data-user-id="<?php echo \htmlspecialchars($u->id); ?>">
                                     <img src="<?php echo \htmlspecialchars($pic); ?>"
