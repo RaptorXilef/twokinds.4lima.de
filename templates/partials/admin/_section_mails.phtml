@@ -10,6 +10,42 @@ use App\Contracts\Config\ConfigInterface;
  * @var array $mailQueue
  * @var array $mailLogs
  */
+$groupedQueue = [];
+$queueTemplates = [];
+foreach ($mailQueue as $mail) {
+    $minute = \substr($mail['created_at'], 0, 16);
+    $key = $minute . '|' . $mail['template'] . '|' . $mail['subject'];
+    if (!isset($groupedQueue[$key])) {
+        $groupedQueue[$key] = ['ids' => [], 'recipients' => [], 'created_at' => $mail['created_at'], 'subject' => $mail['subject'], 'template' => $mail['template'], 'priority' => $mail['priority'], 'attempts' => $mail['attempts']];
+    }
+    $groupedQueue[$key]['ids'][] = $mail['id'];
+    $groupedQueue[$key]['recipients'][] = $mail['recipient'];
+    $queueTemplates[$mail['template']] = true;
+}
+foreach ($groupedQueue as &$g) {
+    \natcasesort($g['recipients']);
+    $g['recipients'] = \array_values($g['recipients']);
+}
+unset($g);
+\ksort($queueTemplates);
+$groupedLogs = [];
+$logTemplates = [];
+foreach ($mailLogs as $log) {
+    $minute = \substr($log['timestamp'], 0, 16);
+    $key = $minute . '|' . $log['template'] . '|' . $log['subject'] . '|' . $log['status'];
+    if (!isset($groupedLogs[$key])) {
+        $groupedLogs[$key] = ['ids' => [], 'recipients' => [], 'timestamp' => $log['timestamp'], 'subject' => $log['subject'], 'template' => $log['template'], 'status' => $log['status']];
+    }
+    $groupedLogs[$key]['ids'][] = $log['id'];
+    $groupedLogs[$key]['recipients'][] = $log['recipient'];
+    $logTemplates[$log['template']] = true;
+}
+foreach ($groupedLogs as &$g) {
+    \natcasesort($g['recipients']);
+    $g['recipients'] = \array_values($g['recipients']);
+}
+unset($g);
+\ksort($logTemplates);
 ?>
 
 <div class="d-flex gap-10 mb-20 pb-15 border-bottom-2">
@@ -30,12 +66,19 @@ use App\Contracts\Config\ConfigInterface;
         <p>Richte diesen Link in deinem Webhosting/Server als CronJob ein (z.B. alle 5 Minuten), um liegengebliebene
             oder zeitversetzte E-Mails automatisch abzuarbeiten:</p>
         <code style="display:block; padding: 10px; background: rgba(0,0,0,0.1); border-radius: 4px; margin-top: 10px;">
-            <?php echo $baseUrl; ?>/api/process_mail_queue?token=<?php echo \htmlspecialchars($config->get('cron_secret', '')); ?>
-        </code>
+<?php echo $baseUrl; ?>/api/process_mail_queue?token=<?php echo \htmlspecialchars($config->get('cron_secret', '')); ?>
+</code>
     </div>
 
     <div class="table-controls actions-bar d-flex flex-wrap justify-end gap-15 align-center">
         <div class="search-wrapper d-flex gap-10 align-center flex-wrap">
+            <select id="mail-queue-template-filter"
+                    class="dt-per-page-select">
+                <option value="">Alle Vorlagen</option>
+                <?php foreach (\array_keys($queueTemplates) as $tpl) {
+                    echo '<option value="' . \htmlspecialchars((string) $tpl) . '">' . \htmlspecialchars((string) $tpl) . '</option>';
+                } ?>
+            </select>
             <select id="mail-queue-per-page"
                     class="dt-per-page-select">
                 <option value="15"
@@ -65,35 +108,48 @@ use App\Contracts\Config\ConfigInterface;
                 </tr>
             </thead>
             <tbody>
-                <?php if (empty($mailQueue)) { ?>
+                <?php if (empty($groupedQueue)) { ?>
                     <tr>
                         <td colspan="5"
                             class="empty-table-message">Die Warteschlange ist aktuell leer.</td>
                     </tr>
                 <?php } else { ?>
-                    <?php foreach ($mailQueue as $mail) { ?>
-                        <tr>
-                            <td><?php echo (new \DateTimeImmutable($mail['created_at']))->format('d.m.Y H:i:s'); ?></td>
-                            <td><strong><?php echo \htmlspecialchars($mail['recipient']); ?></strong></td>
+                    <?php foreach ($groupedQueue as $group) {
+                        $recCount = \count($group['recipients']); ?>
+                        <tr data-template="<?php echo \htmlspecialchars($group['template']); ?>">
+                            <td><?php echo (new \DateTimeImmutable($group['created_at']))->format('d.m.Y H:i:s'); ?></td>
                             <td>
-                                <strong><?php echo \htmlspecialchars($mail['subject']); ?></strong><br>
-                                <span class="badge bg-even border-medium mt-5"><?php echo \htmlspecialchars($mail['template']); ?></span>
+                                <?php if ($recCount > 1) { ?>
+                                    <strong><?php echo $recCount; ?> Empfänger</strong> (Batch)
+                                    <div class="scroll-y border-light border-radius-4 p-5 mt-5"
+                                         style="max-height: 80px; font-size: 0.85em; background: var(--input-bg);">
+                                        <?php foreach ($group['recipients'] as $rec) {
+                                            echo '<div>' . \htmlspecialchars($rec) . '</div>';
+                                        } ?>
+                                    </div>
+                                <?php } else { ?>
+                                    <strong><?php echo \htmlspecialchars($group['recipients'][0]); ?></strong>
+                                <?php } ?>
                             </td>
                             <td>
-                                <span class="badge bg-even border-medium">Prio: <?php echo (int) $mail['priority']; ?></span><br>
-                                <span class="font-small text-faded">Versuche: <?php echo (int) $mail['attempts']; ?></span>
+                                <strong><?php echo \htmlspecialchars($group['subject']); ?></strong><br>
+                                <span class="badge bg-even border-medium mt-5"><?php echo \htmlspecialchars($group['template']); ?></span>
+                            </td>
+                            <td>
+                                <span class="badge bg-even border-medium">Prio: <?php echo (int) $group['priority']; ?></span><br>
+                                <span class="font-small text-faded">Versuche: <?php echo (int) $group['attempts']; ?></span>
                             </td>
                             <td class="actions-cell">
                                 <form>
                                     <button type="button"
                                             class="button add btn-send-mail"
-                                            data-id="<?php echo \htmlspecialchars($mail['id']); ?>"
+                                            data-id="<?php echo \htmlspecialchars(\implode(',', $group['ids'])); ?>"
                                             title="Jetzt sofort versenden">
                                         <i class="fa-solid fa-paper-plane"></i>
                                     </button>
                                     <button type="button"
                                             class="button edit btn-preview-mail"
-                                            data-id="<?php echo \htmlspecialchars($mail['id']); ?>"
+                                            data-id="<?php echo \htmlspecialchars($group['ids'][0]); ?>"
                                             title="Vorschau anzeigen">
                                         <i class="fa-solid fa-eye"></i>
                                     </button>
@@ -115,6 +171,13 @@ use App\Contracts\Config\ConfigInterface;
 
     <div class="table-controls actions-bar d-flex flex-wrap justify-end gap-15 align-center">
         <div class="search-wrapper d-flex gap-10 align-center flex-wrap">
+            <select id="mail-log-template-filter"
+                    class="dt-per-page-select">
+                <option value="">Alle Vorlagen</option>
+                <?php foreach (\array_keys($logTemplates) as $tpl) {
+                    echo '<option value="' . \htmlspecialchars((string) $tpl) . '">' . \htmlspecialchars((string) $tpl) . '</option>';
+                } ?>
+            </select>
             <select id="mail-log-per-page"
                     class="dt-per-page-select">
                 <option value="15">15 Einträge</option>
@@ -144,40 +207,52 @@ use App\Contracts\Config\ConfigInterface;
                 </tr>
             </thead>
             <tbody>
-                <?php if (empty($mailLogs)) { ?>
+                <?php if (empty($groupedLogs)) { ?>
                     <tr>
                         <td colspan="5"
                             class="empty-table-message">Es gibt noch keine Einträge im Verlauf.</td>
                     </tr>
                 <?php } else { ?>
-                    <?php foreach ($mailLogs as $log) {
-                        $isSuccess = $log['status'] === 'Erfolg';
+                    <?php foreach ($groupedLogs as $group) {
+                        $isSuccess = $group['status'] === 'Erfolg';
                         $statusClass = $isSuccess ? 'complete' : 'missing';
-                        ?>
-                        <tr>
-                            <td><?php echo (new \DateTimeImmutable($log['timestamp']))->format('d.m.Y H:i:s'); ?></td>
-                            <td><strong><?php echo \htmlspecialchars($log['recipient']); ?></strong></td>
+                        $recCount = \count($group['recipients']); ?>
+                        <tr data-template="<?php echo \htmlspecialchars($group['template']); ?>">
+                            <td><?php echo (new \DateTimeImmutable($group['timestamp']))->format('d.m.Y H:i:s'); ?></td>
                             <td>
-                                <strong><?php echo \htmlspecialchars($log['subject']); ?></strong><br>
-                                <span class="badge bg-even border-medium mt-5"><?php echo \htmlspecialchars($log['template']); ?></span>
+                                <?php if ($recCount > 1) { ?>
+                                    <strong><?php echo $recCount; ?> Empfänger</strong> (Batch)
+                                    <div class="scroll-y border-light border-radius-4 p-5 mt-5"
+                                         style="max-height: 80px; font-size: 0.85em; background: var(--input-bg);">
+                                        <?php foreach ($group['recipients'] as $rec) {
+                                            echo '<div>' . \htmlspecialchars($rec) . '</div>';
+                                        } ?>
+                                    </div>
+                                <?php } else { ?>
+                                    <strong><?php echo \htmlspecialchars($group['recipients'][0]); ?></strong>
+                                <?php } ?>
+                            </td>
+                            <td>
+                                <strong><?php echo \htmlspecialchars($group['subject']); ?></strong><br>
+                                <span class="badge bg-even border-medium mt-5"><?php echo \htmlspecialchars($group['template']); ?></span>
                             </td>
                             <td>
                                 <span class="status-badge <?php echo $statusClass; ?>">
-                                    <?php echo $isSuccess ? '<i class="fa-solid fa-check"></i> ' : '<i class="fa-solid fa-xmark"></i> '; ?>
-                                    <?php echo \htmlspecialchars($log['status']); ?>
-                                </span>
+<?php echo $isSuccess ? '<i class="fa-solid fa-check"></i> ' : '<i class="fa-solid fa-xmark"></i> '; ?>
+<?php echo \htmlspecialchars($group['status']); ?>
+</span>
                             </td>
                             <td class="actions-cell">
                                 <form>
                                     <button type="button"
                                             class="button add btn-resend-mail"
-                                            data-id="<?php echo \htmlspecialchars($log['id']); ?>"
+                                            data-id="<?php echo \htmlspecialchars(\implode(',', $group['ids'])); ?>"
                                             title="Erneut in die Warteschlange einreihen">
                                         <i class="fa-solid fa-rotate-right"></i>
                                     </button>
                                     <button type="button"
                                             class="button edit btn-preview-mail"
-                                            data-id="<?php echo \htmlspecialchars($log['id']); ?>"
+                                            data-id="<?php echo \htmlspecialchars($group['ids'][0]); ?>"
                                             title="Vorschau anzeigen">
                                         <i class="fa-solid fa-eye"></i>
                                     </button>

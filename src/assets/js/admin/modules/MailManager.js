@@ -23,6 +23,7 @@ export class MailManager {
                 searchInputId: 'mail-queue-search',
                 perPageSelectId: 'mail-queue-per-page',
                 paginationContainerSelector: '.mail-queue-pagination',
+                selectFilters: [{ id: 'mail-queue-template-filter', attr: 'template' }],
             });
         }
 
@@ -33,6 +34,7 @@ export class MailManager {
                 searchInputId: 'mail-log-search',
                 perPageSelectId: 'mail-log-per-page',
                 paginationContainerSelector: '.mail-log-pagination',
+                selectFilters: [{ id: 'mail-log-template-filter', attr: 'template' }],
             });
         }
     }
@@ -129,7 +131,14 @@ export class MailManager {
     }
 
     async sendMailNow(id, btnElement) {
-        if (!confirm('Möchtest du diese E-Mail jetzt sofort versenden?')) return;
+        // Falls wir eine Batch-Id (comma separated) verarbeiten, Meldung anpassen
+        const isBatch = id.includes(',');
+        if (
+            !confirm(
+                `Möchtest du diese ${isBatch ? 'E-Mail GANZER BATCH' : 'E-Mail'} jetzt sofort versenden?`
+            )
+        )
+            return;
 
         const origText = btnElement.innerHTML;
         btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
@@ -151,7 +160,13 @@ export class MailManager {
     }
 
     async requeueMail(id, btnElement) {
-        if (!confirm('Soll diese E-Mail erneut in die Warteschlange eingereiht werden?')) return;
+        const isBatch = id.includes(',');
+        if (
+            !confirm(
+                `Soll diese ${isBatch ? 'E-Mail GANZER BATCH' : 'E-Mail'} erneut in die Warteschlange eingereiht werden?`
+            )
+        )
+            return;
 
         const origText = btnElement.innerHTML;
         btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';

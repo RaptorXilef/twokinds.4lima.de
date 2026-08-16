@@ -38,45 +38,51 @@ final readonly class RequeueMailAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
+        \set_time_limit(0);
         $idRaw = $request->post['id'] ?? '';
-        $id = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
-
-        if ($id === '') {
+        $idStr = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+        $ids = \array_filter(\array_map('trim', \explode(',', $idStr)), fn ($val): bool => $val !== '');
+        if ($ids === []) {
             return JsonResponse::error('Keine ID übergeben.', 400);
         }
 
-        $log = $this->logRepo->findById($id);
-        if ($log === null) {
-            return JsonResponse::error('E-Mail nicht im Verlauf gefunden.', 404);
+        $successCount = 0;
+        foreach ($ids as $id) {
+            $log = $this->logRepo->findById($id);
+            if ($log === null) {
+                continue;
+            }
+
+            $dataRaw = $log['data'] ?? [];
+            /** @var array<string, mixed> $data */
+            $data = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
+            $template = \is_string($log['template'] ?? null) ? $log['template'] : '';
+
+            // Dynamische Tokens erneuern
+            if (\in_array($template, ['verify_account', 'forgot_password', 'verify_new_email'], true)) {
+                $data = $this->regenerateSecurityUrls($template, $log, $data);
+            }
+
+            // Packe sie mit extrem hoher Priorität (100) als neuen Job in die Queue
+            $job = new MailJob(
+                \uniqid('mq_'),
+                \is_string($log['recipient'] ?? null) ? $log['recipient'] : '',
+                \is_string($log['subject'] ?? null) ? $log['subject'] : '',
+                $template,
+                $data,
+                0,
+                100,
+                new DateTimeImmutable(),
+            );
+
+            $this->queueRepo->enqueue($job);
+            ++$successCount;
+        }
+        if ($successCount > 0) {
+            return JsonResponse::success(['message' => "$successCount E-Mail(s) zur erneuten Verarbeitung eingereiht!"]);
         }
 
-        $dataRaw = $log['data'] ?? [];
-        /** @var array<string, mixed> $data */
-        $data = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
-        $template = \is_string($log['template'] ?? null) ? $log['template'] : '';
-
-        // Dynamische Tokens erneuern
-        if (\in_array($template, ['verify_account', 'forgot_password', 'verify_new_email'], true)) {
-            $data = $this->regenerateSecurityUrls($template, $log, $data);
-        }
-
-        // Packe sie mit extrem hoher Priorität (100) als neuen Job in die Queue
-        $job = new MailJob(
-            \uniqid('mq_'),
-            \is_string($log['recipient'] ?? null) ? $log['recipient'] : '',
-            \is_string($log['subject'] ?? null) ? $log['subject'] : '',
-            $template,
-            $data,
-            0,
-            100,
-            new DateTimeImmutable(),
-        );
-
-        $this->queueRepo->enqueue($job);
-
-        return JsonResponse::success(
-            ['message' => 'Die E-Mail wurde mit einem frischen Link zur erneuten Verarbeitung eingereiht!'],
-        );
+        return JsonResponse::error('Keine gültigen E-Mails im Verlauf gefunden.', 404);
     }
 
     /**

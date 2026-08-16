@@ -31,42 +31,53 @@ final readonly class SendQueuedMailAction implements ActionInterface
         if (!$this->auth->hasPermission('system.manage') && !$this->auth->hasPermission('admin.access')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
-
+        \set_time_limit(0);
         $idRaw = $request->post['id'] ?? '';
-        $id = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
-
-        if ($id === '') {
+        $idStr = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+        $ids = \array_filter(\array_map('trim', \explode(',', $idStr)), fn ($val): bool => $val !== '');
+        if ($ids === []) {
             return JsonResponse::error('Keine ID übergeben.', 400);
         }
+        $successCount = 0;
+        $failCount = 0;
+        foreach ($ids as $id) {
+            $mail = $this->queueRepo->findById($id);
+            if ($mail === null) {
+                ++$failCount;
+                continue;
+            }
 
-        $mail = $this->queueRepo->findById($id);
-        if ($mail === null) {
-            return JsonResponse::error('E-Mail nicht in der Warteschlange gefunden.', 404);
+            $dataRaw = $mail['data'] ?? [];
+            $decoded = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
+
+            /** @var array<string, mixed> $data */
+            $data = [];
+            foreach ($decoded as $k => $v) {
+                $data[(string) $k] = $v;
+            }
+
+            $recipient = \is_string($mail['recipient'] ?? null) ? $mail['recipient'] : '';
+            $subject = \is_string($mail['subject'] ?? null) ? $mail['subject'] : '';
+            $template = \is_string($mail['template'] ?? null) ? $mail['template'] : '';
+
+            // Versendet die Mail direkt und loggt sie in mail_logs (Da wir SmtpMailService nutzen)
+            $result = $this->mailService->sendTemplate($recipient, $subject, $template, $data);
+
+            if ($result === true) {
+                // Nach erfolgreichem Versand aus der Queue entfernen
+                $this->queueRepo->delete($id);
+                ++$successCount;
+            } else {
+                ++$failCount;
+            }
+        }
+        if ($successCount > 0 && $failCount === 0) {
+            return JsonResponse::success(['message' => "Erfolgreich $successCount E-Mail(s) versendet!"]);
+        }
+        if ($successCount > 0 && $failCount > 0) {
+            return JsonResponse::success(['message' => "Aktion abgeschlossen: $successCount versendet, $failCount fehlgeschlagen."]);
         }
 
-        $dataRaw = $mail['data'] ?? [];
-        $decoded = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
-
-        /** @var array<string, mixed> $data */
-        $data = [];
-        foreach ($decoded as $k => $v) {
-            $data[(string) $k] = $v;
-        }
-
-        $recipient = \is_string($mail['recipient'] ?? null) ? $mail['recipient'] : '';
-        $subject = \is_string($mail['subject'] ?? null) ? $mail['subject'] : '';
-        $template = \is_string($mail['template'] ?? null) ? $mail['template'] : '';
-
-        // Versendet die Mail direkt und loggt sie in mail_logs (Da wir SmtpMailService nutzen)
-        $result = $this->mailService->sendTemplate($recipient, $subject, $template, $data);
-
-        if ($result === true) {
-            // Nach erfolgreichem Versand aus der Queue entfernen
-            $this->queueRepo->delete($id);
-
-            return JsonResponse::success(['message' => 'E-Mail wurde erfolgreich versendet!']);
-        }
-
-        return JsonResponse::error('Versand fehlgeschlagen: ' . $result, 500);
+        return JsonResponse::error('Versand fehlgeschlagen.', 500);
     }
 }

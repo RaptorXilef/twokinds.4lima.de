@@ -6,9 +6,15 @@ export class DataTable {
         this.tableBody = document.querySelector(config.tableBodySelector);
         this.searchInput = document.getElementById(config.searchInputId);
         this.perPageSelect = document.getElementById(config.perPageSelectId);
-
-        // FIX: Hole alle Paginierungs-Container (Oben und Unten)
         this.paginationContainers = document.querySelectorAll(config.paginationContainerSelector);
+
+        // Neues Feature: Optionale HTML Select Filter
+        this.selectFilters = config.selectFilters || [];
+        this.selectElements = this.selectFilters.map((f) => ({
+            id: f.id,
+            el: document.getElementById(f.id),
+            attr: f.attr,
+        }));
 
         if (
             !this.tableBody ||
@@ -29,6 +35,7 @@ export class DataTable {
         this.currentPage = 1;
         this.itemsPerPage = this.perPageSelect.value;
         this.currentSearchQuery = '';
+        this.currentSelectValues = {};
 
         this.restoreState(); // Lade alte Seite!
         this.bindEvents();
@@ -43,6 +50,7 @@ export class DataTable {
                     page: this.currentPage,
                     limit: this.itemsPerPage,
                     query: this.currentSearchQuery,
+                    selects: this.currentSelectValues,
                 })
             );
         } catch (err) {
@@ -62,6 +70,14 @@ export class DataTable {
                 if (s.query !== undefined && this.searchInput) {
                     this.currentSearchQuery = s.query;
                     this.searchInput.value = s.query;
+                }
+                if (s.selects) {
+                    this.currentSelectValues = s.selects;
+                    this.selectElements.forEach((f) => {
+                        if (f.el && s.selects[f.id] !== undefined) {
+                            f.el.value = s.selects[f.id];
+                        }
+                    });
                 }
             }
         } catch (err) {
@@ -88,12 +104,34 @@ export class DataTable {
             this.currentPage = 1;
             this.renderTable();
         });
+
+        this.selectElements.forEach((f) => {
+            if (f.el) {
+                f.el.addEventListener('change', (e) => {
+                    this.currentSelectValues[f.id] = e.target.value;
+                    this.currentPage = 1;
+                    this.renderTable();
+                });
+            }
+        });
     }
 
     renderTable() {
-        const filteredRows = this.allRows.filter((row) =>
-            row.textContent.toLowerCase().includes(this.currentSearchQuery.toLowerCase())
-        );
+        const filteredRows = this.allRows.filter((row) => {
+            const matchesSearch = row.textContent
+                .toLowerCase()
+                .includes(this.currentSearchQuery.toLowerCase());
+            if (!matchesSearch) return false;
+
+            for (const f of this.selectElements) {
+                const val = this.currentSelectValues[f.id] || '';
+                if (val && row.dataset[f.attr] !== val) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
 
         const totalItems = filteredRows.length;
         const limit = this.itemsPerPage === 'all' ? totalItems : parseInt(this.itemsPerPage, 10);
@@ -117,7 +155,7 @@ export class DataTable {
             if (!emptyMsg) {
                 emptyMsg = document.createElement('tr');
                 emptyMsg.className = 'dyn-empty-msg empty-table-message';
-                emptyMsg.innerHTML = `<td colspan="10">Keine Ergebnisse für "${this.currentSearchQuery}" gefunden.</td>`;
+                emptyMsg.innerHTML = `<td colspan="10">Keine Ergebnisse für die aktuellen Filter gefunden.</td>`;
                 this.tableBody.appendChild(emptyMsg);
             }
             emptyMsg.style.display = '';
