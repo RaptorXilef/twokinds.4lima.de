@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.20.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.20.1...v6.20.2) (2026-08-16)
+
+### 🐛 Bug Fixes
+
+* **admin:** Resolve JSON parsing errors and unresponsive modal close buttons ([9767b33](https://github.com/RaptorXilef/twokinds.4lima.de/commit/9767b336859bdd666b215e77de24bd9d9083db5b))
+* **mail:** Redesign email templates and inject rich context data ([cbd759b](https://github.com/RaptorXilef/twokinds.4lima.de/commit/cbd759b17fe515aae788ff5eb15d9e573036aa16))
+* **mail:** Refine newsletter design and optimize workflow for admins ([219972d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/219972ddc45729c717d4d99e7d0a3ff41b9642a9))
+
 ## [6.20.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.20.0...v6.20.1) (2026-08-16)
 
 ### 🐛 Bug Fixes
