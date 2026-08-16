@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.20.3](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.20.2...v6.20.3) (2026-08-16)
+
+### 🐛 Bug Fixes
+
+* **admin:** Group batch emails visually and add template filtering ([b22fbd0](https://github.com/RaptorXilef/twokinds.4lima.de/commit/b22fbd085559000fedce76648803882137e22347))
+* **mail:** Resolve malformed URL issue in newsletter emails ([98d0f81](https://github.com/RaptorXilef/twokinds.4lima.de/commit/98d0f812d723981ff1df0951621470c0f6d37b1c))
+* **media:** Resolve aggressive browser caching on cropped social media images ([fdb67f3](https://github.com/RaptorXilef/twokinds.4lima.de/commit/fdb67f39e50153b708f260944ccc0314d96d06b7))
+
 ## [6.20.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.20.1...v6.20.2) (2026-08-16)
 
 ### 🐛 Bug Fixes
