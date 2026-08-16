@@ -103,11 +103,33 @@ export class ComicEditor {
             // WICHTIG: Strikte Trennung der Klassen!
             const charItem = e.target.closest('.char-selection-item:not(.user-selection-item)');
             const userItem = e.target.closest('.user-selection-item');
+            const btnToggleCharView = e.target.closest('#btn-toggle-char-view');
 
             // SICHERHEIT: Prüfen ob der Klick überhaupt im Comic-Modal stattfindet
             const comicModal = document.getElementById('comic-modal');
             const isInsideComicModal =
                 comicModal && comicModal.style.display !== 'none' && comicModal.contains(e.target);
+
+            // Ansicht zwischen Alphabetisch und Gruppiert umschalten
+            if (btnToggleCharView && isInsideComicModal) {
+                e.preventDefault();
+                const viewAlpha = document.getElementById('view-chars-alpha');
+                const viewGrouped = document.getElementById('view-chars-grouped');
+
+                if (viewAlpha && viewGrouped) {
+                    if (viewAlpha.classList.contains('hidden')) {
+                        viewAlpha.classList.remove('hidden');
+                        viewGrouped.classList.add('hidden');
+                        btnToggleCharView.innerHTML =
+                            '<i class="fa-solid fa-layer-group"></i> Gruppiert anzeigen';
+                    } else {
+                        viewAlpha.classList.add('hidden');
+                        viewGrouped.classList.remove('hidden');
+                        btnToggleCharView.innerHTML =
+                            '<i class="fa-solid fa-font"></i> Alphabetisch anzeigen';
+                    }
+                }
+            }
 
             if (btnSave) {
                 e.preventDefault();
