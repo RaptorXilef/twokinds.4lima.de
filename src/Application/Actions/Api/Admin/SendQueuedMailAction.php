@@ -34,7 +34,7 @@ final readonly class SendQueuedMailAction implements ActionInterface
         \set_time_limit(0);
         $idRaw = $request->post['id'] ?? '';
         $idStr = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
-        $ids = \array_filter(\array_map('trim', \explode(',', $idStr)), fn ($val): bool => $val !== '');
+        $ids = \array_filter(\array_map(trim(...), \explode(',', $idStr)), fn ($val): bool => $val !== '');
         if ($ids === []) {
             return JsonResponse::error('Keine ID übergeben.', 400);
         }

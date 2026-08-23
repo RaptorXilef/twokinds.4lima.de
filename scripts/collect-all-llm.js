@@ -67,42 +67,44 @@ try {
     console.warn(`${c.yellow}⚠️ package.json nicht gefunden oder fehlerhaft.${c.reset}`);
 }
 
+// Dynamischer Zielordner basierend auf der Version
 const debugFolder = path.join(basePath, '.debug', version);
 
 // --- 2. Filter-Konfigurationen ---
+// Alle Exporte nutzen jetzt .md für optimales LLM-Parsing
 const configs = {
     JS: {
         name: 'JsCode',
         filter: /\.js$/,
-        ext: '.js',
+        ext: '.md',
         exclDirs: ['public/assets'],
         exclFiles: ['svgo.config', 'purgecss.config', 'eslint.config', 'commitlint.config'],
     },
     PHP: {
         name: 'PhpCode',
         filter: /\.php$/,
-        ext: '.php',
+        ext: '.md',
         exclDirs: ['tests'],
         exclFiles: ['php-cs-fixer.dist', 'rector.php'],
     },
     PHTML: {
         name: 'PhtmlCode',
         filter: /\.phtml$/,
-        ext: '.phtml',
+        ext: '.md',
         exclDirs: [],
         exclFiles: [],
     },
     SCSS: {
         name: 'ScssCode',
         filter: /\.scss$/,
-        ext: '.scss',
+        ext: '.md',
         exclDirs: [],
         exclFiles: [],
     },
     PROJECT: {
         name: 'ProjektZusammenfassung',
         filter: /\.(js|php|phtml|scss)$/,
-        ext: '.txt',
+        ext: '.md',
         exclDirs: [],
         exclFiles: [],
     },
@@ -331,7 +333,6 @@ function getTimestampString() {
 
 function startStructureMirror() {
     const timestampDirName = getTimestampString();
-
     const docSuffix = globalKeepDocBlocks ? '_docblock' : '';
     const targetDirName = `${timestampDirName}_minimized${docSuffix}`;
     const targetDir = path.join(debugFolder, targetDirName);
@@ -418,9 +419,29 @@ function startFileCollection(configKey, silent = false) {
             const rawContent = fs.readFileSync(file.fullPath, 'utf-8');
             const optimizedContent = optimizeTokens(rawContent, file.ext);
 
-            combinedContent += `// ========== START FILE: [${file.relPath}] ==========\n`;
+            // =================================================================
+            // NEU: Saubere Markdown Formatierung für LLMs
+            // =================================================================
+            const extName = file.ext.toLowerCase().replace('.', '');
+
+            // Map Dateiendung zu Markdown-Sprache
+            const langMap = {
+                js: 'javascript',
+                php: 'php',
+                phtml: 'html', // PHTML wird oft am besten als HTML vom LLM formatiert
+                scss: 'scss',
+            };
+            const lang = langMap[extName] || extName;
+
+            // Sorge für saubere Forward-Slashes im Markdown-Pfad
+            const mdPath = file.relPath.replace(/\\/g, '/');
+
+            combinedContent += `### /${mdPath}\n`;
+            combinedContent += `\`\`\`${lang}\n`;
             combinedContent += `${optimizedContent}\n`;
-            combinedContent += `// ========== END FILE: [${file.relPath}] ==========\n\n`;
+            combinedContent += `\`\`\`\n\n`;
+            // =================================================================
+
             if (!silent) console.log(`${c.gray} + [Optimiert] ${file.relPath}${c.reset}`);
         } catch (_e) {
             if (!silent) console.log(`${c.gray} ! Überspringe (Binär?): ${file.relPath}${c.reset}`);
@@ -442,17 +463,11 @@ function showHelp() {
         { Argument: '--php', Beschreibung: 'Sammelt & optimiert nur PHP Dateien' },
         { Argument: '--phtml', Beschreibung: 'Sammelt & optimiert nur PHTML Dateien' },
         { Argument: '--scss', Beschreibung: 'Sammelt & optimiert nur SCSS Dateien' },
-        { Argument: '--project', Beschreibung: 'Projektweite Zusammenfassung (*.txt)' },
-        {
-            Argument: '--mirror',
-            Beschreibung: 'Spiegelt die gesamte optimierte Ordnerstruktur (Punkt 6)',
-        },
+        { Argument: '--project', Beschreibung: 'Projektweite Zusammenfassung (*.md)' },
+        { Argument: '--mirror', Beschreibung: 'Spiegelt die gesamte optimierte Ordnerstruktur' },
         { Argument: '--all', Beschreibung: 'Führt Punkt 1-4 automatisch aus' },
         { Argument: '--root', Beschreibung: 'Bezieht Dateien im Root-Verzeichnis mit ein' },
-        {
-            Argument: '--docblocks',
-            Beschreibung: 'Behält DocBlocks mit @-Tags bei (hängt _docblock an den Dateinamen)',
-        },
+        { Argument: '--docblocks', Beschreibung: 'Behält DocBlocks mit @-Tags bei' },
         { Argument: '--help', Beschreibung: 'Zeigt diese Hilfe an' },
     ]);
     console.log(`${c.gray}Info: Im CI-Modus (mit Argumenten) läuft das Skript stumm.${c.reset}\n`);
@@ -500,12 +515,12 @@ if (args.length > 0) {
         console.log(`${c.cyan}    Root: ${c.gray}${basePath}${c.reset}`);
         console.log(`${c.cyan}    Ziel: ${c.yellow}.debug/${version}/${c.reset}`);
         console.log(`${c.cyan}===============================================${c.reset}`);
-        console.log(`${c.bright} 1)${c.reset} JavaScript (*.js)`);
-        console.log(`${c.bright} 2)${c.reset} PHP (*.php)`);
-        console.log(`${c.bright} 3)${c.reset} PHTML (*.phtml)`);
-        console.log(`${c.bright} 4)${c.reset} SCSS (*.scss)`);
+        console.log(`${c.bright} 1)${c.reset} JavaScript (*.md)`);
+        console.log(`${c.bright} 2)${c.reset} PHP (*.md)`);
+        console.log(`${c.bright} 3)${c.reset} PHTML (*.md)`);
+        console.log(`${c.bright} 4)${c.reset} SCSS (*.md)`);
         console.log(
-            `${c.bright} 5)${c.reset} ${c.magenta}PROJEKT-ZUSAMMENFASSUNG${c.reset} (*.txt)`
+            `${c.bright} 5)${c.reset} ${c.magenta}PROJEKT-ZUSAMMENFASSUNG${c.reset} (*.md)`
         );
         console.log(
             `${c.bright} 6)${c.reset} ${c.green}PROJEKT-STRUKTUR SPIEGELN${c.reset} (Einzeldateien in Verzeichnissen)`
