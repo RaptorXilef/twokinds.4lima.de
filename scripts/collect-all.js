@@ -23,6 +23,8 @@ const ALWAYS_IGNORE_DIRS = [
     '.old-5.0.0-alpha.23',
 ];
 
+const ALWAYS_IGNORE_PATHS = ['public/assets', 'public/dev'];
+
 const ALWAYS_IGNORE_FILES = [
     '.lock',
     '-lock.json',
@@ -72,46 +74,63 @@ const configs = {
     JS: {
         name: 'JsCode',
         filter: /\.js$/,
-        ext: '.js',
+        ext: '.md',
         exclDirs: ['public/assets'],
         exclFiles: ['svgo.config', 'purgecss.config', 'eslint.config', 'commitlint.config'],
     },
     PHP: {
         name: 'PhpCode',
         filter: /\.php$/,
-        ext: '.php',
+        ext: '.md',
         exclDirs: ['tests'],
         exclFiles: ['php-cs-fixer.dist', 'rector.php'],
     },
     PHTML: {
         name: 'PhtmlCode',
         filter: /\.phtml$/,
-        ext: '.phtml',
+        ext: '.md',
         exclDirs: [],
         exclFiles: [],
     },
     SCSS: {
         name: 'ScssCode',
         filter: /\.scss$/,
-        ext: '.scss',
+        ext: '.md',
         exclDirs: [],
         exclFiles: [],
     },
     PROJECT: {
         name: 'ProjektZusammenfassung',
-        // Greift exakt die Typen der Punkte 1-4 ab
         filter: /\.(js|php|phtml|scss)$/,
-        ext: '.txt',
+        ext: '.md',
         exclDirs: [],
         exclFiles: [],
     },
 };
 
-// --- 3. Kern-Logik ---
+// --- 3. Formatierungs-Logik (Ohne Token-Minimierung) ---
 
-/**
- * Durchsucht rekursiv Verzeichnisse
- */
+function formatContent(content) {
+    // Teilt den Inhalt in einzelne Zeilen auf
+    const lines = content.split(/\r?\n/);
+    const formattedLines = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        // trim() entfernt führende UND abschließende Leerzeichen (wie z.B. unsichtbare Spaces am Zeilenende).
+        // Der Code selbst (Kommentare, Operatoren, etc.) bleibt völlig unangetastet.
+        const line = lines[i].trim();
+
+        // Wir behalten leere Zeilen bei, filtern sie aber auf absolut "leer" (0 Zeichen)
+        formattedLines.push(line);
+    }
+
+    return formattedLines.join('\n');
+}
+
+// =============================================================================
+// FILE SYSTEM & CLI LOGIC
+// =============================================================================
+
 function getFiles(dir, filter, exclDirs, exclFiles, includeRoot, currentFiles = []) {
     const files = fs.readdirSync(dir);
 
@@ -121,17 +140,19 @@ function getFiles(dir, filter, exclDirs, exclFiles, includeRoot, currentFiles = 
         const stat = fs.statSync(fullPath);
 
         if (stat.isDirectory()) {
-            // Check gegen globale und lokale Ausschlussverzeichnisse
+            const normalizedRelPath = relPath.replace(/\\/g, '/').toLowerCase();
+
             const isExcluded =
                 ALWAYS_IGNORE_DIRS.some(
                     (d) => file.toLowerCase().includes(d.toLowerCase()) || file.startsWith('.')
-                ) || exclDirs.some((d) => relPath.toLowerCase().includes(d.toLowerCase()));
+                ) ||
+                ALWAYS_IGNORE_PATHS.some((p) => normalizedRelPath.includes(p.toLowerCase())) ||
+                exclDirs.some((d) => normalizedRelPath.includes(d.toLowerCase()));
 
             if (!isExcluded) {
                 getFiles(fullPath, filter, exclDirs, exclFiles, includeRoot, currentFiles);
             }
         } else {
-            // Datei-Validierung
             const isRootFile = path.dirname(fullPath) === basePath;
             if (!includeRoot && isRootFile) continue;
 
@@ -141,23 +162,69 @@ function getFiles(dir, filter, exclDirs, exclFiles, includeRoot, currentFiles = 
                 exclFiles.some((f) => file.toLowerCase().includes(f.toLowerCase()));
 
             if (matchesFilter && !isExcludedFile) {
-                currentFiles.push({ fullPath, relPath });
+                currentFiles.push({ fullPath, relPath, ext: path.extname(file) });
             }
         }
     }
     return currentFiles;
 }
 
+function getTimestampString() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+}
+
+function startStructureMirror() {
+    const timestampDirName = getTimestampString();
+    const targetDirName = `${timestampDirName}_collected`;
+    const targetDir = path.join(debugFolder, targetDirName);
+
+    console.log(`\n${c.cyan}🚀 Starte Erstellung der gespiegelten RAW-Struktur...`);
+    console.log(`${c.yellow}Target: .debug/${version}/${targetDirName}/${c.reset}`);
+
+    const foundFiles = getFiles(basePath, /\.(js|php|phtml|scss)$/, [], [], globalIncludeRootFiles);
+
+    if (foundFiles.length === 0) {
+        console.log(`${c.red}❌ Keine Dateien gefunden.${c.reset}`);
+        return;
+    }
+
+    let count = 0;
+    for (const file of foundFiles) {
+        try {
+            const rawContent = fs.readFileSync(file.fullPath, 'utf-8');
+            const formattedContent = formatContent(rawContent);
+
+            const fileOutputDir = path.join(targetDir, path.dirname(file.relPath));
+            const fileOutputPath = path.join(targetDir, file.relPath);
+
+            if (!fs.existsSync(fileOutputDir)) fs.mkdirSync(fileOutputDir, { recursive: true });
+
+            fs.writeFileSync(fileOutputPath, formattedContent, 'utf-8');
+            count++;
+            console.log(`${c.gray} + [Spiegeln] ${file.relPath}${c.reset}`);
+        } catch (e) {
+            console.log(`${c.red} ! Fehler bei Datei: ${file.relPath} (${e.message})${c.reset}`);
+        }
+    }
+
+    console.log(
+        `${c.green}✅ Erfolg: Struktur gespiegelt! ${c.bright}${count} Dateien${c.reset} exportiert nach ${c.yellow}.debug/${version}/${targetDirName}/${c.reset}`
+    );
+}
+
 function startFileCollection(configKey, silent = false) {
     const conf = configs[configKey];
-    const timestamp = new Date().toISOString().replace(/[:T]/g, '-').split('.')[0];
-    const outputName = `${conf.name}_${timestamp}${conf.ext}`;
+    const timestamp = getTimestampString();
+
+    const outputName = `${conf.name}_${timestamp}_collected${conf.ext}`;
     const outputPath = path.join(debugFolder, outputName);
 
-    // Erstelle den versionierten Ordner
     if (!fs.existsSync(debugFolder)) fs.mkdirSync(debugFolder, { recursive: true });
 
-    if (!silent) console.log(`\n${c.cyan}🚀 Starte Sammlung: ${c.bright}${conf.name}${c.reset}...`);
+    if (!silent)
+        console.log(`\n${c.cyan}🚀 Starte RAW-Sammlung: ${c.bright}${conf.name}${c.reset}...`);
 
     const foundFiles = getFiles(
         basePath,
@@ -175,33 +242,51 @@ function startFileCollection(configKey, silent = false) {
     let combinedContent = '';
     for (const file of foundFiles) {
         try {
-            const content = fs.readFileSync(file.fullPath, 'utf-8');
-            combinedContent += `// ========== START FILE: [${file.relPath}] ==========\n`;
-            combinedContent += `${content}\n`;
-            combinedContent += `// ========== END FILE: [${file.relPath}] ==========\n\n`;
-            if (!silent) console.log(`${c.gray} + ${file.relPath}${c.reset}`);
+            const rawContent = fs.readFileSync(file.fullPath, 'utf-8');
+            const formattedContent = formatContent(rawContent);
+
+            const extName = file.ext.toLowerCase().replace('.', '');
+
+            // Map Dateiendung zu Markdown-Sprache
+            const langMap = {
+                js: 'javascript',
+                php: 'php',
+                phtml: 'phtml',
+                scss: 'scss',
+            };
+            const lang = langMap[extName] || extName;
+
+            // Sorge für saubere Forward-Slashes im Markdown-Pfad
+            const mdPath = file.relPath.replace(/\\/g, '/');
+
+            combinedContent += `### /${mdPath}\n`;
+            combinedContent += `\`\`\`${lang}\n`;
+            combinedContent += `${formattedContent}\n`;
+            combinedContent += `\`\`\`\n\n`;
+
+            if (!silent) console.log(`${c.gray} + [Gesammelt] ${file.relPath}${c.reset}`);
         } catch (_e) {
             if (!silent) console.log(`${c.gray} ! Überspringe (Binär?): ${file.relPath}${c.reset}`);
         }
     }
 
     fs.writeFileSync(outputPath, combinedContent, 'utf-8');
-    // Pfad relativ zum Root für die Anzeige kürzen
     const displayPath = path.relative(basePath, outputPath);
     console.log(
-        `${c.green}✅ Erfolg: ${c.bright}${displayPath}${c.reset} (${foundFiles.length} Dateien).`
+        `${c.green}✅ Erfolg: ${c.bright}${displayPath}${c.reset} (${foundFiles.length} Dateien gesammelt).`
     );
 }
 
 function showHelp() {
-    console.log(`\n${c.bright}HILFE & CLI ARGUMENTE${c.reset}`);
+    console.log(`\n${c.bright}HILFE & CLI ARGUMENTE (RAW/COLLECTED)${c.reset}`);
     console.log(`${c.gray}------------------------------------------------------------${c.reset}`);
     console.table([
         { Argument: '--js', Beschreibung: 'Sammelt nur JavaScript Dateien' },
         { Argument: '--php', Beschreibung: 'Sammelt nur PHP Dateien' },
         { Argument: '--phtml', Beschreibung: 'Sammelt nur PHTML Dateien' },
         { Argument: '--scss', Beschreibung: 'Sammelt nur SCSS Dateien' },
-        { Argument: '--project', Beschreibung: 'Projektweite Zusammenfassung (*.txt)' },
+        { Argument: '--project', Beschreibung: 'Projektweite Zusammenfassung (*.md)' },
+        { Argument: '--mirror', Beschreibung: 'Spiegelt die gesamte Ordnerstruktur' },
         { Argument: '--all', Beschreibung: 'Führt Punkt 1-4 automatisch aus' },
         { Argument: '--root', Beschreibung: 'Bezieht Dateien im Root-Verzeichnis mit ein' },
         { Argument: '--help', Beschreibung: 'Zeigt diese Hilfe an' },
@@ -213,7 +298,6 @@ function showHelp() {
 const args = process.argv.slice(2);
 
 if (args.length > 0) {
-    // --- STUMMER MODUS (CLI) ---
     if (args.includes('--help') || args.includes('-h')) {
         showHelp();
         process.exit(0);
@@ -221,23 +305,20 @@ if (args.length > 0) {
     if (args.includes('--root')) globalIncludeRootFiles = true;
 
     if (args.includes('--all')) {
-        ['JS', 'PHP', 'PHTML', 'SCSS'].forEach((k) => {
+        for (const k of ['JS', 'PHP', 'PHTML', 'SCSS']) {
             startFileCollection(k, true);
-        });
+        }
     } else {
         if (args.includes('--js')) startFileCollection('JS', true);
         if (args.includes('--php')) startFileCollection('PHP', true);
         if (args.includes('--phtml')) startFileCollection('PHTML', true);
         if (args.includes('--scss')) startFileCollection('SCSS', true);
         if (args.includes('--project')) startFileCollection('PROJECT', true);
+        if (args.includes('--mirror')) startStructureMirror();
     }
     process.exit(0);
 } else {
-    // --- INTERAKTIVER MODUS ---
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    });
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
     const showMenu = () => {
         const rootStatus = globalIncludeRootFiles
@@ -246,18 +327,19 @@ if (args.length > 0) {
 
         console.clear();
         console.log(`${c.cyan}===============================================`);
-        console.log(
-            `${c.cyan}    ${c.bright}DATEI-ZUSAMMENFASSUNG${c.reset} ${c.dim}(NodeJS CLI)${c.reset}`
-        );
+        console.log(`${c.cyan}    ${c.bright}DATEI-ZUSAMMENFASSUNG (RAW/COLLECTED)${c.reset}`);
         console.log(`${c.cyan}    Root: ${c.gray}${basePath}${c.reset}`);
         console.log(`${c.cyan}    Ziel: ${c.yellow}.debug/${version}/${c.reset}`);
         console.log(`${c.cyan}===============================================${c.reset}`);
-        console.log(`${c.bright} 1)${c.reset} JavaScript (*.js)`);
-        console.log(`${c.bright} 2)${c.reset} PHP (*.php)`);
-        console.log(`${c.bright} 3)${c.reset} PHTML (*.phtml)`);
-        console.log(`${c.bright} 4)${c.reset} SCSS (*.scss)`);
+        console.log(`${c.bright} 1)${c.reset} JavaScript (*.md)`);
+        console.log(`${c.bright} 2)${c.reset} PHP (*.md)`);
+        console.log(`${c.bright} 3)${c.reset} PHTML (*.md)`);
+        console.log(`${c.bright} 4)${c.reset} SCSS (*.md)`);
         console.log(
-            `${c.bright} 5)${c.reset} ${c.magenta}PROJEKT-ZUSAMMENFASSUNG${c.reset} (*.txt)`
+            `${c.bright} 5)${c.reset} ${c.magenta}PROJEKT-ZUSAMMENFASSUNG${c.reset} (*.md)`
+        );
+        console.log(
+            `${c.bright} 6)${c.reset} ${c.green}PROJEKT-STRUKTUR SPIEGELN${c.reset} (Einzeldateien in Verzeichnissen)`
         );
         console.log(`${c.gray}-----------------------------------------------${c.reset}`);
         console.log(`${c.bright} T)${c.reset} Toggle Root-Files: [${rootStatus}]`);
@@ -281,9 +363,14 @@ if (args.length > 0) {
                 return;
             }
             if (choice === 'A') {
-                ['JS', 'PHP', 'PHTML', 'SCSS'].forEach((k) => {
+                for (const k of ['JS', 'PHP', 'PHTML', 'SCSS']) {
                     startFileCollection(k);
-                });
+                }
+                rl.question(`\n${c.gray}Fertig. Drücke Enter...${c.reset}`, showMenu);
+                return;
+            }
+            if (choice === '6') {
+                startStructureMirror();
                 rl.question(`\n${c.gray}Fertig. Drücke Enter...${c.reset}`, showMenu);
                 return;
             }
